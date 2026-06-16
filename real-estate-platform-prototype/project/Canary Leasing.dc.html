@@ -84,9 +84,13 @@
           <sc-for list="{{ listingCards }}" as="l" hint-placeholder-count="6">
             <article onClick="{{ l.onOpen }}" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-1);transition:box-shadow 200ms var(--ease-out-soft),transform 200ms var(--ease-out-soft)" style-hover="box-shadow:var(--shadow-2);transform:translateY(-3px)">
               <div style="position:relative;height:208px;background-size:cover;background-position:center;background-image:{{ l.imgCss }}">
-                <span style="position:absolute;top:13px;left:13px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;background:rgba(255,255,255,0.94);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-1)">
+                <span style="position:absolute;top:13px;left:13px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;background:rgba(255,255,255,0.94);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-1);z-index:2">
                   <span style="width:6px;height:6px;border-radius:9999px;background:{{ l.dot }}"></span>{{ l.tag }}
                 </span>
+                <sc-if value="{{ l.hasMultiPhotos }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ l.onPrevPhoto }}" title="Previous photo" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:9999px;border:none;background:rgba(255,255,255,0.92);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-1);font-size:17px;line-height:1;z-index:2;padding:0 0 1px 0">‹</button>
+                <button onClick="{{ l.onNextPhoto }}" title="Next photo" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:9999px;border:none;background:rgba(255,255,255,0.92);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-1);font-size:17px;line-height:1;z-index:2;padding:0 0 1px 0">›</button>
+                </sc-if>
               </div>
               <div style="padding:18px 20px 20px">
                 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
@@ -234,13 +238,45 @@
               <p style="color:var(--fg-2);font-size:14px;margin-top:6px">Request a viewing, or apply directly online.</p>
 
               <sc-if value="{{ viewOpen }}" hint-placeholder-val="{{ true }}">
-              <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
-                <input value="{{ vName }}" onChange="{{ setVName }}" placeholder="Full name" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
-                <input value="{{ vEmail }}" onChange="{{ setVEmail }}" placeholder="Email" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
-                <input value="{{ vPhone }}" onChange="{{ setVPhone }}" placeholder="Phone" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
-                <label style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:2px">Preferred viewing date</label>
-                <input type="date" value="{{ vDate }}" onChange="{{ setVDate }}" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
-                <button onClick="{{ submitViewing }}" style="width:100%;height:46px;margin-top:6px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Request a viewing</button>
+              <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding-right:4px">
+                <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:2px">Contact</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <input value="{{ vFirst }}" onChange="{{ setVFirst }}" placeholder="First name *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                  <input value="{{ vLast }}" onChange="{{ setVLast }}" placeholder="Last name *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                </div>
+                <input value="{{ vEmail }}" onChange="{{ setVEmail }}" placeholder="Email *" type="email" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <input value="{{ vPhone }}" onChange="{{ setVPhone }}" placeholder="Phone *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:8px">Your search criteria</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                  <input value="{{ vMinBeds }}" onChange="{{ setVMinBeds }}" placeholder="Min beds" inputmode="numeric" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                  <input value="{{ vMinBaths }}" onChange="{{ setVMinBaths }}" placeholder="Min baths" inputmode="decimal" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                  <input value="{{ vMinParking }}" onChange="{{ setVMinParking }}" placeholder="Min parking" inputmode="numeric" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                </div>
+                <input value="{{ vPets }}" onChange="{{ setVPets }}" placeholder="Pets (e.g. No pets, 1 small dog)" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Move-in date</label>
+                    <input type="date" value="{{ vMoveIn }}" onChange="{{ setVMoveIn }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Preferred viewing date</label>
+                    <input type="date" value="{{ vDate }}" onChange="{{ setVDate }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Lease type</label>
+                    <select value="{{ vLeaseType }}" onChange="{{ setVLeaseType }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)">
+                      <option>Long-term</option><option>Short-term</option><option>Flexible</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Max price / month</label>
+                    <input value="{{ vMaxPrice }}" onChange="{{ setVMaxPrice }}" placeholder="e.g. 1800" inputmode="numeric" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                  </div>
+                </div>
+                <textarea value="{{ vOtherDetails }}" onChange="{{ setVOtherDetails }}" placeholder="Other details (must-haves, timeline, questions…)" style="width:100%;height:72px;border:1px solid var(--border-strong);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;background:var(--paper);resize:vertical;line-height:1.5"></textarea>
+                <button onClick="{{ submitViewing }}" disabled="{{ viewSubmitting }}" style="width:100%;height:46px;margin-top:6px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;opacity:{{ viewSubmitOpacity }}">{{ viewSubmitLabel }}</button>
                 <div style="display:flex;align-items:center;gap:12px;margin:6px 0">
                   <div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:12px;color:var(--fg-3)">or</span><div style="flex:1;height:1px;background:var(--border)"></div>
                 </div>
@@ -287,6 +323,86 @@
     </section>
     </sc-if>
 
+  </div>
+  </sc-if>
+
+  <!-- ============================ MANAGER SIGN IN ============================ -->
+  <sc-if value="{{ isManagerSignIn }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;flex-direction:column">
+    <header style="height:64px;display:flex;align-items:center;border-bottom:1px solid var(--border);background:var(--nav-bg);backdrop-filter:blur(20px) saturate(140%)">
+      <div style="width:100%;max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between">
+        <a onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <img src="{{ logoSrc }}" alt="" style="width:26px;height:26px"/>
+          <span style="font-weight:700;font-size:19px;letter-spacing:-0.01em;color:var(--ink)">Canary</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:14px">
+          <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+            <span style="{{ knobStyle }}"></span>
+          </button>
+          <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">← Back to listings</a>
+        </div>
+      </div>
+    </header>
+    <main style="flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px">
+      <div style="width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 32px;box-shadow:var(--shadow-2)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+          <img src="{{ logoSrc }}" alt="" style="width:32px;height:32px"/>
+          <span style="font-weight:700;font-size:22px;letter-spacing:-0.01em;color:var(--ink)">Canary</span>
+        </div>
+        <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px">Manager sign in</h1>
+        <p style="color:var(--fg-2);font-size:15px;line-height:1.55;margin:0 0 28px">Sign in with your work account to access listings, inquiries, and bookings.</p>
+        <sc-if value="{{ authLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;color:var(--fg-3);font-size:14px;padding:20px 0">Checking session…</div>
+        </sc-if>
+        <sc-if value="{{ authReady }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ authEmail }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Email</label>
+            <input type="email" value="{{ signInEmail }}" onChange="{{ setSignInEmail }}" placeholder="admin@canarypm.ca" autocomplete="email" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Password</label>
+            <input type="password" value="{{ signInPassword }}" onChange="{{ setSignInPassword }}" placeholder="Your password" autocomplete="current-password" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+          </div>
+          <button onClick="{{ submitSignIn }}" disabled="{{ signInSubmitting }}" style="height:48px;width:100%;border-radius:12px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;opacity:{{ signInBtnOpacity }}">{{ signInBtnLabel }}</button>
+        </div>
+        </sc-if>
+        <sc-if value="{{ showOAuthDivider }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:12px;margin:4px 0 20px">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:13px;color:var(--fg-3)">or continue with</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ oauthGoogle }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ signInGoogle }}" style="height:48px;width:100%;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23Z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z"/></svg>
+            Continue with Google
+          </button>
+          </sc-if>
+          <sc-if value="{{ oauthMicrosoft }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ signInMicrosoft }}" style="height:48px;width:100%;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+            Continue with Microsoft
+          </button>
+          </sc-if>
+          <sc-if value="{{ oauthNone }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid var(--warning-tint);background:var(--warning-tint);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.5;color:var(--fg-2)">
+            Supabase is not configured. Add <code style="font-size:13px">NEXT_PUBLIC_SUPABASE_URL</code> and <code style="font-size:13px">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> to <code style="font-size:13px">.env.local</code>.
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:16px;border:1px solid var(--danger-tint);background:var(--danger-tint);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--danger)">{{ authError }}</div>
+        </sc-if>
+        <p style="margin:24px 0 0;font-size:13px;color:var(--fg-3);line-height:1.5;text-align:center">Access is limited to authorized property managers.</p>
+      </div>
+    </main>
   </div>
   </sc-if>
 
@@ -339,9 +455,13 @@
           <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">View public site</span></sc-if>
         </button>
         <div style="display:flex;align-items:center;gap:10px;padding:10px 8px 4px;justify-content:center">
-          <div style="width:34px;height:34px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">AB</div>
-          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Aoife Byrne</div><div style="font-size:12px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Atlantic Property Trust</div></div></sc-if>
+          <sc-if value="{{ mgrAvatarUrl }}" hint-placeholder-val="{{ true }}"><img src="{{ mgrAvatarUrl }}" alt="" style="width:34px;height:34px;border-radius:9999px;object-fit:cover;flex-shrink:0"/></sc-if>
+          <sc-if value="{{ mgrAvatarInitials }}" hint-placeholder-val="{{ false }}"><div style="width:34px;height:34px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">{{ mgrInitials }}</div></sc-if>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ mgrName }}</div><div style="font-size:12px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ mgrEmail }}</div></div></sc-if>
         </div>
+        <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ signOut }}" style="margin:8px 8px 0;width:calc(100% - 16px);height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Sign out</button>
+        </sc-if>
       </div>
     </aside>
 
@@ -485,15 +605,20 @@
               </div>
             </div>
             <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Photos · image URLs</label>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Photos</label>
               <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px">
                 <sc-for list="{{ upImages }}" as="im" hint-placeholder-count="0">
                   <div style="position:relative;width:96px;height:72px;border-radius:10px;background-size:cover;background-position:center;border:1px solid var(--border);background-image:{{ im.css }}"><button onClick="{{ im.onRemove }}" style="position:absolute;top:4px;right:4px;border:none;background:rgba(14,15,12,0.7);width:20px;height:20px;border-radius:9999px;cursor:pointer;color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">×</button></div>
                 </sc-for>
               </div>
-              <div style="display:flex;gap:8px">
-                <input value="{{ imgDraft }}" onChange="{{ onImgDraft }}" onKeyDown="{{ onImgKey }}" placeholder="Paste an image URL" style="flex:1;height:42px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
-                <button onClick="{{ addImg }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <label style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                  {{ photoUploadLabel }}
+                  <input type="file" accept="image/*" multiple onChange="{{ onPhotoPick }}" style="display:none"/>
+                </label>
+                <input value="{{ imgDraft }}" onChange="{{ onImgDraft }}" onKeyDown="{{ onImgKey }}" placeholder="Or paste an image URL" style="flex:1;min-width:180px;height:42px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
+                <button onClick="{{ addImg }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add URL</button>
               </div>
             </div>
             <div style="border-top:1px solid var(--border);padding-top:20px">
@@ -558,11 +683,20 @@
         <sc-if value="{{ mgrIsFunnel }}" hint-placeholder-val="{{ false }}">
         <div style="padding:24px 32px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-            <p style="font-size:14px;color:var(--fg-2)">{{ funnelCount }} inquiries in the pipeline</p>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3)">
+            <p style="font-size:14px;color:var(--fg-2)">{{ funnelCount }} inquiries in the pipeline{{ funnelFilteredLabel }}</p>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ inqPropertyOptions }}" as="opt" hint-placeholder-count="3">
+                <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
+              </sc-for>
+              <sc-for list="{{ inqLeaseTypeOptions }}" as="opt" hint-placeholder-count="4">
+                <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
+              </sc-for>
+              <input value="{{ inqFilterMinBeds }}" onChange="{{ setInqFilterMinBeds }}" placeholder="Min beds" inputmode="numeric" style="width:88px;height:36px;border:1px solid var(--border-strong);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:13px;background:var(--surface)"/>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3);margin:-8px 0 14px">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9 2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
               Drag a card between stages, or use → to advance
-            </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start">
             <sc-for list="{{ columns }}" as="col" hint-placeholder-count="4">
@@ -585,6 +719,9 @@
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                         Wants {{ q.desired }}
                       </div>
+                      <sc-if value="{{ q.hasCriteria }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:12px;color:var(--fg-3);margin-top:6px;line-height:1.45">{{ q.criteria }}</div>
+                      </sc-if>
                       <sc-if value="{{ q.hasNotes }}" hint-placeholder-val="{{ false }}">
                       <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
                         <sc-for list="{{ q.notes }}" as="n" hint-placeholder-count="1">
@@ -723,6 +860,22 @@
             <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Inquiry type</span><span style="font-weight:500">{{ drawer.typeLabel }}</span></div>
             <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Wants</span><span style="font-weight:500">{{ drawer.desired }}</span></div>
           </div>
+
+          <sc-if value="{{ drawer.hasCriteria }}" hint-placeholder-val="{{ true }}">
+          <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:14px">
+            <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:10px">Search criteria</div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Bedrooms</span><span style="font-weight:500">{{ drawer.minBedroomsLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Bathrooms</span><span style="font-weight:500">{{ drawer.minBathroomsLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Parking</span><span style="font-weight:500">{{ drawer.minParkingLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Pets</span><span style="font-weight:500">{{ drawer.petsLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Move-in</span><span style="font-weight:500">{{ drawer.moveInLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Lease type</span><span style="font-weight:500">{{ drawer.leaseTypeLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Max price</span><span style="font-weight:500">{{ drawer.maxPriceLabel }}</span></div>
+            <sc-if value="{{ drawer.hasOtherDetails }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13px;color:var(--fg-2);margin-top:8px;padding-top:10px;border-top:1px solid var(--border);line-height:1.5">{{ drawer.otherDetails }}</div>
+            </sc-if>
+          </div>
+          </sc-if>
 
           <div style="margin-top:22px">
             <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:12px">Pipeline stage</div>
@@ -904,16 +1057,24 @@ class Component extends DCLogic {
     try { theme = localStorage.getItem('canary-theme') || 'light'; } catch (e) {}
     this.state = {
       theme,
-      surface: props.startSurface === 'manager' ? 'manager' : 'public',
+      surface: props.startSurface === 'manager' ? 'manager-signin' : 'public',
       pubView: 'listings', propId: null, pubFilter: 'all',
       rangeStart: '2026-06-20', rangeEnd: '2026-06-24',
       bookSubmitted: false, viewSubmitted: false,
-      vName: '', vEmail: '', vPhone: '', vDate: '',
+      vFirst: '', vLast: '', vEmail: '', vPhone: '', vDate: '',
+      vMinBeds: '', vMinBaths: '', vMinParking: '', vPets: '', vMoveIn: '',
+      vOtherDetails: '', vLeaseType: 'Long-term', vMaxPrice: '',
+      viewSubmitting: false,
+      inqFilterProperty: 'all', inqFilterLeaseType: 'all', inqFilterMinBeds: '',
       mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false,
       properties, inquiries, bookings, viewings,
       noteDrafts: {}, draggingId: null, dragOverCol: null,
       copiedId: null, toast: null,
       up: this.blankUploader(), featDraft: '', imgDraft: '',
+      managerUser: null, authLoading: true, authChecked: false, authError: null,
+      oauthGoogle: false, oauthMicrosoft: false, authEmail: false,
+      signInEmail: '', signInPassword: '', signInSubmitting: false,
+      cardPhotoIdx: {}, photoUploading: false, publishSubmitting: false,
     };
     this._toastT = null; this._copyT = null;
   }
@@ -924,8 +1085,169 @@ class Component extends DCLogic {
       yearBuilt:'', storeys:'', heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false,
       powerMeter:'', oilCompany:'', internalNotes:'' };
   }
-  componentDidMount() { this.applyTheme(this.state.theme === 'dark'); }
+  componentDidMount() {
+    this.applyTheme(this.state.theme === 'dark');
+    this.bootstrapAuth();
+    this.loadListings();
+  }
   componentWillUnmount() { clearTimeout(this._toastT); clearTimeout(this._copyT); }
+
+  authCallbackUrl() {
+    return encodeURIComponent(window.location.pathname + '?manager=1');
+  }
+
+  bootstrapAuth = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('error') === 'auth' ? 'Sign in failed. Please try again.' : null;
+    if (params.has('manager') || params.has('error')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    let oauthGoogle = false, oauthMicrosoft = false, authEmail = false;
+    try {
+      const provRes = await fetch('/api/auth/providers', { credentials: 'include' });
+      if (provRes.ok) {
+        const prov = await provRes.json();
+        oauthGoogle = !!prov.google;
+        oauthMicrosoft = !!prov.microsoft;
+        authEmail = !!prov.email;
+      }
+    } catch (e) {}
+    let managerUser = null;
+    try {
+      const res = await fetch('/api/auth/session', { credentials: 'include' });
+      if (res.ok) {
+        const session = await res.json();
+        if (session?.user) managerUser = session.user;
+      }
+    } catch (e) {}
+    const wantsManager = params.get('manager') === '1' || params.get('manager') === 'signin' || this.state.surface === 'manager-signin';
+    this.setState({
+      managerUser, oauthGoogle, oauthMicrosoft, authEmail,
+      authLoading: false, authChecked: true, authError,
+      surface: managerUser && wantsManager ? 'manager' : (wantsManager && !managerUser ? 'manager-signin' : this.state.surface),
+    });
+    if (managerUser) this.loadInquiries();
+  };
+
+  setSignInEmail = e => this.setState({ signInEmail: e.target.value, authError: null });
+  setSignInPassword = e => this.setState({ signInPassword: e.target.value, authError: null });
+  submitSignIn = async () => {
+    const { signInEmail, signInPassword } = this.state;
+    if (!signInEmail.trim() || !signInPassword) {
+      this.setState({ authError: 'Please enter your email and password.' });
+      return;
+    }
+    this.setState({ signInSubmitting: true, authError: null });
+    try {
+      const res = await fetch('/api/auth/signin', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signInEmail.trim(), password: signInPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        this.setState({ authError: data.error || 'Sign in failed.', signInSubmitting: false });
+        return;
+      }
+      this.setState({
+        managerUser: data.user,
+        surface: 'manager',
+        signInSubmitting: false,
+        authError: null,
+        signInPassword: '',
+      });
+    } catch (e) {
+      this.setState({ authError: 'Sign in failed. Please try again.', signInSubmitting: false });
+    }
+  };
+
+  loadListings = async () => {
+    try {
+      const res = await fetch('/api/listings');
+      if (!res.ok) return;
+      const dbListings = await res.json();
+      if (!dbListings.length) return;
+      this.setState(s => ({
+        properties: [...dbListings, ...s.properties.filter(p => !p.fromDb)],
+      }));
+    } catch (e) {}
+  };
+
+  cardPhotoIndex(id) { return this.state.cardPhotoIdx[id] || 0; }
+  prevCardPhoto = (id, e) => {
+    if (e) e.stopPropagation();
+    const p = this.getProp(id);
+    if (!p || p.images.length <= 1) return;
+    const cur = this.cardPhotoIndex(id);
+    const next = (cur - 1 + p.images.length) % p.images.length;
+    this.setState(s => ({ cardPhotoIdx: { ...s.cardPhotoIdx, [id]: next } }));
+  };
+  nextCardPhoto = (id, e) => {
+    if (e) e.stopPropagation();
+    const p = this.getProp(id);
+    if (!p || p.images.length <= 1) return;
+    const cur = this.cardPhotoIndex(id);
+    const next = (cur + 1) % p.images.length;
+    this.setState(s => ({ cardPhotoIdx: { ...s.cardPhotoIdx, [id]: next } }));
+  };
+
+  loadInquiries = async () => {
+    try {
+      const res = await fetch('/api/inquiries', { credentials: 'include' });
+      if (!res.ok) return;
+      const dbInquiries = await res.json();
+      if (!dbInquiries.length) return;
+      this.setState(s => ({
+        inquiries: [...dbInquiries, ...s.inquiries.filter(q => !q.fromDb)],
+      }));
+    } catch (e) {}
+  };
+
+  patchInquiry = async (id, patch) => {
+    const q = this.state.inquiries.find(x => x.id === id);
+    if (!q?.fromDb) return;
+    try {
+      await fetch('/api/inquiries/' + id, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+    } catch (e) {}
+  };
+
+  criteriaSummary(q) {
+    const parts = [];
+    if (q.minBedrooms != null && q.minBedrooms !== '') parts.push(q.minBedrooms + '+ bed');
+    if (q.minBathrooms != null && q.minBathrooms !== '') parts.push(q.minBathrooms + '+ bath');
+    if (q.minParking != null && q.minParking !== '') parts.push(q.minParking + '+ parking');
+    if (q.pets) parts.push(q.pets);
+    if (q.leaseType) parts.push(q.leaseType);
+    if (q.maxPrice) parts.push('\u2264 $' + Number(q.maxPrice).toLocaleString('en-CA'));
+    return parts.join(' \u00b7 ');
+  }
+
+  inqCriteriaFields(q) {
+    const dash = '\u2014';
+    return {
+      hasCriteria: !!(q.minBedrooms || q.minBathrooms || q.minParking || q.pets || q.leaseType || q.maxPrice || q.moveInDate || q.otherDetails),
+      criteria: this.criteriaSummary(q),
+      minBedroomsLabel: q.minBedrooms != null && q.minBedrooms !== '' ? String(q.minBedrooms) + '+' : dash,
+      minBathroomsLabel: q.minBathrooms != null && q.minBathrooms !== '' ? String(q.minBathrooms) + '+' : dash,
+      minParkingLabel: q.minParking != null && q.minParking !== '' ? String(q.minParking) + '+' : dash,
+      petsLabel: q.pets || dash,
+      moveInLabel: q.moveInDate || dash,
+      leaseTypeLabel: q.leaseType || dash,
+      maxPriceLabel: q.maxPrice ? ('$' + Number(q.maxPrice).toLocaleString('en-CA') + '/mo') : dash,
+      hasOtherDetails: !!q.otherDetails,
+      otherDetails: q.otherDetails || '',
+    };
+  }
+
+  signInGoogle = () => { window.location.href = '/auth/google'; };
+  signInMicrosoft = () => { this.showToast('Microsoft sign-in is not enabled yet'); };
+  signOut = () => { window.location.href = '/auth/signout?callbackUrl=' + encodeURIComponent(window.location.pathname); };
   applyTheme(dark) { try { const c = dark ? '#1A1916' : '#FAF7F1'; document.body.style.background = c; document.documentElement.style.background = c; } catch (e) {} }
   toggleTheme = () => this.setState(s => { const t = s.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('canary-theme', t); } catch (e) {} this.applyTheme(t === 'dark'); return { theme: t }; });
   themeVars(dark) {
@@ -953,8 +1275,14 @@ class Component extends DCLogic {
   // navigation
   goHome = () => this.setState({ surface:'public', pubView:'listings' });
   goPublic = () => this.setState({ surface:'public' });
-  goManager = () => this.setState({ surface:'manager' });
-  goUploader = () => this.setState({ surface:'manager', mgrView:'uploader' });
+  goManager = () => {
+    if (this.state.managerUser) this.setState({ surface:'manager' });
+    else this.setState({ surface:'manager-signin', authError: null });
+  };
+  goUploader = () => {
+    if (this.state.managerUser) this.setState({ surface:'manager', mgrView:'uploader' });
+    else this.setState({ surface:'manager-signin', authError: null });
+  };
   goOverview = () => this.setState({ mgrView:'overview' });
   goProperties = () => this.setState({ mgrView:'properties' });
   goFunnel = () => this.setState({ mgrView:'funnel' });
@@ -963,7 +1291,7 @@ class Component extends DCLogic {
   toggleSide = () => this.setState(s => ({ sideCollapsed: !s.sideCollapsed }));
   confirmViewing = (id) => { this.setState(s => ({ viewings: s.viewings.map(v => v.id===id ? {...v, status:'CONFIRMED'} : v) })); this.showToast('Viewing confirmed'); };
   rescheduleViewing = (id) => this.showToast('Reschedule link sent to prospect');
-  openProperty = (id) => this.setState({ surface:'public', pubView:'detail', propId:id, bookSubmitted:false, viewSubmitted:false, vName:'', vEmail:'', vPhone:'', vDate:'', rangeStart:'2026-06-20', rangeEnd:'2026-06-24' });
+  openProperty = (id) => this.setState({ surface:'public', pubView:'detail', propId:id, bookSubmitted:false, viewSubmitted:false, vFirst:'', vLast:'', vEmail:'', vPhone:'', vDate:'', vMinBeds:'', vMinBaths:'', vMinParking:'', vPets:'', vMoveIn:'', vOtherDetails:'', vLeaseType:'Long-term', vMaxPrice:'', rangeStart:'2026-06-20', rangeEnd:'2026-06-24' });
   goApply = () => this.setState({ pubView:'apply' });
   goBackDetail = () => this.setState({ pubView:'detail' });
 
@@ -980,17 +1308,66 @@ class Component extends DCLogic {
     this.setState(s => ({ bookings:[bk,...s.bookings], inquiries:[iq,...s.inquiries], bookSubmitted:true }));
     this.showToast('Booking request sent to Canary');
   };
-  setVName = (e) => this.setState({ vName: e.target.value });
+  setVFirst = (e) => this.setState({ vFirst: e.target.value });
+  setVLast = (e) => this.setState({ vLast: e.target.value });
   setVEmail = (e) => this.setState({ vEmail: e.target.value });
   setVPhone = (e) => this.setState({ vPhone: e.target.value });
   setVDate = (e) => this.setState({ vDate: e.target.value });
-  submitViewing = () => {
+  setVMinBeds = (e) => this.setState({ vMinBeds: e.target.value });
+  setVMinBaths = (e) => this.setState({ vMinBaths: e.target.value });
+  setVMinParking = (e) => this.setState({ vMinParking: e.target.value });
+  setVPets = (e) => this.setState({ vPets: e.target.value });
+  setVMoveIn = (e) => this.setState({ vMoveIn: e.target.value });
+  setVOtherDetails = (e) => this.setState({ vOtherDetails: e.target.value });
+  setVLeaseType = (e) => this.setState({ vLeaseType: e.target.value });
+  setVMaxPrice = (e) => this.setState({ vMaxPrice: e.target.value });
+  setInqFilterMinBeds = (e) => this.setState({ inqFilterMinBeds: e.target.value });
+  submitViewing = async () => {
     const p = this.getProp(this.state.propId); if (!p) return;
-    if (!this.state.vName.trim()) { this.showToast('Add your name to request a viewing'); return; }
-    const parts = this.state.vName.trim().split(' ');
-    const iq = { id:'q'+Date.now(), first:parts[0], last:parts.slice(1).join(' ')||'', email:this.state.vEmail||'\u2014', phone:this.state.vPhone||'\u2014', propId:p.id, type:'LONG_TERM_RENTAL', desired:this.state.vDate?('viewing '+this.state.vDate):'a viewing', status:'NEW', notes:[{ text:'Viewing requested via website.', time:'just now' }] };
-    this.setState(s => ({ inquiries:[iq,...s.inquiries], viewSubmitted:true }));
-    this.showToast('Viewing request sent');
+    const s = this.state;
+    if (!s.vFirst.trim() || !s.vLast.trim()) { this.showToast('First and last name are required'); return; }
+    if (!s.vEmail.trim() || !s.vPhone.trim()) { this.showToast('Email and phone are required'); return; }
+    this.setState({ viewSubmitting: true });
+    const payload = {
+      firstName: s.vFirst.trim(), lastName: s.vLast.trim(),
+      email: s.vEmail.trim(), phone: s.vPhone.trim(),
+      propertyRef: p.id, propertyTitle: p.title,
+      listingId: p.fromDb ? p.id : null,
+      inquiryType: 'VIEWING_REQUEST',
+      minBedrooms: s.vMinBeds ? Number(s.vMinBeds) : null,
+      minBathrooms: s.vMinBaths ? Number(s.vMinBaths) : null,
+      minParking: s.vMinParking ? Number(s.vMinParking) : null,
+      pets: s.vPets.trim() || null,
+      moveInDate: s.vMoveIn || null,
+      otherDetails: s.vOtherDetails.trim() || null,
+      leaseType: s.vLeaseType || null,
+      maxPrice: s.vMaxPrice ? Number(s.vMaxPrice) : null,
+      preferredViewingDate: s.vDate || null,
+    };
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const saved = await res.json().catch(() => null);
+      if (res.ok && saved) {
+        this.setState(st => ({ inquiries: [saved, ...st.inquiries], viewSubmitted: true, viewSubmitting: false }));
+        this.showToast('Viewing request sent');
+        return;
+      }
+    } catch (e) {}
+    const iq = {
+      id: 'q' + Date.now(), first: payload.firstName, last: payload.lastName,
+      email: payload.email, phone: payload.phone, propId: p.id, propertyTitle: p.title,
+      type: 'VIEWING_REQUEST', desired: payload.preferredViewingDate ? ('viewing ' + payload.preferredViewingDate) : 'a viewing',
+      status: 'NEW', notes: [{ text: 'Viewing requested via website.', time: 'just now' }],
+      minBedrooms: payload.minBedrooms, minBathrooms: payload.minBathrooms, minParking: payload.minParking,
+      pets: payload.pets, moveInDate: payload.moveInDate, otherDetails: payload.otherDetails,
+      leaseType: payload.leaseType, maxPrice: payload.maxPrice, preferredViewingDate: payload.preferredViewingDate,
+    };
+    this.setState(st => ({ inquiries: [iq, ...st.inquiries], viewSubmitted: true, viewSubmitting: false }));
+    this.showToast('Viewing request saved locally');
   };
 
   // pipeline
@@ -998,22 +1375,27 @@ class Component extends DCLogic {
   moveInq = (id, status) => {
     if (!id) return;
     this.setState(s => ({ inquiries: s.inquiries.map(q => q.id===id ? {...q, status} : q), draggingId:null, dragOverCol:null }));
+    this.patchInquiry(id, { status });
   };
   advanceInq = (id) => {
     this.setState(s => ({ inquiries: s.inquiries.map(q => {
       if (q.id!==id) return q;
       const i = this.STAGES.findIndex(st => st[0]===q.status);
       const next = this.STAGES[Math.min(i+1, this.STAGES.length-1)][0];
+      this.patchInquiry(id, { status: next });
       return {...q, status: next};
     }) }));
   };
   setNoteDraft = (id, v) => this.setState(s => ({ noteDrafts:{...s.noteDrafts, [id]:v} }));
   addNote = (id) => {
     const v = (this.state.noteDrafts[id]||'').trim(); if (!v) return;
+    const q = this.state.inquiries.find(x => x.id === id);
+    const notes = [...(q?.notes || []), { text:v, time:'just now' }];
     this.setState(s => ({
-      inquiries: s.inquiries.map(q => q.id===id ? {...q, notes:[...q.notes, { text:v, time:'just now' }]} : q),
+      inquiries: s.inquiries.map(q => q.id===id ? {...q, notes} : q),
       noteDrafts: {...s.noteDrafts, [id]:''},
     }));
+    this.patchInquiry(id, { notes });
   };
   copyLink = (q) => {
     const p = this.getProp(q.propId);
@@ -1046,29 +1428,89 @@ class Component extends DCLogic {
   addFeat = () => { const v=this.state.featDraft.trim(); if(!v) return; this.setState(s=>({ up:{...s.up, features:[...s.up.features, v]}, featDraft:'' })); };
   removeFeat = (i) => this.setState(s => ({ up:{...s.up, features: s.up.features.filter((_,j)=>j!==i)} }));
   onFeatKey = e => { if (e.key==='Enter') { e.preventDefault(); this.addFeat(); } };
-  addImg = () => { const v=this.state.imgDraft.trim(); if(!v) return; this.setState(s=>({ up:{...s.up, images:[...s.up.images, v]}, imgDraft:'' })); };
-  removeImg = (i) => this.setState(s => ({ up:{...s.up, images: s.up.images.filter((_,j)=>j!==i)} }));
-  onImgKey = e => { if (e.key==='Enter') { e.preventDefault(); this.addImg(); } };
-  publish = () => {
+  addImg = () => {
+    const v = this.state.imgDraft.trim();
+    if (!v) return;
+    this.setState(s => ({ up: { ...s.up, images: [...s.up.images, { url: v }] }, imgDraft: '' }));
+  };
+  removeImg = (i) => this.setState(s => ({ up: { ...s.up, images: s.up.images.filter((_, j) => j !== i) } }));
+  onImgKey = e => { if (e.key === 'Enter') { e.preventDefault(); this.addImg(); } };
+  onPhotoPick = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    this.setState({ photoUploading: true });
+    const added = [];
+    for (const file of files) {
+      try {
+        const form = new FormData();
+        form.append('photo', file);
+        const res = await fetch('/api/listings/photos', { method: 'POST', credentials: 'include', body: form });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.url) added.push({ url: data.url, path: data.path || null });
+      } catch (err) {}
+    }
+    if (added.length) {
+      this.setState(s => ({ up: { ...s.up, images: [...s.up.images, ...added] }, photoUploading: false }));
+      this.showToast(added.length === 1 ? 'Photo uploaded' : added.length + ' photos uploaded');
+    } else {
+      this.setState({ photoUploading: false });
+      this.showToast('Photo upload failed — sign in and run supabase/schema.sql');
+    }
+    e.target.value = '';
+  };
+  publish = async () => {
     const u = this.state.up;
     if (!u.title.trim()) { this.showToast('Give the listing a title'); return; }
     if (!u.rate) { this.showToast('Add a rate'); return; }
-    const id = 'p' + Date.now();
-    const imgs = u.images.length ? u.images : [this.IMG('1493809842364-78817add7ffb'), this.IMG('1502005229762-cf1b2da7c5d6'), this.IMG('1484154218962-a197022b5858')];
-    const np = {
-      id, slug:(u.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'listing'),
-      title:u.title, type:u.type, area:u.city||'St. John\u2019s', city:u.city||'St. John\u2019s', province:u.province||'NL', postal:u.postal||'',
-      rate:Number(u.rate)||0, cleaning:u.type==='SHORT_TERM'?(Number(u.cleaning)||0):0,
-      beds:Number(u.beds)||0, baths:Number(u.baths)||0, sqft:Number(u.sqft)||0,
-      status:'ACTIVE', features:u.features.slice(), images:imgs,
-      parking:Number(u.parking)||0, petFriendly:!!u.petFriendly, dogs:!!u.dogs, cats:!!u.cats,
-      utilitiesIncluded:!!u.utilitiesIncluded, utilityTypes:u.utilityTypes.slice(), utilityCap:Number(u.utilityCap)||0,
-      yearBuilt:Number(u.yearBuilt)||0, storeys:Number(u.storeys)||0, heatingType:u.heatingType, waterHeater:u.waterHeater, firewall:!!u.firewall,
-      powerMeter:u.powerMeter, oilCompany:u.oilCompany, internalNotes:u.internalNotes,
-      description:u.description||'A new Canary listing.',
+    this.setState({ publishSubmitting: true });
+    const slug = (u.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'listing') + '-' + Date.now().toString(36);
+    const imgs = u.images.length ? u.images : [
+      { url: this.IMG('1493809842364-78817add7ffb') },
+      { url: this.IMG('1502005229762-cf1b2da7c5d6') },
+      { url: this.IMG('1484154218962-a197022b5858') },
+    ];
+    const payload = {
+      slug, title: u.title, type: u.type, area: u.city || 'St. John\u2019s', city: u.city || 'St. John\u2019s', province: u.province || 'NL', postal: u.postal || '',
+      rate: Number(u.rate) || 0, cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
+      beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
+      status: 'ACTIVE', features: u.features.slice(), description: u.description || 'A new Canary listing.',
+      parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
+      utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
+      yearBuilt: Number(u.yearBuilt) || 0, storeys: Number(u.storeys) || 0, heatingType: u.heatingType, waterHeater: u.waterHeater, firewall: !!u.firewall,
+      powerMeter: u.powerMeter, oilCompany: u.oilCompany, internalNotes: u.internalNotes,
+      images: imgs.map(im => ({ url: im.url, path: im.path || null })),
     };
-    this.setState(s => ({ properties:[np, ...s.properties], up:this.blankUploader(), featDraft:'', imgDraft:'', mgrView:'properties' }));
-    this.showToast('Listing published \u2014 now live on the storefront');
+    try {
+      const res = await fetch('/api/listings', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const saved = await res.json().catch(() => null);
+      if (res.ok && saved) {
+        this.setState(s => ({
+          properties: [saved, ...s.properties.filter(p => p.id !== saved.id)],
+          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+        }));
+        this.showToast('Listing published \u2014 now live on the storefront');
+        return;
+      }
+    } catch (e) {}
+    const id = 'p' + Date.now();
+    const np = {
+      id, slug, title: payload.title, type: payload.type, area: payload.area, city: payload.city, province: payload.province, postal: payload.postal,
+      rate: payload.rate, cleaning: payload.cleaning, beds: payload.beds, baths: payload.baths, sqft: payload.sqft,
+      status: 'ACTIVE', features: payload.features, images: imgs.map(im => im.url),
+      parking: payload.parking, petFriendly: payload.petFriendly, dogs: payload.dogs, cats: payload.cats,
+      utilitiesIncluded: payload.utilitiesIncluded, utilityTypes: payload.utilityTypes, utilityCap: payload.utilityCap,
+      yearBuilt: payload.yearBuilt, storeys: payload.storeys, heatingType: payload.heatingType, waterHeater: payload.waterHeater, firewall: payload.firewall,
+      powerMeter: payload.powerMeter, oilCompany: payload.oilCompany, internalNotes: payload.internalNotes,
+      description: payload.description,
+    };
+    this.setState(s => ({
+      properties: [np, ...s.properties], up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+    }));
+    this.showToast('Listing saved locally (database unavailable)');
   };
 
   typeLabelOf(t) { return t==='SHORT_TERM' ? 'Short stay' : (t==='MULTI' ? 'Multi-unit' : 'Single unit'); }
@@ -1077,12 +1519,14 @@ class Component extends DCLogic {
     const p = this.getProp(q.propId);
     const isShort = q.type === 'SHORT_TERM_BOOKING';
     const copied = this.state.copiedId === q.id;
+    const crit = this.inqCriteriaFields(q);
     return {
       id:q.id, name:(q.first+' '+q.last).trim(), initials:((q.first[0]||'')+(q.last[0]||'')).toUpperCase(),
-      prop:p?p.title:'\u2014', email:q.email, phone:q.phone, desired:q.desired,
-      typeLabel:isShort?'Short-term':'Long-term', isShort,
+      prop:p?p.title:(q.propertyTitle||'\u2014'), email:q.email, phone:q.phone, desired:q.desired,
+      typeLabel:q.type==='VIEWING_REQUEST'?'Viewing':(isShort?'Short-term':'Long-term'), isShort,
       typeFg:isShort?'#7a5a12':'var(--atlantic)', typeBg:isShort?'var(--warning-tint)':'var(--atlantic-tint)',
       notes:q.notes.slice().reverse(), hasNotes:q.notes.length>0, noNotes:q.notes.length===0,
+      ...crit,
       noteDraft:this.state.noteDrafts[q.id]||'',
       onNote:(e)=>this.setNoteDraft(q.id, e.target.value),
       onNoteKey:(e)=>{ if(e.key==='Enter'){ e.preventDefault(); this.addNote(q.id);} },
@@ -1110,7 +1554,8 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const isPublic = s.surface === 'public';
-    const isManager = !isPublic;
+    const isManagerSignIn = s.surface === 'manager-signin';
+    const isManager = s.surface === 'manager' && !!s.managerUser;
     const isDark = s.theme === 'dark';
     const rootStyle = { minHeight:'100vh', background:'var(--paper)', color:'var(--fg-1)', fontFamily:'var(--font-sans)', transition:'background 320ms var(--ease-out-soft), color 320ms var(--ease-out-soft)', ...this.themeVars(isDark) };
     const knobStyle = { position:'absolute', top:'2px', left:isDark?'30px':'2px', width:'24px', height:'24px', borderRadius:'9999px', background:'var(--surface)', border:'1px solid var(--border)', boxShadow:'0 1px 3px rgba(0,0,0,0.22)', transition:'left 220ms var(--ease-out-soft)' };
@@ -1120,12 +1565,17 @@ class Component extends DCLogic {
     const filtered = active.filter(p => s.pubFilter==='all' ? true : (s.pubFilter==='short' ? p.type==='SHORT_TERM' : p.type!=='SHORT_TERM'));
     const listingCards = filtered.map(p => {
       const isShort = p.type==='SHORT_TERM';
+      const imgIdx = s.cardPhotoIdx[p.id] || 0;
+      const imgUrl = p.images[imgIdx] || p.images[0] || '';
       return {
         id:p.id, addr:p.title, area:p.area,
         tag:isShort?'Short stay':'Long-term', dot:isShort?'var(--canary)':'var(--atlantic)',
         priceMain:this.moneyShort(p.rate), priceUnit:isShort?'/night':'/mo',
         specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
-        imgCss:`url('${p.images[0]}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
+        imgCss:`url('${imgUrl}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
+        hasMultiPhotos: p.images.length > 1,
+        onPrevPhoto: (e) => this.prevCardPhoto(p.id, e),
+        onNextPhoto: (e) => this.nextCardPhoto(p.id, e),
         onOpen:()=>this.openProperty(p.id),
       };
     });
@@ -1163,17 +1613,43 @@ class Component extends DCLogic {
     ];
 
     // ---- manager ----
-    const newCount = s.inquiries.filter(q=>q.status==='NEW').length;
+    const filteredInquiries = s.inquiries.filter(q => {
+      if (s.inqFilterProperty !== 'all') {
+        const ref = q.propId || q.listingId;
+        if (ref !== s.inqFilterProperty) return false;
+      }
+      if (s.inqFilterLeaseType !== 'all' && (q.leaseType || '') !== s.inqFilterLeaseType) return false;
+      if (s.inqFilterMinBeds && Number(q.minBedrooms || 0) < Number(s.inqFilterMinBeds)) return false;
+      return true;
+    });
+    const propertyMap = new Map();
+    for (const q of s.inquiries) {
+      const ref = q.propId || q.listingId;
+      const title = this.getProp(q.propId)?.title || q.propertyTitle;
+      if (ref && title && !propertyMap.has(ref)) propertyMap.set(ref, title);
+    }
+    for (const pr of s.properties) {
+      if (!propertyMap.has(pr.id)) propertyMap.set(pr.id, pr.title);
+    }
+    const inqPropertyOptions = [{ value: 'all', label: 'All properties', onClick: () => this.setState({ inqFilterProperty: 'all' }), style: this.segStyle(s.inqFilterProperty === 'all') }, ...Array.from(propertyMap.entries()).map(([value, label]) => ({ value, label, onClick: () => this.setState({ inqFilterProperty: value }), style: this.segStyle(s.inqFilterProperty === value) }))];
+    const inqLeaseTypeOptions = [
+      { value: 'all', label: 'All types', onClick: () => this.setState({ inqFilterLeaseType: 'all' }), style: this.segStyle(s.inqFilterLeaseType === 'all') },
+      { value: 'Long-term', label: 'Long-term', onClick: () => this.setState({ inqFilterLeaseType: 'Long-term' }), style: this.segStyle(s.inqFilterLeaseType === 'Long-term') },
+      { value: 'Short-term', label: 'Short-term', onClick: () => this.setState({ inqFilterLeaseType: 'Short-term' }), style: this.segStyle(s.inqFilterLeaseType === 'Short-term') },
+      { value: 'Flexible', label: 'Flexible', onClick: () => this.setState({ inqFilterLeaseType: 'Flexible' }), style: this.segStyle(s.inqFilterLeaseType === 'Flexible') },
+    ];
+    const funnelFilteredLabel = filteredInquiries.length !== s.inquiries.length ? (' · showing ' + filteredInquiries.length) : '';
+    const newCount = filteredInquiries.filter(q=>q.status==='NEW').length;
     const columns = this.STAGES.map(([key,label]) => ({
       key, label,
-      count: s.inquiries.filter(q=>q.status===key).length,
-      items: s.inquiries.filter(q=>q.status===key).map(q=>this.inqVM(q)),
+      count: filteredInquiries.filter(q=>q.status===key).length,
+      items: filteredInquiries.filter(q=>q.status===key).map(q=>this.inqVM(q)),
       isOver: s.dragOverCol===key,
       onDragOver:(e)=>{ e.preventDefault(); if(s.dragOverCol!==key) this.setState({ dragOverCol:key }); },
       onDragLeave:(e)=>{ if(s.dragOverCol===key) this.setState({ dragOverCol:null }); },
       onDrop:(e)=>{ e.preventDefault(); this.moveInq(s.draggingId, key); },
     }));
-    const funnelCount = s.inquiries.length;
+    const funnelCount = filteredInquiries.length;
 
     const propsRows = s.properties.map(pr => ({
       title:pr.title, area:`${pr.area}, ${pr.city}`, typeLabel:this.typeLabelOf(pr.type),
@@ -1191,7 +1667,8 @@ class Component extends DCLogic {
     const isShortType = s.up.type==='SHORT_TERM';
     const rateLabel = isShortType ? 'Nightly rate' : 'Monthly rent';
     const upFeatures = s.up.features.map((f,i)=>({ label:f, onRemove:()=>this.removeFeat(i) }));
-    const upImages = s.up.images.map((im,i)=>({ css:`url('${im}')`, onRemove:()=>this.removeImg(i) }));
+    const upImages = s.up.images.map((im, i) => ({ css: `url('${im.url || im}')`, onRemove: () => this.removeImg(i) }));
+    const photoUploadLabel = s.photoUploading ? 'Uploading…' : 'Upload photos';
 
     // bookings
     const segStyleFor = (seg) => {
@@ -1218,7 +1695,7 @@ class Component extends DCLogic {
       { label:'Open inquiries', value:String(newCount), sub:'in the New column', subColor:'var(--warning)' },
       { label:'Avg. days to lease', value:'11', sub:'\u22124 vs last quarter', subColor:'var(--success)' },
     ];
-    const recentInquiries = s.inquiries.filter(q=>q.status==='NEW').slice(0,4).map(q=>this.inqVM(q));
+    const recentInquiries = filteredInquiries.filter(q=>q.status==='NEW').slice(0,4).map(q=>this.inqVM(q));
 
     // scheduled viewings
     const vStatus = (st) => st==='CONFIRMED' ? {fg:'var(--success)',bg:'var(--success-tint)',label:'Confirmed'} : st==='SCHEDULED' ? {fg:'var(--atlantic)',bg:'var(--atlantic-tint)',label:'Scheduled'} : {fg:'var(--warning)',bg:'var(--warning-tint)',label:'Requested'};
@@ -1263,12 +1740,35 @@ class Component extends DCLogic {
     let propDrawer=null, propDrawerOpen=false;
     if (s.openProp) { const pr=this.getProp(s.openProp); if (pr) { propDrawerOpen=true; propDrawer = { ...pr, typeLabel:this.typeLabelOf(pr.type), statusLabel:pr.status==='ACTIVE'?'Active':(pr.status==='DRAFT'?'Draft':'Archived'), rateLabel:this.moneyShort(pr.rate)+(pr.type==='SHORT_TERM'?' / night':' / mo'), specs:`${pr.beds} bed \u00b7 ${pr.baths} bath \u00b7 ${pr.sqft} sq ft`, parkingLabel:this.parkingLabel(pr.parking), petLabel:this.petLabel(pr), utilIncluded:pr.utilitiesIncluded, utilTypes:pr.utilityTypes, hasUtilTypes:pr.utilityTypes.length>0, utilCapLabel:this.capText(pr.utilityCap), firewallLabel:pr.firewall?'Yes':'No', img0:`url('${pr.images[0]}')`, oilCompanyLabel:pr.oilCompany||'\u2014', internalNotesLabel:pr.internalNotes||'No internal notes yet.' }; } }
 
+    // manager property drawer
+    const mgrUser = s.managerUser;
+    const mgrName = mgrUser?.name || 'Manager';
+    const mgrEmail = mgrUser?.email || '';
+    const mgrAvatarUrl = mgrUser?.image || '';
+    const mgrInitials = mgrName.split(/\s+/).filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'M';
+    const authLoading = s.authLoading;
+    const authReady = s.authChecked && !s.authLoading;
+    const authError = s.authError;
+    const oauthGoogle = s.oauthGoogle;
+    const oauthMicrosoft = s.oauthMicrosoft;
+    const authEmail = s.authEmail;
+    const oauthNone = authReady && !oauthGoogle && !oauthMicrosoft && !authEmail;
+    const showOAuthDivider = authEmail && (oauthGoogle || oauthMicrosoft);
+    const signInSubmitting = s.signInSubmitting;
+    const signInBtnLabel = signInSubmitting ? 'Signing in…' : 'Sign in';
+    const signInBtnOpacity = signInSubmitting ? 0.7 : 1;
+
     return {
-      isPublic, isManager,
+      isPublic, isManager, isManagerSignIn,
       publicIsListings: isPublic && s.pubView==='listings',
       publicIsDetail: isPublic && s.pubView==='detail',
       publicIsApply: isPublic && s.pubView==='apply',
       goHome:this.goHome, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
+      signInGoogle:this.signInGoogle, signInMicrosoft:this.signInMicrosoft, signOut:this.signOut,
+      setSignInEmail:this.setSignInEmail, setSignInPassword:this.setSignInPassword, submitSignIn:this.submitSignIn,
+      signInEmail:s.signInEmail, signInPassword:s.signInPassword, signInSubmitting, signInBtnLabel, signInBtnOpacity,
+      authLoading, authReady, authError, oauthGoogle, oauthMicrosoft, oauthNone, authEmail, showOAuthDivider,
+      mgrName, mgrEmail, mgrAvatarUrl, mgrAvatarInitials: !mgrAvatarUrl, mgrInitials,
       goOverview:this.goOverview, goProperties:this.goProperties, goFunnel:this.goFunnel, goBookings:this.goBookings,
       goApply:this.goApply, goBackDetail:this.goBackDetail,
       activeCount: active.length, listingCards, pubFilters,
@@ -1278,8 +1778,14 @@ class Component extends DCLogic {
       rangeStart:s.rangeStart, rangeEnd:s.rangeEnd, rangeValid, rangeInvalid,
       nights, baseLine, baseTotal, cleaningFee, grandTotal,
       setStart:this.setStart, setEnd:this.setEnd, requestBooking:this.requestBooking,
-      vName:s.vName, vEmail:s.vEmail, vPhone:s.vPhone, vDate:s.vDate,
-      setVName:this.setVName, setVEmail:this.setVEmail, setVPhone:this.setVPhone, setVDate:this.setVDate,
+      vFirst:s.vFirst, vLast:s.vLast, vEmail:s.vEmail, vPhone:s.vPhone, vDate:s.vDate,
+      setVFirst:this.setVFirst, setVLast:this.setVLast, setVEmail:this.setVEmail, setVPhone:this.setVPhone, setVDate:this.setVDate,
+      vMinBeds:s.vMinBeds, vMinBaths:s.vMinBaths, vMinParking:s.vMinParking, vPets:s.vPets, vMoveIn:s.vMoveIn,
+      vOtherDetails:s.vOtherDetails, vLeaseType:s.vLeaseType, vMaxPrice:s.vMaxPrice,
+      setVMinBeds:this.setVMinBeds, setVMinBaths:this.setVMinBaths, setVMinParking:this.setVMinParking,
+      setVPets:this.setVPets, setVMoveIn:this.setVMoveIn, setVOtherDetails:this.setVOtherDetails,
+      setVLeaseType:this.setVLeaseType, setVMaxPrice:this.setVMaxPrice,
+      viewSubmitting:s.viewSubmitting, viewSubmitLabel:s.viewSubmitting?'Sending…':'Request a viewing', viewSubmitOpacity:s.viewSubmitting?0.7:1,
       submitViewing:this.submitViewing, applyRef, applySteps,
       // manager nav
       navOverview:this.navStyle(s.mgrView==='overview',col), navProperties:this.navStyle(s.mgrView==='properties',col),
@@ -1292,18 +1798,22 @@ class Component extends DCLogic {
       mgrIsOverview:s.mgrView==='overview', mgrIsProperties:s.mgrView==='properties',
       mgrIsUploader:s.mgrView==='uploader', mgrIsFunnel:s.mgrView==='funnel', mgrIsBookings:s.mgrView==='bookings',
       kpis, recentInquiries, upcomingBookings, bookingRows, lanes,
-      columns, funnelCount, propsRows,
+      columns, funnelCount, funnelFilteredLabel, inqPropertyOptions, inqLeaseTypeOptions,
+      inqFilterProperty:s.inqFilterProperty, inqFilterLeaseType:s.inqFilterLeaseType, inqFilterMinBeds:s.inqFilterMinBeds,
+      setInqFilterMinBeds:this.setInqFilterMinBeds,
+      propsRows,
       typeOpts, isShortType, rateLabel, up:s.up,
       onUpTitle:this.onUpTitle, onUpAddress:this.onUpAddress, onUpCity:this.onUpCity, onUpProvince:this.onUpProvince, onUpPostal:this.onUpPostal,
       onUpRate:this.onUpRate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
       featDraft:s.featDraft, onFeatDraft:this.onFeatDraft, onFeatKey:this.onFeatKey, addFeat:this.addFeat, upFeatures,
       imgDraft:s.imgDraft, onImgDraft:this.onImgDraft, onImgKey:this.onImgKey, addImg:this.addImg, upImages,
+      photoUploadLabel, onPhotoPick:this.onPhotoPick,
       publish:this.publish,
       ynPetFriendly, ynDogs, ynCats, ynUtilities, ynFirewall, utilTypeOpts, capOpts, showUtilDetail,
       onUpParking, onUpYearBuilt, onUpStoreys, onUpHeating, onUpWater, onUpPowerMeter, onUpOilCompany, onUpInternalNotes,
       propDrawer, propDrawerOpen, closePropDrawer:this.closePropDrawer,
       drawer, drawerOpen, closeDrawer:this.closeDrawer, stop:this.stop,
-      tabPublic:this.tabStyle(isPublic), tabManager:this.tabStyle(isManager),
+      tabPublic:this.tabStyle(isPublic), tabManager:this.tabStyle(isManager || isManagerSignIn),
       isDark, rootStyle, knobStyle, toggleTheme:this.toggleTheme, themeTitle: isDark?'Switch to light mode':'Switch to dark mode',
       logoSrc: isDark ? 'canary/assets/canary-logo-white-name.png' : 'canary/assets/canary-logo-black-mark.png',
       toast:s.toast,
