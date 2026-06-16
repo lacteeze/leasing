@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="canary/colors_and_type.css"/>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:9999px;border:3px solid var(--paper)}
+  ::-webkit-scrollbar-track{background:transparent}
+  input::placeholder,textarea::placeholder{color:var(--fg-3)}
+  @keyframes cnUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes cnFade{from{opacity:0}to{opacity:1}}
+  @keyframes cnSlide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</helmet>
+
+<div style="{{ rootStyle }}">
+
+  <!-- ============================ PUBLIC SURFACE ============================ -->
+  <sc-if value="{{ isPublic }}" hint-placeholder-val="{{ true }}">
+  <div>
+    <header style="position:sticky;top:0;z-index:40;height:64px;display:flex;align-items:center;backdrop-filter:blur(20px) saturate(140%);background:var(--nav-bg);border-bottom:1px solid var(--border)">
+      <div style="width:100%;max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:30px">
+        <a onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <img src="{{ logoSrc }}" alt="" style="width:26px;height:26px"/>
+          <span style="font-weight:700;font-size:19px;letter-spacing:-0.01em;color:var(--ink)">Canary</span>
+        </a>
+        <nav style="display:flex;gap:26px;align-items:center">
+          <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
+          <span style="color:var(--fg-2);font-size:15px;cursor:default">For owners</span>
+          <span style="color:var(--fg-2);font-size:15px;cursor:default">About</span>
+        </nav>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+            <span style="{{ knobStyle }}"></span>
+          </button>
+          <a onClick="{{ goManager }}" style="cursor:pointer;color:var(--fg-1);font-size:15px;font-weight:500">Manager sign in</a>
+          <button onClick="{{ goUploader }}" style="height:40px;padding:0 18px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">List a property</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ---- LISTINGS ---- -->
+    <sc-if value="{{ publicIsListings }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <section style="max-width:1200px;margin:24px auto 0;padding:0 24px">
+        <div style="position:relative;height:460px;border-radius:28px;overflow:hidden;background:#cfc9bd">
+          <div style="position:absolute;inset:0;background-size:cover;background-position:center;background-image:url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1600&q=80&auto=format&fit=crop')"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(14,15,12,0.66) 0%, rgba(14,15,12,0.18) 46%, rgba(14,15,12,0.04) 72%)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:44px 48px;color:#fff">
+            <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:9999px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);backdrop-filter:blur(6px);font-size:13px;font-weight:500">
+              <span style="width:7px;height:7px;border-radius:9999px;background:var(--canary)"></span>St. John’s · Mount Pearl · Paradise
+            </span>
+            <h1 style="font-family:var(--font-serif);font-weight:400;font-size:60px;line-height:1.04;letter-spacing:-0.02em;margin-top:16px;max-width:680px;color:#fff">Homes worth settling into.</h1>
+            <p style="font-size:18px;line-height:1.5;color:rgba(255,255,255,0.92);max-width:520px;margin-top:12px">Long-term rentals and short stays across Newfoundland — leased, booked, and managed start to finish by Canary.</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:46px 24px 96px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-size:32px;letter-spacing:-0.02em">Available now</h2>
+            <p style="color:var(--fg-2);font-size:16px;margin-top:6px">{{ activeCount }} homes ready for viewings and bookings.</p>
+          </div>
+          <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+            <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+          <sc-for list="{{ listingCards }}" as="l" hint-placeholder-count="6">
+            <article onClick="{{ l.onOpen }}" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-1);transition:box-shadow 200ms var(--ease-out-soft),transform 200ms var(--ease-out-soft)" style-hover="box-shadow:var(--shadow-2);transform:translateY(-3px)">
+              <div style="position:relative;height:208px;background-size:cover;background-position:center;background-image:{{ l.imgCss }}">
+                <span style="position:absolute;top:13px;left:13px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;background:rgba(255,255,255,0.94);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-1)">
+                  <span style="width:6px;height:6px;border-radius:9999px;background:{{ l.dot }}"></span>{{ l.tag }}
+                </span>
+              </div>
+              <div style="padding:18px 20px 20px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+                  <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">{{ l.addr }}</h3>
+                  <span class="tnum" style="font-size:17px;font-weight:600;white-space:nowrap">{{ l.priceMain }}<span style="font-size:13px;font-weight:400;color:var(--fg-2)">{{ l.priceUnit }}</span></span>
+                </div>
+                <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.area }} · {{ l.specs }}</div>
+                <div style="display:flex;gap:7px;margin-top:14px;flex-wrap:wrap">
+                  <span style="font-size:12.5px;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:4px 10px;border-radius:9999px">{{ l.feat0 }}</span>
+                  <span style="font-size:12.5px;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:4px 10px;border-radius:9999px">{{ l.feat1 }}</span>
+                </div>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ---- DETAIL ---- -->
+    <sc-if value="{{ publicIsDetail }}" hint-placeholder-val="{{ false }}">
+    <section style="max-width:1200px;margin:0 auto;padding:22px 24px 96px">
+      <button onClick="{{ goHome }}" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--fg-2);font-family:inherit;font-size:14px;padding:6px 0">← All listings</button>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:10px;height:440px;margin-top:10px">
+        <div style="grid-row:span 2;border-radius:20px;background-size:cover;background-position:center;background-image:{{ selProp.img0 }}"></div>
+        <div style="border-radius:20px;background-size:cover;background-position:center;background-image:{{ selProp.img1 }}"></div>
+        <div style="border-radius:20px;background-size:cover;background-position:center;background-image:{{ selProp.img2 }}"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:56px;margin-top:40px;align-items:start">
+        <div>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;background:var(--gray-50);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--fg-2)">
+            <span style="width:6px;height:6px;border-radius:9999px;background:{{ selProp.dot }}"></span>{{ selProp.typeLabel }}
+          </span>
+          <h1 style="font-size:38px;letter-spacing:-0.025em;margin-top:14px">{{ selProp.title }}</h1>
+          <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.area }}, {{ selProp.city }} · {{ selProp.specs }}</p>
+
+          <div style="height:1px;background:var(--border);margin:32px 0"></div>
+          <h4 style="font-size:20px">About this home</h4>
+          <p style="color:var(--fg-2);font-size:16px;line-height:1.6;margin-top:10px;max-width:560px">{{ selProp.description }}</p>
+
+          <h4 style="font-size:20px;margin-top:32px">Features</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-top:14px;max-width:560px">
+            <sc-for list="{{ selProp.features }}" as="ft" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;color:var(--fg-1);font-size:15px">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                {{ ft }}
+              </div>
+            </sc-for>
+          </div>
+
+          <h4 style="font-size:20px;margin-top:32px">Utilities & parking</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;max-width:560px">
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+              <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Parking</div>
+              <div style="font-size:15px;font-weight:500;margin-top:4px">{{ selProp.parkingLabel }}</div>
+            </div>
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+              <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Pets</div>
+              <div style="font-size:15px;font-weight:500;margin-top:4px">{{ selProp.petLabel }}</div>
+            </div>
+            <div style="grid-column:span 2;background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+              <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Utilities</div>
+              <sc-if value="{{ selProp.utilIncluded }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px">
+                <span style="font-size:15px;font-weight:500">Included</span>
+                <span style="font-size:13px;color:var(--fg-3)">· {{ selProp.utilCapLabel }}</span>
+                <span style="flex-basis:100%;height:0"></span>
+                <sc-for list="{{ selProp.utilTypes }}" as="u" hint-placeholder-count="3">
+                  <span style="font-size:12.5px;color:var(--fg-2);background:var(--surface);border:1px solid var(--border);padding:4px 11px;border-radius:9999px">{{ u }}</span>
+                </sc-for>
+              </div>
+              </sc-if>
+              <sc-if value="{{ selProp.utilNotIncluded }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:15px;font-weight:500;margin-top:4px">Not included · billed to tenant</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <h4 style="font-size:20px;margin-top:32px">Location</h4>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--fg-2);font-size:15px">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--atlantic)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{ selProp.title }}, {{ selProp.city }}, {{ selProp.province }} {{ selProp.postal }}
+          </div>
+        </div>
+
+        <!-- STICKY WIDGET -->
+        <aside style="position:sticky;top:88px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-2);padding:22px">
+
+            <!-- SHORT TERM -->
+            <sc-if value="{{ shortTerm }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span class="tnum" style="font-size:28px;font-weight:600">{{ selProp.priceMain }}</span>
+                <span style="color:var(--fg-2);font-size:15px">/ night</span>
+              </div>
+              <sc-if value="{{ bookOpen }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border-strong);border-radius:12px;overflow:hidden;margin-top:16px">
+                  <label style="padding:11px 14px;border-right:1px solid var(--border)">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.02em;color:var(--fg-2);text-transform:uppercase">Check-in</div>
+                    <input type="date" value="{{ rangeStart }}" onChange="{{ setStart }}" style="border:none;background:none;font-family:inherit;font-size:14px;color:var(--ink);margin-top:3px;width:100%;padding:0"/>
+                  </label>
+                  <label style="padding:11px 14px">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.02em;color:var(--fg-2);text-transform:uppercase">Check-out</div>
+                    <input type="date" value="{{ rangeEnd }}" onChange="{{ setEnd }}" style="border:none;background:none;font-family:inherit;font-size:14px;color:var(--ink);margin-top:3px;width:100%;padding:0"/>
+                  </label>
+                </div>
+
+                <sc-if value="{{ rangeValid }}" hint-placeholder-val="{{ true }}">
+                <div style="margin-top:18px;display:flex;flex-direction:column;gap:11px">
+                  <div style="display:flex;justify-content:space-between;font-size:15px;color:var(--fg-1)"><span>{{ baseLine }}</span><span class="tnum">{{ baseTotal }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:15px;color:var(--fg-1)"><span style="display:flex;align-items:center;gap:6px">Cleaning fee <span style="font-size:11px;color:var(--fg-3);border:1px solid var(--border);border-radius:9999px;padding:1px 7px">one-time</span></span><span class="tnum">{{ cleaningFee }}</span></div>
+                  <div style="height:1px;background:var(--border);margin:3px 0"></div>
+                  <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:600"><span>Total</span><span class="tnum">{{ grandTotal }}</span></div>
+                </div>
+                </sc-if>
+                <sc-if value="{{ rangeInvalid }}" hint-placeholder-val="{{ false }}">
+                <p style="margin-top:16px;font-size:14px;color:var(--fg-3)">Pick your dates to see the full cost.</p>
+                </sc-if>
+
+                <button onClick="{{ requestBooking }}" style="width:100%;height:48px;margin-top:18px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Request to book</button>
+                <p style="margin-top:12px;font-size:12.5px;color:var(--fg-3);line-height:1.5">You won’t be charged yet. The cleaning fee is always a separate line — never folded into the nightly rate.</p>
+              </div>
+              </sc-if>
+              <sc-if value="{{ bookSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:18px;background:var(--success-tint);border-radius:14px;padding:20px;text-align:center">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px"><path d="M20 6 9 17l-5-5"/></svg>
+                <div style="font-weight:600;font-size:16px">Request sent</div>
+                <p style="color:var(--fg-2);font-size:14px;margin-top:6px">Canary will confirm your dates within one business day.</p>
+              </div>
+              </sc-if>
+            </div>
+            </sc-if>
+
+            <!-- LONG TERM -->
+            <sc-if value="{{ longTerm }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span class="tnum" style="font-size:28px;font-weight:600">{{ selProp.priceMain }}</span>
+                <span style="color:var(--fg-2);font-size:15px">/ month</span>
+              </div>
+              <p style="color:var(--fg-2);font-size:14px;margin-top:6px">Request a viewing, or apply directly online.</p>
+
+              <sc-if value="{{ viewOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+                <input value="{{ vName }}" onChange="{{ setVName }}" placeholder="Full name" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <input value="{{ vEmail }}" onChange="{{ setVEmail }}" placeholder="Email" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <input value="{{ vPhone }}" onChange="{{ setVPhone }}" placeholder="Phone" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <label style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:2px">Preferred viewing date</label>
+                <input type="date" value="{{ vDate }}" onChange="{{ setVDate }}" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+                <button onClick="{{ submitViewing }}" style="width:100%;height:46px;margin-top:6px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Request a viewing</button>
+                <div style="display:flex;align-items:center;gap:12px;margin:6px 0">
+                  <div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:12px;color:var(--fg-3)">or</span><div style="flex:1;height:1px;background:var(--border)"></div>
+                </div>
+                <button onClick="{{ goApply }}" style="width:100%;height:48px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Apply now</button>
+                <p style="margin-top:8px;font-size:12.5px;color:var(--fg-3);line-height:1.5">Applying takes about 5 minutes. We respond within one business day.</p>
+              </div>
+              </sc-if>
+              <sc-if value="{{ viewSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px;background:var(--success-tint);border-radius:14px;padding:20px;text-align:center">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px"><path d="M20 6 9 17l-5-5"/></svg>
+                <div style="font-weight:600;font-size:16px">Viewing requested</div>
+                <p style="color:var(--fg-2);font-size:14px;margin-top:6px">We’ll be in touch to lock a time. Want to skip ahead?</p>
+                <button onClick="{{ goApply }}" style="width:100%;height:44px;margin-top:12px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Apply now</button>
+              </div>
+              </sc-if>
+            </div>
+            </sc-if>
+
+          </div>
+        </aside>
+      </div>
+    </section>
+    </sc-if>
+
+    <!-- ---- APPLY PLACEHOLDER ---- -->
+    <sc-if value="{{ publicIsApply }}" hint-placeholder-val="{{ false }}">
+    <section style="max-width:680px;margin:0 auto;padding:64px 24px 96px;text-align:center">
+      <img src="{{ logoSrc }}" alt="" style="width:40px;height:40px;margin:0 auto"/>
+      <h1 style="font-size:34px;letter-spacing:-0.025em;margin-top:20px">Apply for {{ selProp.title }}</h1>
+      <p style="color:var(--fg-2);font-size:17px;line-height:1.6;margin-top:12px">This is where the Canary rental application would open. It’s pre-filled with the property and unit you came from, so the prospect just confirms their details.</p>
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-top:20px;background:var(--gray-50);border:1px solid var(--border);border-radius:9999px;padding:8px 16px;font-size:13.5px;color:var(--fg-2)">
+        Reference <span class="tnum" style="font-weight:600;color:var(--ink)">{{ applyRef }}</span>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-1);padding:28px;margin-top:32px;text-align:left">
+        <h4 style="font-size:18px;margin-bottom:16px">What happens next</h4>
+        <sc-for list="{{ applySteps }}" as="st" hint-placeholder-count="3">
+          <div style="display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--border)">
+            <span class="tnum" style="flex-shrink:0;width:26px;height:26px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ st.n }}</span>
+            <div><div style="font-weight:600;font-size:15px">{{ st.title }}</div><div style="color:var(--fg-2);font-size:14px;margin-top:2px">{{ st.body }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+      <button onClick="{{ goBackDetail }}" style="margin-top:28px;height:44px;padding:0 22px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">← Back to listing</button>
+    </section>
+    </sc-if>
+
+  </div>
+  </sc-if>
+
+  <!-- ============================ MANAGER SURFACE ============================ -->
+  <sc-if value="{{ isManager }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;min-height:100vh">
+    <!-- SIDEBAR -->
+    <aside style="{{ sideStyle }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 16px 14px;gap:8px">
+        <a onClick="{{ goOverview }}" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0">
+          <img src="{{ logoSrc }}" alt="" style="width:24px;height:24px;flex-shrink:0"/>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:var(--ink)">Canary</span></sc-if>
+        </a>
+        <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ toggleSide }}" title="Collapse sidebar" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--fg-2);display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        </sc-if>
+      </div>
+      <sc-if value="{{ sideCollapsed }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ toggleSide }}" title="Expand sidebar" style="margin:0 auto 6px;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--fg-2);display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      </sc-if>
+      <nav style="display:flex;flex-direction:column;gap:2px;padding:8px 12px;flex:1">
+        <button onClick="{{ goOverview }}" style="{{ navOverview }}" title="Overview">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10h14V10"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Overview</span></sc-if>
+        </button>
+        <button onClick="{{ goProperties }}" style="{{ navProperties }}" title="Properties">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12h12M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Properties</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ propCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ goFunnel }}" style="{{ navLeasing }}" title="Leasing">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="4"/><path d="m11 11 8-8 3 3-3 3-2-2-2 2-2-2"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Leasing</span><span class="tnum" style="font-size:11px;font-weight:600;color:var(--ink);background:var(--canary);border-radius:9999px;padding:1px 7px">{{ newCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ goBookings }}" style="{{ navBookings }}" title="Bookings">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Bookings</span></sc-if>
+        </button>
+        <button onClick="{{ goViewings }}" style="{{ navViewings }}" title="Scheduled viewings">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 14V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7M16 2v4M8 2v4M3 10h18"/><path d="m16 20 2 2 4-4"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Viewings</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ viewingsCount }}</span></sc-if>
+        </button>
+      </nav>
+      <div style="padding:12px;border-top:1px solid var(--border)">
+        <button onClick="{{ goPublic }}" style="{{ navPublicBtn }}" title="View public site">
+          <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">View public site</span></sc-if>
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 8px 4px;justify-content:center">
+          <div style="width:34px;height:34px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">AB</div>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Aoife Byrne</div><div style="font-size:12px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Atlantic Property Trust</div></div></sc-if>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:64px;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;padding:0 32px;gap:20px;position:sticky;top:0;z-index:20">
+        <div style="flex:1;min-width:0">
+          <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">{{ mgrTitle }}</h1>
+          <div style="font-size:13px;color:var(--fg-3);margin-top:1px">{{ mgrSub }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;color:var(--fg-3);background:var(--paper);width:280px">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span style="font-size:14px">Search properties, tenants…</span>
+        </div>
+        <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+          <span style="{{ knobStyle }}"></span>
+        </button>
+        <sc-if value="{{ showNewBtn }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ goUploader }}" style="height:40px;padding:0 18px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New listing
+        </button>
+        </sc-if>
+      </header>
+
+      <div style="flex:1;overflow:auto">
+
+        <!-- OVERVIEW -->
+        <sc-if value="{{ mgrIsOverview }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1200px">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
+                <div style="font-size:13px;color:var(--fg-2)">{{ k.label }}</div>
+                <div class="tnum" style="font-size:32px;font-weight:600;letter-spacing:-0.02em;margin-top:8px">{{ k.value }}</div>
+                <div style="font-size:13px;margin-top:6px;color:{{ k.subColor }}">{{ k.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:16px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <h3 style="font-size:18px">New inquiries</h3>
+                <button onClick="{{ goFunnel }}" style="background:none;border:none;cursor:pointer;color:var(--link);font-family:inherit;font-size:13.5px">Open pipeline →</button>
+              </div>
+              <sc-for list="{{ recentInquiries }}" as="r" hint-placeholder-count="3">
+                <div onClick="{{ r.onOpen }}" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--border);cursor:pointer">
+                  <div style="width:38px;height:38px;border-radius:9999px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--fg-1)">{{ r.initials }}</div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">{{ r.name }}</div><div style="font-size:13px;color:var(--fg-2)">{{ r.prop }}</div></div>
+                  <span style="font-size:12px;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:3px 10px;border-radius:9999px">{{ r.typeLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <h3 style="font-size:18px">Upcoming</h3>
+                <button onClick="{{ goBookings }}" style="background:none;border:none;cursor:pointer;color:var(--link);font-family:inherit;font-size:13.5px">All bookings →</button>
+              </div>
+              <sc-for list="{{ upcomingBookings }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--border)">
+                  <div style="flex-shrink:0;text-align:center;width:42px"><div class="tnum" style="font-size:18px;font-weight:600;line-height:1">{{ b.day }}</div><div style="font-size:11px;color:var(--fg-3);text-transform:uppercase">{{ b.mon }}</div></div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">{{ b.guest }}</div><div style="font-size:13px;color:var(--fg-2)">{{ b.prop }}</div></div>
+                  <span style="font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:9999px;color:{{ b.fg }};background:{{ b.bg }}">{{ b.statusLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- PROPERTIES -->
+        <sc-if value="{{ mgrIsProperties }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1200px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:2.4fr 1fr 1fr 1fr 1.1fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">
+              <span>Address</span><span>Type</span><span style="text-align:right">Rate</span><span>Beds</span><span>Status</span>
+            </div>
+            <sc-for list="{{ propsRows }}" as="p" hint-placeholder-count="6">
+              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:2.4fr 1fr 1fr 1fr 1.1fr;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
+                <span><span style="display:block;font-weight:600;font-size:15px">{{ p.title }}</span><span style="font-size:13px;color:var(--fg-3)">{{ p.area }}</span></span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ p.typeLabel }}</span>
+                <span class="tnum" style="text-align:right;font-size:14px">{{ p.rateLabel }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ p.beds }}</span>
+                <span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:9999px;color:{{ p.stFg }};background:{{ p.stBg }}"><span style="width:6px;height:6px;border-radius:9999px;background:{{ p.stFg }}"></span>{{ p.statusLabel }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- UPLOADER -->
+        <sc-if value="{{ mgrIsUploader }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:900px;margin:0 auto;width:100%">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:22px">
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:10px">Listing type</label>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ typeOpts }}" as="t" hint-placeholder-count="3">
+                  <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Title</label>
+              <input value="{{ up.title }}" onChange="{{ onUpTitle }}" placeholder="e.g. 142 Gower Street, #2" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Street address</label><input value="{{ up.address }}" onChange="{{ onUpAddress }}" placeholder="Street address" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">City</label><input value="{{ up.city }}" onChange="{{ onUpCity }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:16px">
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Province</label><input value="{{ up.province }}" onChange="{{ onUpProvince }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Postal</label><input value="{{ up.postal }}" onChange="{{ onUpPostal }}" placeholder="A1C 1J3" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Beds</label><input value="{{ up.beds }}" onChange="{{ onUpBeds }}" placeholder="2" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Baths</label><input value="{{ up.baths }}" onChange="{{ onUpBaths }}" placeholder="1" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Sq ft</label><input value="{{ up.sqft }}" onChange="{{ onUpSqft }}" placeholder="760" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">{{ rateLabel }}</label><div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--fg-3)">$</span><input value="{{ up.rate }}" onChange="{{ onUpRate }}" placeholder="0" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px 0 26px;font-family:inherit;font-size:15px;background:var(--paper)"/></div></div>
+              <sc-if value="{{ isShortType }}" hint-placeholder-val="{{ false }}">
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cleaning fee <span style="color:var(--fg-3);font-weight:400">· separate line</span></label><div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--fg-3)">$</span><input value="{{ up.cleaning }}" onChange="{{ onUpCleaning }}" placeholder="0" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px 0 26px;font-family:inherit;font-size:15px;background:var(--paper)"/></div></div>
+              </sc-if>
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Description</label>
+              <textarea value="{{ up.description }}" onChange="{{ onUpDesc }}" placeholder="A short, plain description of the home." style="width:100%;height:90px;border:1px solid var(--border-strong);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;background:var(--paper);resize:vertical;line-height:1.5"></textarea>
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Features</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                <sc-for list="{{ upFeatures }}" as="f" hint-placeholder-count="0">
+                  <span style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;background:var(--gray-50);border:1px solid var(--border);padding:5px 8px 5px 12px;border-radius:9999px">{{ f.label }}<button onClick="{{ f.onRemove }}" style="border:none;background:var(--gray-200);width:18px;height:18px;border-radius:9999px;cursor:pointer;color:var(--fg-2);font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">×</button></span>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input value="{{ featDraft }}" onChange="{{ onFeatDraft }}" onKeyDown="{{ onFeatKey }}" placeholder="Add a feature, e.g. Gas heat" style="flex:1;height:42px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
+                <button onClick="{{ addFeat }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add</button>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Photos · image URLs</label>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+                <sc-for list="{{ upImages }}" as="im" hint-placeholder-count="0">
+                  <div style="position:relative;width:96px;height:72px;border-radius:10px;background-size:cover;background-position:center;border:1px solid var(--border);background-image:{{ im.css }}"><button onClick="{{ im.onRemove }}" style="position:absolute;top:4px;right:4px;border:none;background:rgba(14,15,12,0.7);width:20px;height:20px;border-radius:9999px;cursor:pointer;color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">×</button></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input value="{{ imgDraft }}" onChange="{{ onImgDraft }}" onKeyDown="{{ onImgKey }}" placeholder="Paste an image URL" style="flex:1;height:42px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
+                <button onClick="{{ addImg }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add</button>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:20px">
+              <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:14px">Pets & parking</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:end">
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Parking spaces</label><input value="{{ up.parking }}" onChange="{{ onUpParking }}" inputmode="numeric" placeholder="0" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Pet friendly</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynPetFriendly }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+                <div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Dogs allowed</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynDogs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cats allowed</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynCats }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:20px">
+              <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:14px">Utilities</div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Utilities included</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynUtilities }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              <sc-if value="{{ showUtilDetail }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Types of utilities included</label><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ utilTypeOpts }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              <div style="margin-top:16px"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cap on utilities included</label><div style="display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ capOpts }}" as="o" hint-placeholder-count="6"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              </sc-if>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:20px">
+              <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:14px">Insurance details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:end">
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Year built</label><input value="{{ up.yearBuilt }}" onChange="{{ onUpYearBuilt }}" inputmode="numeric" placeholder="1980" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Number of storeys</label><input value="{{ up.storeys }}" onChange="{{ onUpStoreys }}" inputmode="numeric" placeholder="2" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Firewall</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynFirewall }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Heating type</label><select value="{{ up.heatingType }}" onChange="{{ onUpHeating }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink);cursor:pointer"><option>Electric baseboard</option><option>Mini-split heat pump</option><option>Oil-fired hot water</option><option>Oil-fired forced air</option><option>Natural gas</option><option>Wood / pellet</option><option>Other</option></select></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Water heater type</label><select value="{{ up.waterHeater }}" onChange="{{ onUpWater }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink);cursor:pointer"><option>Electric tank</option><option>Oil-fired</option><option>Tankless electric</option><option>Tankless gas</option><option>Other</option></select></div>
+              </div>
+            </div>
+
+            <div style="border:1px solid var(--border);background:var(--gray-50);border-radius:14px;padding:18px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--warning)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <span style="font-size:13px;font-weight:600;color:var(--warning)">Manager-only · not shown to tenants</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Power meter number</label><input value="{{ up.powerMeter }}" onChange="{{ onUpPowerMeter }}" placeholder="NLH-0000000" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--surface)"/></div>
+                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Oil company</label><input value="{{ up.oilCompany }}" onChange="{{ onUpOilCompany }}" placeholder="e.g. Harvey’s Oil" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--surface)"/></div>
+              </div>
+              <div style="margin-top:16px"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Internal notes</label><textarea value="{{ up.internalNotes }}" onChange="{{ onUpInternalNotes }}" placeholder="Notes for the team — boiler service, access, tenant preferences…" style="width:100%;height:80px;border:1px solid var(--border-strong);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;background:var(--surface);resize:vertical;line-height:1.5"></textarea></div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:20px">
+              <span style="font-size:13px;color:var(--fg-3)">Saved as draft automatically</span>
+              <div style="display:flex;gap:10px">
+                <button onClick="{{ goProperties }}" style="height:44px;padding:0 20px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
+                <button onClick="{{ publish }}" style="height:44px;padding:0 24px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Publish listing</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- FUNNEL -->
+        <sc-if value="{{ mgrIsFunnel }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px 32px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+            <p style="font-size:14px;color:var(--fg-2)">{{ funnelCount }} inquiries in the pipeline</p>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9 2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+              Drag a card between stages, or use → to advance
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start">
+            <sc-for list="{{ columns }}" as="col" hint-placeholder-count="4">
+              <div onDragOver="{{ col.onDragOver }}" onDragLeave="{{ col.onDragLeave }}" onDrop="{{ col.onDrop }}" style="background:var(--gray-50);border:1px solid var(--border);border-radius:16px;padding:12px;min-height:240px;position:relative">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px">
+                  <span style="font-weight:600;font-size:14px">{{ col.label }}</span>
+                  <span class="tnum" style="font-size:12px;font-weight:600;color:var(--fg-2);background:var(--surface);border:1px solid var(--border);min-width:22px;height:22px;border-radius:9999px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px">{{ col.count }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ col.items }}" as="q" hint-placeholder-count="2">
+                    <article draggable="true" onDragStart="{{ q.onDragStart }}" onDragEnd="{{ q.onDragEnd }}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow-1);cursor:grab">
+                      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                        <div style="min-width:0">
+                          <div onClick="{{ q.onOpen }}" style="font-weight:600;font-size:15px;cursor:pointer">{{ q.name }}</div>
+                          <div style="font-size:13px;color:var(--fg-2);margin-top:1px">{{ q.prop }}</div>
+                        </div>
+                        <span style="flex-shrink:0;font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:{{ q.typeFg }};background:{{ q.typeBg }}">{{ q.typeLabel }}</span>
+                      </div>
+                      <div style="font-size:12.5px;color:var(--fg-3);margin-top:8px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        Wants {{ q.desired }}
+                      </div>
+                      <sc-if value="{{ q.hasNotes }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+                        <sc-for list="{{ q.notes }}" as="n" hint-placeholder-count="1">
+                          <div style="font-size:12.5px;color:var(--fg-2);background:var(--gray-50);border-radius:9px;padding:7px 10px;line-height:1.4">{{ n.text }}<span style="display:block;font-size:11px;color:var(--fg-3);margin-top:2px">{{ n.time }}</span></div>
+                        </sc-for>
+                      </div>
+                      </sc-if>
+                      <div style="display:flex;gap:6px;margin-top:10px">
+                        <input value="{{ q.noteDraft }}" onChange="{{ q.onNote }}" onKeyDown="{{ q.onNoteKey }}" placeholder="Log a call or note…" style="flex:1;min-width:0;height:32px;border:1px solid var(--border);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:13px;background:var(--paper)"/>
+                        <button onClick="{{ q.onAddNote }}" style="flex-shrink:0;width:32px;height:32px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-size:16px;line-height:1;cursor:pointer">+</button>
+                      </div>
+                      <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+                        <button onClick="{{ q.onCopy }}" style="flex:1;min-width:0;height:34px;border-radius:9999px;border:1px solid var(--border-strong);background:{{ q.copyBg }};color:{{ q.copyFg }};font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+                          {{ q.copyLabel }}
+                        </button>
+                        <sc-if value="{{ q.canAdvance }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ q.onAdvance }}" title="Advance stage" style="flex-shrink:0;width:34px;height:34px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </button>
+                        </sc-if>
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ col.isOver }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:4px;border:2px dashed var(--canary);border-radius:14px;pointer-events:none"></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- BOOKINGS -->
+        <sc-if value="{{ mgrIsBookings }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1200px;display:flex;flex-direction:column;gap:18px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+              <div><h3 style="font-size:19px">June 2026</h3><p style="font-size:13px;color:var(--fg-2);margin-top:2px">Short-stay calendar — laid out so nothing double-books.</p></div>
+              <div style="display:flex;gap:16px;font-size:12.5px;color:var(--fg-2)">
+                <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:var(--success-tint);border:1px solid var(--success)"></span>Confirmed</span>
+                <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:var(--warning-tint);border:1px solid var(--warning)"></span>Pending</span>
+              </div>
+            </div>
+            <sc-for list="{{ lanes }}" as="lane" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;padding:12px 0;border-top:1px solid var(--border)">
+                <div style="font-size:14px;font-weight:600">{{ lane.title }}</div>
+                <div style="position:relative;height:36px;background:var(--gray-50);border-radius:8px;border:1px solid var(--border)">
+                  <sc-for list="{{ lane.segs }}" as="s" hint-placeholder-count="2">
+                    <div style="{{ s.style }}">{{ s.label }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:grid;grid-template-columns:150px 1fr;gap:18px;margin-top:8px">
+              <div></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--fg-3)"><span>Jun 1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span></div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="padding:18px 22px 6px"><h3 style="font-size:18px">Upcoming bookings & viewings</h3></div>
+            <div style="display:grid;grid-template-columns:1.3fr 1.4fr 1fr 0.7fr 0.9fr 1fr;gap:16px;padding:12px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">
+              <span>Guest</span><span>Property</span><span>Dates</span><span style="text-align:right">Nights</span><span style="text-align:right">Amount</span><span>Status</span>
+            </div>
+            <sc-for list="{{ bookingRows }}" as="b" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1.3fr 1.4fr 1fr 0.7fr 0.9fr 1fr;gap:16px;padding:15px 22px;border-bottom:1px solid var(--border);align-items:center">
+                <span style="font-weight:600;font-size:14px">{{ b.guest }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ b.prop }}</span>
+                <span class="tnum" style="font-size:14px">{{ b.dates }}</span>
+                <span class="tnum" style="font-size:14px;text-align:right;color:var(--fg-2)">{{ b.nights }}</span>
+                <span class="tnum" style="font-size:14px;text-align:right">{{ b.amount }}</span>
+                <span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 11px;border-radius:9999px;color:{{ b.fg }};background:{{ b.bg }}"><span style="width:6px;height:6px;border-radius:9999px;background:{{ b.fg }}"></span>{{ b.statusLabel }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- SCHEDULED VIEWINGS -->
+        <sc-if value="{{ mgrIsViewings }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1040px;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ viewingRows }}" as="v" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:22px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:16px">
+              <div style="width:118px;flex-shrink:0">
+                <div style="font-size:13px;color:var(--fg-2)">{{ v.date }}</div>
+                <div class="tnum" style="font-size:22px;font-weight:600;letter-spacing:-0.01em;margin-top:2px">{{ v.time }}</div>
+              </div>
+              <div style="width:1px;align-self:stretch;background:var(--border)"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:16px">{{ v.name }}</div>
+                <div style="font-size:14px;color:var(--fg-2);margin-top:2px">{{ v.prop }}</div>
+                <div class="tnum" style="font-size:13px;color:var(--fg-3);margin-top:2px">{{ v.phone }}</div>
+              </div>
+              <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:9999px;color:{{ v.fg }};background:{{ v.bg }}"><span style="width:6px;height:6px;border-radius:9999px;background:{{ v.fg }}"></span>{{ v.statusLabel }}</span>
+              <div style="display:flex;gap:8px;flex-shrink:0">
+                <sc-if value="{{ v.canConfirm }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ v.onConfirm }}" style="height:38px;padding:0 16px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Confirm</button>
+                </sc-if>
+                <button onClick="{{ v.onReschedule }}" style="height:38px;padding:0 16px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Reschedule</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+      </div>
+    </main>
+
+    <!-- INQUIRY DRAWER -->
+    <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:rgba(14,15,12,0.40);z-index:60;display:flex;justify-content:flex-end;animation:cnFade 200ms var(--ease-out-soft)">
+      <div onClick="{{ stop }}" style="width:440px;max-width:92vw;height:100%;background:var(--surface);box-shadow:var(--shadow-3);overflow:auto;animation:cnSlide 260ms var(--ease-out-soft)">
+        <div style="padding:24px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:46px;height:46px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600">{{ drawer.initials }}</div>
+              <div><div style="font-size:19px;font-weight:600">{{ drawer.name }}</div><div style="font-size:13px;color:var(--fg-2)">{{ drawer.prop }}</div></div>
+            </div>
+            <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--fg-2);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:18px">
+            <a href="{{ drawer.mailto }}" style="flex:1;height:40px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email
+            </a>
+            <a href="{{ drawer.tel }}" style="flex:1;height:40px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);display:flex;align-items:center;justify-content:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>Call
+            </a>
+          </div>
+
+          <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:18px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Email</span><span style="font-weight:500">{{ drawer.email }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Phone</span><span class="tnum" style="font-weight:500">{{ drawer.phone }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Inquiry type</span><span style="font-weight:500">{{ drawer.typeLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0"><span style="color:var(--fg-2)">Wants</span><span style="font-weight:500">{{ drawer.desired }}</span></div>
+          </div>
+
+          <div style="margin-top:22px">
+            <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:12px">Pipeline stage</div>
+            <div style="display:flex;align-items:center;gap:0">
+              <sc-for list="{{ drawer.stages }}" as="st" hint-placeholder-count="4">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative">
+                  <div style="width:16px;height:16px;border-radius:9999px;background:{{ st.dot }};border:2px solid {{ st.ring }};z-index:1"></div>
+                  <span style="font-size:10.5px;text-align:center;color:{{ st.fg }};line-height:1.2">{{ st.label }}</span>
+                  <div style="{{ st.barStyle }}"></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <button onClick="{{ drawer.onCopy }}" style="width:100%;height:44px;margin-top:22px;border-radius:9999px;border:1px solid var(--border-strong);background:{{ drawer.copyBg }};color:{{ drawer.copyFg }};font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+            {{ drawer.copyLabel }}
+          </button>
+
+          <div style="margin-top:24px">
+            <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:12px">Notes & activity</div>
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <input value="{{ drawer.noteDraft }}" onChange="{{ drawer.onNote }}" onKeyDown="{{ drawer.onNoteKey }}" placeholder="Log a call, email, or note…" style="flex:1;height:42px;border:1px solid var(--border-strong);border-radius:9999px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
+              <button onClick="{{ drawer.onAddNote }}" style="height:42px;padding:0 18px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add</button>
+            </div>
+            <sc-if value="{{ drawer.hasNotes }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ drawer.notes }}" as="n" hint-placeholder-count="2">
+                <div style="display:flex;gap:12px">
+                  <div style="flex-shrink:0;width:8px;height:8px;border-radius:9999px;background:var(--canary);margin-top:6px"></div>
+                  <div style="flex:1;border-bottom:1px solid var(--border);padding-bottom:10px"><div style="font-size:14px;line-height:1.5">{{ n.text }}</div><div style="font-size:12px;color:var(--fg-3);margin-top:3px">{{ n.time }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ drawer.noNotes }}" hint-placeholder-val="{{ true }}">
+            <p style="font-size:13.5px;color:var(--fg-3)">No notes yet. Log your first call or email above.</p>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- PROPERTY DRAWER (manager) -->
+    <sc-if value="{{ propDrawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePropDrawer }}" style="position:fixed;inset:0;background:rgba(14,15,12,0.40);z-index:60;display:flex;justify-content:flex-end;animation:cnFade 200ms var(--ease-out-soft)">
+      <div onClick="{{ stop }}" style="width:468px;max-width:94vw;height:100%;background:var(--surface);box-shadow:var(--shadow-3);overflow:auto;animation:cnSlide 260ms var(--ease-out-soft)">
+        <div style="height:158px;background-size:cover;background-position:center;background-image:{{ propDrawer.img0 }};position:relative">
+          <button onClick="{{ closePropDrawer }}" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:9999px;border:none;background:rgba(14,15,12,0.55);cursor:pointer;color:#fff;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+        <div style="padding:22px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:3px 10px;border-radius:9999px">{{ propDrawer.typeLabel }}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--success);background:var(--success-tint);padding:3px 10px;border-radius:9999px">{{ propDrawer.statusLabel }}</span>
+          </div>
+          <h3 style="font-size:22px;margin-top:10px">{{ propDrawer.title }}</h3>
+          <div style="font-size:14px;color:var(--fg-2);margin-top:3px">{{ propDrawer.area }}, {{ propDrawer.city }} · {{ propDrawer.specs }}</div>
+          <div class="tnum" style="font-size:18px;font-weight:600;margin-top:10px">{{ propDrawer.rateLabel }}</div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;margin:22px 0 12px">Listing details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:12px 14px"><div style="font-size:11.5px;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Parking</div><div style="font-size:14.5px;font-weight:500;margin-top:3px">{{ propDrawer.parkingLabel }}</div></div>
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:12px 14px"><div style="font-size:11.5px;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Pets</div><div style="font-size:14.5px;font-weight:500;margin-top:3px">{{ propDrawer.petLabel }}</div></div>
+            <div style="grid-column:span 2;background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
+              <div style="font-size:11.5px;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Utilities</div>
+              <sc-if value="{{ propDrawer.utilIncluded }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:6px">
+                <span style="font-size:14.5px;font-weight:500">Included · {{ propDrawer.utilCapLabel }}</span>
+                <span style="flex-basis:100%;height:0"></span>
+                <sc-for list="{{ propDrawer.utilTypes }}" as="u" hint-placeholder-count="2">
+                  <span style="font-size:12px;color:var(--fg-2);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:9999px">{{ u }}</span>
+                </sc-for>
+              </div>
+              </sc-if>
+              <sc-if value="{{ propDrawer.utilIncluded }}" hint-placeholder-val="{{ true }}"></sc-if>
+            </div>
+          </div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;margin:22px 0 12px">Insurance details</div>
+          <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:11px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--fg-2)">Year built</span><span class="tnum" style="font-weight:500">{{ propDrawer.yearBuilt }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:11px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--fg-2)">Storeys</span><span class="tnum" style="font-weight:500">{{ propDrawer.storeys }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:11px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--fg-2)">Heating type</span><span style="font-weight:500">{{ propDrawer.heatingType }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:11px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--fg-2)">Water heater</span><span style="font-weight:500">{{ propDrawer.waterHeater }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:11px 14px"><span style="color:var(--fg-2)">Firewall</span><span style="font-weight:500">{{ propDrawer.firewallLabel }}</span></div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin:22px 0 12px">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--warning)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <span style="font-size:12px;font-weight:600;color:var(--warning);letter-spacing:0.02em">Manager-only · not shown to tenants</span>
+          </div>
+          <div style="border:1px solid var(--warning-tint);background:var(--warning-tint);border-radius:12px;padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0"><span style="color:var(--fg-2)">Power meter no.</span><span class="tnum" style="font-weight:500">{{ propDrawer.powerMeter }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0"><span style="color:var(--fg-2)">Oil company</span><span style="font-weight:500">{{ propDrawer.oilCompanyLabel }}</span></div>
+            <div style="font-size:13px;color:var(--fg-2);margin-top:8px;padding-top:10px;border-top:1px solid rgba(185,122,14,0.25);line-height:1.5">{{ propDrawer.internalNotesLabel }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- SURFACE SWITCHER -->
+  <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);padding:5px;border-radius:9999px;box-shadow:var(--shadow-3)">
+    <button onClick="{{ goPublic }}" style="{{ tabPublic }}">Public site</button>
+    <button onClick="{{ goManager }}" style="{{ tabManager }}">Manager</button>
+  </div>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:78px;left:50%;transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--fg-on-ink);padding:12px 20px;border-radius:9999px;box-shadow:var(--shadow-3);font-size:14px;font-weight:500;display:flex;align-items:center;gap:9px;animation:cnUp 220ms var(--ease-out-soft)">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--canary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    {{ toast }}
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;startSurface&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;public&quot;,&quot;manager&quot;],&quot;default&quot;:&quot;public&quot;,&quot;tsType&quot;:&quot;\&quot;public\&quot;|\&quot;manager\&quot;&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const IMG = (id) => `https://images.unsplash.com/${id}?w=1400&q=80&auto=format&fit=crop`;
+    this.IMG = IMG;
+    const ph = {
+      rowhouse: '1502672260266-1c1ef2d93688',
+      house2: '1493809842364-78817add7ffb',
+      apartment: '1494526585095-c41746248156',
+      living: '1502005229762-cf1b2da7c5d6',
+      bedroom: '1505691938895-1758d7feb511',
+      kitchen: '1484154218962-a197022b5858',
+      house3: '1568605114967-8130f3a36994',
+      whitehouse: '1512917774080-9991f1c4c750',
+      coastal: '1449844908441-8829872d2607',
+    };
+    const properties = [
+      { id:'p1', slug:'142-gower-2', title:'142 Gower Street, #2', type:'MULTI', area:'Downtown', city:'St. John\u2019s', province:'NL', postal:'A1C 1J3', rate:1820, cleaning:0, beds:2, baths:1, sqft:760, status:'ACTIVE', features:['Black fixtures','Gas heat','In-unit laundry','Original hardwood'], images:[IMG(ph.rowhouse),IMG(ph.living),IMG(ph.kitchen)], description:'A bright second-floor flat on one of downtown\u2019s best-kept streets. Black fixtures, gas heat, and original hardwood, a few minutes from Water Street.' },
+      { id:'p2', slug:'84-pleasant', title:'84 Pleasant Street', type:'SINGLE', area:'Georgestown', city:'St. John\u2019s', province:'NL', postal:'A1C 4M7', rate:2140, cleaning:0, beds:3, baths:2, sqft:1080, status:'ACTIVE', features:['Fenced yard','Finished basement','Parking for 2','Pet friendly'], images:[IMG(ph.house2),IMG(ph.bedroom),IMG(ph.living)], description:'A three-bedroom rowhouse in Georgestown with a fenced yard and a finished basement \u2014 room for a family or a couple who both work from home.' },
+      { id:'p3', slug:'17-topsail-b', title:'17 Topsail Road, #B', type:'MULTI', area:'Mount Pearl', city:'Mount Pearl', province:'NL', postal:'A1N 1W4', rate:1560, cleaning:0, beds:1, baths:1, sqft:540, status:'ACTIVE', features:['Utilities included','Quartz counters','Bike storage'], images:[IMG(ph.apartment),IMG(ph.kitchen),IMG(ph.living)], description:'A tidy one-bedroom in Mount Pearl with utilities included and quartz counters. Low-maintenance living, close to the trail.' },
+      { id:'p4', slug:'31-quidi-vidi', title:'31 Quidi Vidi Road', type:'SHORT_TERM', area:'Quidi Vidi', city:'St. John\u2019s', province:'NL', postal:'A1A 1B2', rate:189, cleaning:95, beds:1, baths:1, sqft:620, status:'ACTIVE', features:['Harbour glimpses','Wood stove','Fast Wi-Fi','Self check-in'], images:[IMG(ph.coastal),IMG(ph.living),IMG(ph.bedroom)], description:'A snug one-bedroom above the harbour in Quidi Vidi. Wood stove, fast Wi-Fi, and self check-in \u2014 built for a long weekend or a quiet week away.' },
+      { id:'p5', slug:'9-battery', title:'9 Battery Road', type:'SHORT_TERM', area:'The Battery', city:'St. John\u2019s', province:'NL', postal:'A1A 1A9', rate:245, cleaning:120, beds:2, baths:1, sqft:740, status:'ACTIVE', features:['Narrows view','Rooftop deck','Heated floors','Self check-in'], images:[IMG(ph.whitehouse),IMG(ph.living),IMG(ph.kitchen)], description:'Two bedrooms on the Battery with a clear view down the Narrows. A rooftop deck and heated floors make it a genuine year-round stay.' },
+      { id:'p6', slug:'301-empire', title:'301 Empire Avenue', type:'SINGLE', area:'Rabbittown', city:'St. John\u2019s', province:'NL', postal:'A1C 3J5', rate:1480, cleaning:0, beds:2, baths:1, sqft:690, status:'ACTIVE', features:['South-facing','New windows','Off-street parking'], images:[IMG(ph.house3),IMG(ph.bedroom),IMG(ph.kitchen)], description:'A south-facing two-bedroom in Rabbittown with new windows and off-street parking. Quiet street, quick walk to everything.' },
+    ];
+    const EX = {
+      p1:{ parking:1, petFriendly:true, dogs:false, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1921, storeys:2, heatingType:'Oil-fired hot water', waterHeater:'Electric tank', firewall:true, powerMeter:'NLH-4471902', oilCompany:'Harvey\u2019s Oil', internalNotes:'Boiler serviced Mar 2026. Tenant in #3 prefers email contact.' },
+      p2:{ parking:2, petFriendly:true, dogs:true, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1955, storeys:2, heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false, powerMeter:'NLH-5582013', oilCompany:'\u2014', internalNotes:'Separate basement entrance. Owner approves dogs under 40lb.' },
+      p3:{ parking:1, petFriendly:false, dogs:false, cats:false, utilitiesIncluded:true, utilityTypes:['Electric','Internet'], utilityCap:200, yearBuilt:1998, storeys:1, heatingType:'Mini-split heat pump', waterHeater:'Electric tank', firewall:true, powerMeter:'NLH-6610477', oilCompany:'\u2014', internalNotes:'Utilities capped at $200/mo; overage billed to tenant.' },
+      p4:{ parking:2, petFriendly:true, dogs:true, cats:true, utilitiesIncluded:true, utilityTypes:['Electric','Oil','Internet'], utilityCap:0, yearBuilt:1948, storeys:1, heatingType:'Oil stove + mini-split', waterHeater:'Electric tank', firewall:false, powerMeter:'NLH-7039118', oilCompany:'Quidi Vidi Fuels', internalNotes:'Short-term: utilities in nightly rate. Firewood in shed.' },
+      p5:{ parking:0, petFriendly:false, dogs:false, cats:false, utilitiesIncluded:true, utilityTypes:['Electric','Mini-split','Air conditioning','Internet'], utilityCap:0, yearBuilt:1962, storeys:3, heatingType:'Mini-split heat pump', waterHeater:'Tankless electric', firewall:true, powerMeter:'NLH-7781560', oilCompany:'\u2014', internalNotes:'Steep stairs; street-permit parking only. Rooftop key in lockbox.' },
+      p6:{ parking:1, petFriendly:true, dogs:false, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1971, storeys:2, heatingType:'Oil-fired forced air', waterHeater:'Oil-fired', firewall:false, powerMeter:'NLH-8123094', oilCompany:'Harvey\u2019s Oil', internalNotes:'Cat ok with pet deposit. Furnace filter changed quarterly.' },
+    };
+    properties.forEach(pp => Object.assign(pp, EX[pp.id]));
+    const inquiries = [
+      { id:'q1', first:'Saoirse', last:'Mullins', email:'saoirse.mullins@gmail.com', phone:'(709) 555-0148', propId:'p1', type:'LONG_TERM_RENTAL', desired:'Jul 1, 2026', status:'NEW', notes:[] },
+      { id:'q2', first:'Liam', last:'Foley', email:'liam.foley@gmail.com', phone:'(709) 555-0177', propId:'p4', type:'SHORT_TERM_BOOKING', desired:'Jun 20\u201324', status:'NEW', notes:[] },
+      { id:'q3', first:'Declan', last:'Hynes', email:'d.hynes@gmail.com', phone:'(709) 555-0192', propId:'p3', type:'LONG_TERM_RENTAL', desired:'Aug 1, 2026', status:'NEW', notes:[] },
+      { id:'q4', first:'Maeve', last:'Doyle', email:'maeve.doyle@gmail.com', phone:'(709) 555-0123', propId:'p2', type:'LONG_TERM_RENTAL', desired:'Aug 15, 2026', status:'CONTACTED', notes:[{ text:'Called Jun 14 \u2014 wants a Saturday viewing.', time:'2d ago' }] },
+      { id:'q5', first:'Connor', last:'Walsh', email:'c.walsh@gmail.com', phone:'(709) 555-0150', propId:'p5', type:'SHORT_TERM_BOOKING', desired:'Jul 2\u20135', status:'CONTACTED', notes:[{ text:'Asked about parking \u2014 sent street-permit info.', time:'1d ago' }] },
+      { id:'q6', first:'Niamh', last:'Power', email:'niamh.power@gmail.com', phone:'(709) 555-0168', propId:'p3', type:'LONG_TERM_RENTAL', desired:'Jul 15, 2026', status:'APPLICATION_SENT', notes:[{ text:'Application link sent Jun 12.', time:'3d ago' }] },
+      { id:'q7', first:'Brigid', last:'Carey', email:'b.carey@gmail.com', phone:'(709) 555-0139', propId:'p1', type:'LONG_TERM_RENTAL', desired:'Sep 1, 2026', status:'APPLICATION_SENT', notes:[{ text:'Reviewing application \u2014 references requested.', time:'1d ago' }] },
+      { id:'q8', first:'Aoife', last:'Kelly', email:'aoife.kelly@gmail.com', phone:'(709) 555-0111', propId:'p6', type:'LONG_TERM_RENTAL', desired:'Jul 15, 2026', status:'SIGNED', notes:[{ text:'Lease signed. Move-in Jul 15.', time:'5d ago' }] },
+    ];
+    const bookings = [
+      { id:'b1', guest:'Liam Foley', propId:'p4', dates:'Jun 20 \u2013 24', day:'20', mon:'Jun', nights:4, amount:851, status:'PENDING' },
+      { id:'b3', guest:'A. Tobin', propId:'p5', dates:'Jun 14 \u2013 17', day:'14', mon:'Jun', nights:3, amount:855, status:'CONFIRMED' },
+      { id:'b5', guest:'Maeve Doyle', propId:'p2', dates:'Jun 17 \u00b7 2:00 PM', day:'17', mon:'Jun', nights:0, amount:0, status:'VIEWING' },
+      { id:'b4', guest:'Connor Walsh', propId:'p5', dates:'Jun 21 \u2013 25', day:'21', mon:'Jun', nights:4, amount:1100, status:'CONFIRMED' },
+      { id:'b2', guest:'R. Squires', propId:'p4', dates:'Jun 27 \u2013 30', day:'27', mon:'Jun', nights:3, amount:662, status:'CONFIRMED' },
+    ];
+    const viewings = [
+      { id:'v1', name:'Maeve Doyle', propId:'p2', date:'Tue, Jun 17', time:'2:00 PM', status:'CONFIRMED', phone:'(709) 555-0123' },
+      { id:'v2', name:'Saoirse Mullins', propId:'p1', date:'Wed, Jun 18', time:'5:30 PM', status:'SCHEDULED', phone:'(709) 555-0148' },
+      { id:'v3', name:'Declan Hynes', propId:'p3', date:'Thu, Jun 19', time:'12:00 PM', status:'SCHEDULED', phone:'(709) 555-0192' },
+      { id:'v4', name:'Brigid Carey', propId:'p1', date:'Sat, Jun 21', time:'10:00 AM', status:'REQUESTED', phone:'(709) 555-0139' },
+    ];
+    let theme = 'light';
+    try { theme = localStorage.getItem('canary-theme') || 'light'; } catch (e) {}
+    this.state = {
+      theme,
+      surface: props.startSurface === 'manager' ? 'manager' : 'public',
+      pubView: 'listings', propId: null, pubFilter: 'all',
+      rangeStart: '2026-06-20', rangeEnd: '2026-06-24',
+      bookSubmitted: false, viewSubmitted: false,
+      vName: '', vEmail: '', vPhone: '', vDate: '',
+      mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false,
+      properties, inquiries, bookings, viewings,
+      noteDrafts: {}, draggingId: null, dragOverCol: null,
+      copiedId: null, toast: null,
+      up: this.blankUploader(), featDraft: '', imgDraft: '',
+    };
+    this._toastT = null; this._copyT = null;
+  }
+
+  blankUploader() {
+    return { title:'', type:'SINGLE', address:'', city:'St. John\u2019s', province:'NL', postal:'', rate:'', cleaning:'', beds:'', baths:'', sqft:'', description:'', features:[], images:[],
+      parking:'', petFriendly:false, dogs:false, cats:false, utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
+      yearBuilt:'', storeys:'', heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false,
+      powerMeter:'', oilCompany:'', internalNotes:'' };
+  }
+  componentDidMount() { this.applyTheme(this.state.theme === 'dark'); }
+  componentWillUnmount() { clearTimeout(this._toastT); clearTimeout(this._copyT); }
+  applyTheme(dark) { try { const c = dark ? '#1A1916' : '#FAF7F1'; document.body.style.background = c; document.documentElement.style.background = c; } catch (e) {} }
+  toggleTheme = () => this.setState(s => { const t = s.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('canary-theme', t); } catch (e) {} this.applyTheme(t === 'dark'); return { theme: t }; });
+  themeVars(dark) {
+    return dark ? {
+      '--paper':'#1A1916','--surface':'#2A2925','--ink':'#F2EFE8','--canary':'#F5C518','--canary-pressed':'#DCAE0E',
+      '--atlantic':'#79ADD0','--atlantic-tint':'#24333F',
+      '--gray-50':'#24221E','--gray-100':'#201E1A','--gray-200':'#38352F','--gray-300':'#46423B','--gray-400':'#5A564E','--gray-500':'#8A867C','--gray-600':'#A6A299','--gray-700':'#C2BEB4','--gray-800':'#DAD6CC','--gray-900':'#F2EFE8',
+      '--success':'#62BD88','--success-tint':'#1C3326','--warning':'#D9A441','--warning-tint':'#352B16','--danger':'#DB8080','--danger-tint':'#38211F',
+      '--fg-1':'#F2EFE8','--fg-2':'#C2BEB4','--fg-3':'#8A867C','--fg-on-ink':'#1A1916','--border':'#34312B','--border-strong':'#46423B','--link':'#79ADD0','--nav-bg':'rgba(26,25,22,0.82)'
+    } : {
+      '--paper':'#FAF7F1','--surface':'#FFFFFF','--ink':'#0E0F0C','--canary':'#F5C518','--canary-pressed':'#DCAE0E',
+      '--atlantic':'#2E5C7E','--atlantic-tint':'#E9F0F5',
+      '--gray-50':'#F5F2EC','--gray-100':'#EDEAE3','--gray-200':'#E8E5DD','--gray-300':'#D8D4CB','--gray-400':'#B8B3A8','--gray-500':'#8E8A80','--gray-600':'#6B6862','--gray-700':'#4A4844','--gray-800':'#2A2926','--gray-900':'#161513',
+      '--success':'#2F7D4F','--success-tint':'#E6F1EA','--warning':'#B97A0E','--warning-tint':'#FBF1DE','--danger':'#B43838','--danger-tint':'#F6E4E1',
+      '--fg-1':'#0E0F0C','--fg-2':'#4A4844','--fg-3':'#8E8A80','--fg-on-ink':'#FAF7F1','--border':'#E8E5DD','--border-strong':'#D8D4CB','--link':'#2E5C7E','--nav-bg':'rgba(250,247,241,0.82)'
+    };
+  }
+
+  money(n) { return '$' + Number(n).toLocaleString('en-CA', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  moneyShort(n) { return '$' + Number(n).toLocaleString('en-CA'); }
+  getProp(id) { return this.state.properties.find(p => p.id === id); }
+  refCode(seed) { let h=0; for (let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return 'APP-' + h.toString(36).toUpperCase().slice(0,4).padEnd(4,'0'); }
+  showToast(msg) { clearTimeout(this._toastT); this.setState({ toast: msg }); this._toastT = setTimeout(() => this.setState({ toast: null }), 2600); }
+
+  // navigation
+  goHome = () => this.setState({ surface:'public', pubView:'listings' });
+  goPublic = () => this.setState({ surface:'public' });
+  goManager = () => this.setState({ surface:'manager' });
+  goUploader = () => this.setState({ surface:'manager', mgrView:'uploader' });
+  goOverview = () => this.setState({ mgrView:'overview' });
+  goProperties = () => this.setState({ mgrView:'properties' });
+  goFunnel = () => this.setState({ mgrView:'funnel' });
+  goBookings = () => this.setState({ mgrView:'bookings' });
+  goViewings = () => this.setState({ mgrView:'viewings' });
+  toggleSide = () => this.setState(s => ({ sideCollapsed: !s.sideCollapsed }));
+  confirmViewing = (id) => { this.setState(s => ({ viewings: s.viewings.map(v => v.id===id ? {...v, status:'CONFIRMED'} : v) })); this.showToast('Viewing confirmed'); };
+  rescheduleViewing = (id) => this.showToast('Reschedule link sent to prospect');
+  openProperty = (id) => this.setState({ surface:'public', pubView:'detail', propId:id, bookSubmitted:false, viewSubmitted:false, vName:'', vEmail:'', vPhone:'', vDate:'', rangeStart:'2026-06-20', rangeEnd:'2026-06-24' });
+  goApply = () => this.setState({ pubView:'apply' });
+  goBackDetail = () => this.setState({ pubView:'detail' });
+
+  // public widget handlers
+  setStart = (e) => this.setState({ rangeStart: e.target.value });
+  setEnd = (e) => this.setState({ rangeEnd: e.target.value });
+  nights() { const a = new Date(this.state.rangeStart), b = new Date(this.state.rangeEnd); const d = Math.round((b-a)/86400000); return isFinite(d) && d > 0 ? d : 0; }
+  requestBooking = () => {
+    const p = this.getProp(this.state.propId); if (!p) return;
+    const n = this.nights(); if (n <= 0) { this.showToast('Pick your dates first'); return; }
+    const amount = p.rate*n + p.cleaning;
+    const bk = { id:'b'+Date.now(), guest:'You (prospect)', propId:p.id, dates:this.state.rangeStart+' \u2192 '+this.state.rangeEnd, day:this.state.rangeStart.slice(8), mon:'Jun', nights:n, amount, status:'PENDING' };
+    const iq = { id:'q'+Date.now(), first:'New', last:'guest', email:'guest@example.com', phone:'(709) 555-0000', propId:p.id, type:'SHORT_TERM_BOOKING', desired:this.state.rangeStart, status:'NEW', notes:[] };
+    this.setState(s => ({ bookings:[bk,...s.bookings], inquiries:[iq,...s.inquiries], bookSubmitted:true }));
+    this.showToast('Booking request sent to Canary');
+  };
+  setVName = (e) => this.setState({ vName: e.target.value });
+  setVEmail = (e) => this.setState({ vEmail: e.target.value });
+  setVPhone = (e) => this.setState({ vPhone: e.target.value });
+  setVDate = (e) => this.setState({ vDate: e.target.value });
+  submitViewing = () => {
+    const p = this.getProp(this.state.propId); if (!p) return;
+    if (!this.state.vName.trim()) { this.showToast('Add your name to request a viewing'); return; }
+    const parts = this.state.vName.trim().split(' ');
+    const iq = { id:'q'+Date.now(), first:parts[0], last:parts.slice(1).join(' ')||'', email:this.state.vEmail||'\u2014', phone:this.state.vPhone||'\u2014', propId:p.id, type:'LONG_TERM_RENTAL', desired:this.state.vDate?('viewing '+this.state.vDate):'a viewing', status:'NEW', notes:[{ text:'Viewing requested via website.', time:'just now' }] };
+    this.setState(s => ({ inquiries:[iq,...s.inquiries], viewSubmitted:true }));
+    this.showToast('Viewing request sent');
+  };
+
+  // pipeline
+  STAGES = [['NEW','New'],['CONTACTED','Contacted'],['APPLICATION_SENT','Application sent'],['SIGNED','Signed']];
+  moveInq = (id, status) => {
+    if (!id) return;
+    this.setState(s => ({ inquiries: s.inquiries.map(q => q.id===id ? {...q, status} : q), draggingId:null, dragOverCol:null }));
+  };
+  advanceInq = (id) => {
+    this.setState(s => ({ inquiries: s.inquiries.map(q => {
+      if (q.id!==id) return q;
+      const i = this.STAGES.findIndex(st => st[0]===q.status);
+      const next = this.STAGES[Math.min(i+1, this.STAGES.length-1)][0];
+      return {...q, status: next};
+    }) }));
+  };
+  setNoteDraft = (id, v) => this.setState(s => ({ noteDrafts:{...s.noteDrafts, [id]:v} }));
+  addNote = (id) => {
+    const v = (this.state.noteDrafts[id]||'').trim(); if (!v) return;
+    this.setState(s => ({
+      inquiries: s.inquiries.map(q => q.id===id ? {...q, notes:[...q.notes, { text:v, time:'just now' }]} : q),
+      noteDrafts: {...s.noteDrafts, [id]:''},
+    }));
+  };
+  copyLink = (q) => {
+    const p = this.getProp(q.propId);
+    const url = 'https://apply.canary.nl/' + (p?p.slug:'home') + '?ref=' + this.refCode(q.id);
+    try { navigator.clipboard && navigator.clipboard.writeText(url); } catch(e) {}
+    clearTimeout(this._copyT);
+    this.setState({ copiedId: q.id });
+    this.showToast('Application link copied');
+    this._copyT = setTimeout(() => this.setState({ copiedId:null }), 2200);
+  };
+  openDrawer = (id) => this.setState({ openInq:id });
+  closeDrawer = () => this.setState({ openInq:null });
+  stop = (e) => e.stopPropagation();
+
+  // uploader
+  setUp = (k, v) => this.setState(s => ({ up:{...s.up, [k]:v} }));
+  onUpTitle = e => this.setUp('title', e.target.value);
+  onUpAddress = e => this.setUp('address', e.target.value);
+  onUpCity = e => this.setUp('city', e.target.value);
+  onUpProvince = e => this.setUp('province', e.target.value);
+  onUpPostal = e => this.setUp('postal', e.target.value);
+  onUpRate = e => this.setUp('rate', e.target.value);
+  onUpCleaning = e => this.setUp('cleaning', e.target.value);
+  onUpBeds = e => this.setUp('beds', e.target.value);
+  onUpBaths = e => this.setUp('baths', e.target.value);
+  onUpSqft = e => this.setUp('sqft', e.target.value);
+  onUpDesc = e => this.setUp('description', e.target.value);
+  onFeatDraft = e => this.setState({ featDraft: e.target.value });
+  onImgDraft = e => this.setState({ imgDraft: e.target.value });
+  addFeat = () => { const v=this.state.featDraft.trim(); if(!v) return; this.setState(s=>({ up:{...s.up, features:[...s.up.features, v]}, featDraft:'' })); };
+  removeFeat = (i) => this.setState(s => ({ up:{...s.up, features: s.up.features.filter((_,j)=>j!==i)} }));
+  onFeatKey = e => { if (e.key==='Enter') { e.preventDefault(); this.addFeat(); } };
+  addImg = () => { const v=this.state.imgDraft.trim(); if(!v) return; this.setState(s=>({ up:{...s.up, images:[...s.up.images, v]}, imgDraft:'' })); };
+  removeImg = (i) => this.setState(s => ({ up:{...s.up, images: s.up.images.filter((_,j)=>j!==i)} }));
+  onImgKey = e => { if (e.key==='Enter') { e.preventDefault(); this.addImg(); } };
+  publish = () => {
+    const u = this.state.up;
+    if (!u.title.trim()) { this.showToast('Give the listing a title'); return; }
+    if (!u.rate) { this.showToast('Add a rate'); return; }
+    const id = 'p' + Date.now();
+    const imgs = u.images.length ? u.images : [this.IMG('1493809842364-78817add7ffb'), this.IMG('1502005229762-cf1b2da7c5d6'), this.IMG('1484154218962-a197022b5858')];
+    const np = {
+      id, slug:(u.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'listing'),
+      title:u.title, type:u.type, area:u.city||'St. John\u2019s', city:u.city||'St. John\u2019s', province:u.province||'NL', postal:u.postal||'',
+      rate:Number(u.rate)||0, cleaning:u.type==='SHORT_TERM'?(Number(u.cleaning)||0):0,
+      beds:Number(u.beds)||0, baths:Number(u.baths)||0, sqft:Number(u.sqft)||0,
+      status:'ACTIVE', features:u.features.slice(), images:imgs,
+      parking:Number(u.parking)||0, petFriendly:!!u.petFriendly, dogs:!!u.dogs, cats:!!u.cats,
+      utilitiesIncluded:!!u.utilitiesIncluded, utilityTypes:u.utilityTypes.slice(), utilityCap:Number(u.utilityCap)||0,
+      yearBuilt:Number(u.yearBuilt)||0, storeys:Number(u.storeys)||0, heatingType:u.heatingType, waterHeater:u.waterHeater, firewall:!!u.firewall,
+      powerMeter:u.powerMeter, oilCompany:u.oilCompany, internalNotes:u.internalNotes,
+      description:u.description||'A new Canary listing.',
+    };
+    this.setState(s => ({ properties:[np, ...s.properties], up:this.blankUploader(), featDraft:'', imgDraft:'', mgrView:'properties' }));
+    this.showToast('Listing published \u2014 now live on the storefront');
+  };
+
+  typeLabelOf(t) { return t==='SHORT_TERM' ? 'Short stay' : (t==='MULTI' ? 'Multi-unit' : 'Single unit'); }
+
+  inqVM(q) {
+    const p = this.getProp(q.propId);
+    const isShort = q.type === 'SHORT_TERM_BOOKING';
+    const copied = this.state.copiedId === q.id;
+    return {
+      id:q.id, name:(q.first+' '+q.last).trim(), initials:((q.first[0]||'')+(q.last[0]||'')).toUpperCase(),
+      prop:p?p.title:'\u2014', email:q.email, phone:q.phone, desired:q.desired,
+      typeLabel:isShort?'Short-term':'Long-term', isShort,
+      typeFg:isShort?'#7a5a12':'var(--atlantic)', typeBg:isShort?'var(--warning-tint)':'var(--atlantic-tint)',
+      notes:q.notes.slice().reverse(), hasNotes:q.notes.length>0, noNotes:q.notes.length===0,
+      noteDraft:this.state.noteDrafts[q.id]||'',
+      onNote:(e)=>this.setNoteDraft(q.id, e.target.value),
+      onNoteKey:(e)=>{ if(e.key==='Enter'){ e.preventDefault(); this.addNote(q.id);} },
+      onAddNote:()=>this.addNote(q.id),
+      copyLabel:copied?'Link copied':'Copy application link',
+      copyBg:copied?'var(--success-tint)':'var(--surface)', copyFg:copied?'var(--success)':'var(--ink)',
+      onCopy:()=>this.copyLink(q),
+      canAdvance:q.status!=='SIGNED', onAdvance:()=>this.advanceInq(q.id),
+      onOpen:()=>this.openDrawer(q.id),
+      mailto:'mailto:'+q.email, tel:'tel:'+q.phone.replace(/[^0-9]/g,''),
+      onDragStart:(e)=>{ this.setState({ draggingId:q.id }); if(e.dataTransfer){ e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',q.id);}catch(_){} } },
+      onDragEnd:()=>this.setState({ draggingId:null, dragOverCol:null }),
+      _status:q.status,
+    };
+  }
+
+  toggleUtil = (u) => this.setState(s => { const has = s.up.utilityTypes.includes(u); return { up:{...s.up, utilityTypes: has ? s.up.utilityTypes.filter(x=>x!==u) : [...s.up.utilityTypes, u]} }; });
+  openPropDrawer = (id) => this.setState({ openProp:id });
+  closePropDrawer = () => this.setState({ openProp:null });
+  parkingLabel(n) { return n>0 ? (n + ' space' + (n>1?'s':'')) : 'Street parking only'; }
+  petLabel(p) { if (!p.petFriendly) return 'No pets'; if (p.dogs && p.cats) return 'Dogs & cats welcome'; if (p.dogs) return 'Dogs welcome'; if (p.cats) return 'Cats welcome'; return 'Pets negotiable'; }
+  capText(n) { return n>0 ? ('up to $' + n + '/mo') : 'no cap'; }
+  chipStyle(active) { return { display:'inline-flex', alignItems:'center', gap:'7px', height:'34px', padding:'0 14px', borderRadius:'9999px', border:'1px solid '+(active?'var(--ink)':'var(--border-strong)'), cursor:'pointer', fontFamily:'inherit', fontSize:'13.5px', fontWeight:500, background: active?'var(--ink)':'var(--surface)', color: active?'var(--fg-on-ink)':'var(--fg-2)' }; }
+
+  renderVals() {
+    const s = this.state;
+    const isPublic = s.surface === 'public';
+    const isManager = !isPublic;
+    const isDark = s.theme === 'dark';
+    const rootStyle = { minHeight:'100vh', background:'var(--paper)', color:'var(--fg-1)', fontFamily:'var(--font-sans)', transition:'background 320ms var(--ease-out-soft), color 320ms var(--ease-out-soft)', ...this.themeVars(isDark) };
+    const knobStyle = { position:'absolute', top:'2px', left:isDark?'30px':'2px', width:'24px', height:'24px', borderRadius:'9999px', background:'var(--surface)', border:'1px solid var(--border)', boxShadow:'0 1px 3px rgba(0,0,0,0.22)', transition:'left 220ms var(--ease-out-soft)' };
+
+    // ---- public listings ----
+    const active = s.properties.filter(p => p.status === 'ACTIVE');
+    const filtered = active.filter(p => s.pubFilter==='all' ? true : (s.pubFilter==='short' ? p.type==='SHORT_TERM' : p.type!=='SHORT_TERM'));
+    const listingCards = filtered.map(p => {
+      const isShort = p.type==='SHORT_TERM';
+      return {
+        id:p.id, addr:p.title, area:p.area,
+        tag:isShort?'Short stay':'Long-term', dot:isShort?'var(--canary)':'var(--atlantic)',
+        priceMain:this.moneyShort(p.rate), priceUnit:isShort?'/night':'/mo',
+        specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
+        imgCss:`url('${p.images[0]}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
+        onOpen:()=>this.openProperty(p.id),
+      };
+    });
+    const filt = (key,label) => ({ key, label, onClick:()=>this.setState({ pubFilter:key }), style:this.segStyle(s.pubFilter===key) });
+    const pubFilters = [filt('all','All'), filt('long','Long-term'), filt('short','Short stays')];
+
+    // ---- selected property ----
+    const p = this.getProp(s.propId);
+    let selProp = null, shortTerm=false, longTerm=false, rangeValid=false, rangeInvalid=false;
+    let nights=0, baseLine='', baseTotal='', cleaningFee='', grandTotal='', applyRef='';
+    if (p) {
+      selProp = { ...p, typeLabel:this.typeLabelOf(p.type), dot:(p.type==='SHORT_TERM'?'var(--canary)':'var(--atlantic)'),
+        priceMain:this.moneyShort(p.rate), specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
+        img0:`url('${p.images[0]}')`, img1:`url('${p.images[1]||p.images[0]}')`, img2:`url('${p.images[2]||p.images[0]}')` };
+      shortTerm = p.type==='SHORT_TERM'; longTerm = !shortTerm;
+      nights = this.nights();
+      rangeValid = shortTerm && nights>0; rangeInvalid = shortTerm && nights<=0;
+      baseLine = `${this.moneyShort(p.rate)} \u00d7 ${nights} ${nights===1?'night':'nights'}`;
+      baseTotal = this.money(p.rate*nights);
+      cleaningFee = this.money(p.cleaning);
+      grandTotal = this.money(p.rate*nights + p.cleaning);
+      selProp.parkingLabel = this.parkingLabel(p.parking);
+      selProp.petLabel = this.petLabel(p);
+      selProp.utilIncluded = p.utilitiesIncluded;
+      selProp.utilTypes = p.utilityTypes;
+      selProp.hasUtilTypes = p.utilityTypes.length > 0;
+      selProp.utilNotIncluded = !p.utilitiesIncluded;
+      selProp.utilCapLabel = this.capText(p.utilityCap);
+      applyRef = this.refCode(p.id);
+    }
+    const applySteps = [
+      { n:1, title:'Confirm your details', body:'Name, contact, and move-in date \u2014 pre-filled from this listing.' },
+      { n:2, title:'Income & references', body:'Upload a pay stub and two references. Takes about 3 minutes.' },
+      { n:3, title:'We review and respond', body:'Canary reviews every application within one business day.' },
+    ];
+
+    // ---- manager ----
+    const newCount = s.inquiries.filter(q=>q.status==='NEW').length;
+    const columns = this.STAGES.map(([key,label]) => ({
+      key, label,
+      count: s.inquiries.filter(q=>q.status===key).length,
+      items: s.inquiries.filter(q=>q.status===key).map(q=>this.inqVM(q)),
+      isOver: s.dragOverCol===key,
+      onDragOver:(e)=>{ e.preventDefault(); if(s.dragOverCol!==key) this.setState({ dragOverCol:key }); },
+      onDragLeave:(e)=>{ if(s.dragOverCol===key) this.setState({ dragOverCol:null }); },
+      onDrop:(e)=>{ e.preventDefault(); this.moveInq(s.draggingId, key); },
+    }));
+    const funnelCount = s.inquiries.length;
+
+    const propsRows = s.properties.map(pr => ({
+      title:pr.title, area:`${pr.area}, ${pr.city}`, typeLabel:this.typeLabelOf(pr.type),
+      rateLabel:this.moneyShort(pr.rate)+(pr.type==='SHORT_TERM'?'/night':'/mo'),
+      beds:pr.beds?`${pr.beds} bd \u00b7 ${pr.baths} ba`:'\u2014',
+      statusLabel:pr.status==='ACTIVE'?'Active':(pr.status==='DRAFT'?'Draft':'Archived'),
+      onOpen:()=>this.openPropDrawer(pr.id),
+      stFg:pr.status==='ACTIVE'?'var(--success)':(pr.status==='DRAFT'?'var(--warning)':'var(--fg-3)'),
+      stBg:pr.status==='ACTIVE'?'var(--success-tint)':(pr.status==='DRAFT'?'var(--warning-tint)':'var(--gray-100)'),
+    }));
+
+    // uploader view-models
+    const typeOpt = (key,label) => ({ key, label, onClick:()=>this.setUp('type',key), style:this.segStyle(s.up.type===key) });
+    const typeOpts = [typeOpt('SINGLE','Single unit'), typeOpt('MULTI','Multi-unit'), typeOpt('SHORT_TERM','Short-term')];
+    const isShortType = s.up.type==='SHORT_TERM';
+    const rateLabel = isShortType ? 'Nightly rate' : 'Monthly rent';
+    const upFeatures = s.up.features.map((f,i)=>({ label:f, onRemove:()=>this.removeFeat(i) }));
+    const upImages = s.up.images.map((im,i)=>({ css:`url('${im}')`, onRemove:()=>this.removeImg(i) }));
+
+    // bookings
+    const segStyleFor = (seg) => {
+      const left = ((seg.s-1)/30)*100, width = ((seg.e-seg.s)/30)*100;
+      const conf = seg.cls==='confirmed';
+      return { position:'absolute', top:'4px', bottom:'4px', left:left+'%', width:width+'%',
+        background: conf?'var(--success-tint)':'var(--warning-tint)', border:'1px solid '+(conf?'var(--success)':'var(--warning)'),
+        borderRadius:'6px', display:'flex', alignItems:'center', paddingLeft:'8px', fontSize:'11.5px', fontWeight:600,
+        color: conf?'var(--success)':'#7a5a12', overflow:'hidden', whiteSpace:'nowrap' };
+    };
+    const lanesRaw = [
+      { title:'31 Quidi Vidi Rd', segs:[{ s:20,e:24,label:'Liam Foley',cls:'pending' },{ s:27,e:30,label:'R. Squires',cls:'confirmed' }] },
+      { title:'9 Battery Rd', segs:[{ s:14,e:17,label:'A. Tobin',cls:'confirmed' },{ s:21,e:25,label:'Connor Walsh',cls:'confirmed' }] },
+    ];
+    const lanes = lanesRaw.map(l => ({ title:l.title, segs:l.segs.map(seg=>({ label:seg.label, style:segStyleFor(seg) })) }));
+    const statusColors = (st) => st==='CONFIRMED'?{fg:'var(--success)',bg:'var(--success-tint)',label:'Confirmed'} : st==='PENDING'?{fg:'var(--warning)',bg:'var(--warning-tint)',label:'Pending'} : st==='VIEWING'?{fg:'var(--atlantic)',bg:'var(--atlantic-tint)',label:'Viewing'} : {fg:'var(--fg-2)',bg:'var(--gray-100)',label:st};
+    const bookingRows = s.bookings.map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', dates:b.dates, nights:b.nights||'\u2014', amount:b.amount?this.moneyShort(b.amount):'\u2014', statusLabel:c.label, fg:c.fg, bg:c.bg }; });
+    const upcomingBookings = s.bookings.slice(0,4).map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', day:b.day, mon:b.mon, statusLabel:c.label, fg:c.fg, bg:c.bg }; });
+
+    // overview
+    const kpis = [
+      { label:'Collected this month', value:'$182,400', sub:'100% of expected', subColor:'var(--success)' },
+      { label:'Occupancy', value:'96.2%', sub:'231 of 240 doors', subColor:'var(--fg-2)' },
+      { label:'Open inquiries', value:String(newCount), sub:'in the New column', subColor:'var(--warning)' },
+      { label:'Avg. days to lease', value:'11', sub:'\u22124 vs last quarter', subColor:'var(--success)' },
+    ];
+    const recentInquiries = s.inquiries.filter(q=>q.status==='NEW').slice(0,4).map(q=>this.inqVM(q));
+
+    // scheduled viewings
+    const vStatus = (st) => st==='CONFIRMED' ? {fg:'var(--success)',bg:'var(--success-tint)',label:'Confirmed'} : st==='SCHEDULED' ? {fg:'var(--atlantic)',bg:'var(--atlantic-tint)',label:'Scheduled'} : {fg:'var(--warning)',bg:'var(--warning-tint)',label:'Requested'};
+    const viewingRows = s.viewings.map(v => { const pr=this.getProp(v.propId); const c=vStatus(v.status); return { name:v.name, prop:pr?pr.title:'\u2014', phone:v.phone, date:v.date, time:v.time, statusLabel:c.label, fg:c.fg, bg:c.bg, canConfirm:v.status!=='CONFIRMED', onConfirm:()=>this.confirmViewing(v.id), onReschedule:()=>this.rescheduleViewing(v.id) }; });
+    const viewingsCount = s.viewings.length;
+
+    // sidebar collapse
+    const col = s.sideCollapsed;
+    const sideStyle = { width: col?'74px':'240px', flexShrink:0, borderRight:'1px solid var(--border)', background:'var(--surface)', display:'flex', flexDirection:'column', position:'sticky', top:0, height:'100vh', transition:'width 220ms var(--ease-out-soft)' };
+
+    // drawer
+    let drawer = null, drawerOpen = false;
+    if (s.openInq) {
+      const q = s.inquiries.find(x=>x.id===s.openInq);
+      if (q) {
+        drawerOpen = true;
+        const base = this.inqVM(q);
+        const idx = this.STAGES.findIndex(st=>st[0]===q.status);
+        const stages = this.STAGES.map(([key,label],i) => {
+          const done = i<=idx, current = i===idx;
+          return { label, dot: current?'var(--canary)':(done?'var(--ink)':'var(--surface)'), ring: done||current?'var(--ink)':'var(--border-strong)', fg: done||current?'var(--fg-1)':'var(--fg-3)',
+            barStyle: i<this.STAGES.length-1 ? { position:'absolute', top:'7px', left:'50%', width:'100%', height:'2px', background:(i<idx?'var(--ink)':'var(--border-strong)'), zIndex:0 } : { display:'none' } };
+        });
+        drawer = { ...base, stages };
+      }
+    }
+
+    // chrome
+    const titles = { overview:['Overview','Tuesday, June 15'], properties:['Properties','Your portfolio'], uploader:['New listing','Spin one up in under a minute'], funnel:['Leasing pipeline','Move prospects through to signed'], bookings:['Bookings','Short stays this month'], viewings:['Scheduled viewings','Upcoming property viewings'] };
+    const t = titles[s.mgrView] || titles.overview;
+
+    // extended listing fields — uploader controls
+    const ynOf = (f) => [ {label:'Yes',onClick:()=>this.setUp(f,true),style:this.segStyle(s.up[f]===true)}, {label:'No',onClick:()=>this.setUp(f,false),style:this.segStyle(s.up[f]===false)} ];
+    const ynPetFriendly=ynOf('petFriendly'), ynDogs=ynOf('dogs'), ynCats=ynOf('cats'), ynUtilities=ynOf('utilitiesIncluded'), ynFirewall=ynOf('firewall');
+    const UTILS=['Electric','Oil','Mini-split','Air conditioning','Internet'];
+    const utilTypeOpts = UTILS.map(u=>({ label:u, onClick:()=>this.toggleUtil(u), style:this.chipStyle(s.up.utilityTypes.includes(u)) }));
+    const CAPS=[0,100,200,300,400,500];
+    const capOpts = CAPS.map(c=>({ label:c===0?'No cap':('$'+c), onClick:()=>this.setUp('utilityCap',c), style:this.segStyle(Number(s.up.utilityCap)===c) }));
+    const onUpParking=(e)=>this.setUp('parking',e.target.value), onUpYearBuilt=(e)=>this.setUp('yearBuilt',e.target.value), onUpStoreys=(e)=>this.setUp('storeys',e.target.value), onUpHeating=(e)=>this.setUp('heatingType',e.target.value), onUpWater=(e)=>this.setUp('waterHeater',e.target.value), onUpPowerMeter=(e)=>this.setUp('powerMeter',e.target.value), onUpOilCompany=(e)=>this.setUp('oilCompany',e.target.value), onUpInternalNotes=(e)=>this.setUp('internalNotes',e.target.value);
+    const showUtilDetail = !!s.up.utilitiesIncluded;
+    // manager property drawer
+    let propDrawer=null, propDrawerOpen=false;
+    if (s.openProp) { const pr=this.getProp(s.openProp); if (pr) { propDrawerOpen=true; propDrawer = { ...pr, typeLabel:this.typeLabelOf(pr.type), statusLabel:pr.status==='ACTIVE'?'Active':(pr.status==='DRAFT'?'Draft':'Archived'), rateLabel:this.moneyShort(pr.rate)+(pr.type==='SHORT_TERM'?' / night':' / mo'), specs:`${pr.beds} bed \u00b7 ${pr.baths} bath \u00b7 ${pr.sqft} sq ft`, parkingLabel:this.parkingLabel(pr.parking), petLabel:this.petLabel(pr), utilIncluded:pr.utilitiesIncluded, utilTypes:pr.utilityTypes, hasUtilTypes:pr.utilityTypes.length>0, utilCapLabel:this.capText(pr.utilityCap), firewallLabel:pr.firewall?'Yes':'No', img0:`url('${pr.images[0]}')`, oilCompanyLabel:pr.oilCompany||'\u2014', internalNotesLabel:pr.internalNotes||'No internal notes yet.' }; } }
+
+    return {
+      isPublic, isManager,
+      publicIsListings: isPublic && s.pubView==='listings',
+      publicIsDetail: isPublic && s.pubView==='detail',
+      publicIsApply: isPublic && s.pubView==='apply',
+      goHome:this.goHome, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
+      goOverview:this.goOverview, goProperties:this.goProperties, goFunnel:this.goFunnel, goBookings:this.goBookings,
+      goApply:this.goApply, goBackDetail:this.goBackDetail,
+      activeCount: active.length, listingCards, pubFilters,
+      selProp, shortTerm, longTerm,
+      bookOpen: shortTerm && !s.bookSubmitted, bookSubmitted: s.bookSubmitted,
+      viewOpen: longTerm && !s.viewSubmitted, viewSubmitted: s.viewSubmitted,
+      rangeStart:s.rangeStart, rangeEnd:s.rangeEnd, rangeValid, rangeInvalid,
+      nights, baseLine, baseTotal, cleaningFee, grandTotal,
+      setStart:this.setStart, setEnd:this.setEnd, requestBooking:this.requestBooking,
+      vName:s.vName, vEmail:s.vEmail, vPhone:s.vPhone, vDate:s.vDate,
+      setVName:this.setVName, setVEmail:this.setVEmail, setVPhone:this.setVPhone, setVDate:this.setVDate,
+      submitViewing:this.submitViewing, applyRef, applySteps,
+      // manager nav
+      navOverview:this.navStyle(s.mgrView==='overview',col), navProperties:this.navStyle(s.mgrView==='properties',col),
+      navLeasing:this.navStyle(s.mgrView==='funnel',col), navBookings:this.navStyle(s.mgrView==='bookings',col),
+      navViewings:this.navStyle(s.mgrView==='viewings',col), navPublicBtn:this.navStyle(false,col),
+      sideStyle, sideExpanded:!col, sideCollapsed:col, toggleSide:this.toggleSide,
+      goViewings:this.goViewings, viewingsCount, mgrIsViewings:s.mgrView==='viewings', viewingRows,
+      propCount:s.properties.length, newCount,
+      mgrTitle:t[0], mgrSub:t[1], showNewBtn: s.mgrView!=='uploader',
+      mgrIsOverview:s.mgrView==='overview', mgrIsProperties:s.mgrView==='properties',
+      mgrIsUploader:s.mgrView==='uploader', mgrIsFunnel:s.mgrView==='funnel', mgrIsBookings:s.mgrView==='bookings',
+      kpis, recentInquiries, upcomingBookings, bookingRows, lanes,
+      columns, funnelCount, propsRows,
+      typeOpts, isShortType, rateLabel, up:s.up,
+      onUpTitle:this.onUpTitle, onUpAddress:this.onUpAddress, onUpCity:this.onUpCity, onUpProvince:this.onUpProvince, onUpPostal:this.onUpPostal,
+      onUpRate:this.onUpRate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
+      featDraft:s.featDraft, onFeatDraft:this.onFeatDraft, onFeatKey:this.onFeatKey, addFeat:this.addFeat, upFeatures,
+      imgDraft:s.imgDraft, onImgDraft:this.onImgDraft, onImgKey:this.onImgKey, addImg:this.addImg, upImages,
+      publish:this.publish,
+      ynPetFriendly, ynDogs, ynCats, ynUtilities, ynFirewall, utilTypeOpts, capOpts, showUtilDetail,
+      onUpParking, onUpYearBuilt, onUpStoreys, onUpHeating, onUpWater, onUpPowerMeter, onUpOilCompany, onUpInternalNotes,
+      propDrawer, propDrawerOpen, closePropDrawer:this.closePropDrawer,
+      drawer, drawerOpen, closeDrawer:this.closeDrawer, stop:this.stop,
+      tabPublic:this.tabStyle(isPublic), tabManager:this.tabStyle(isManager),
+      isDark, rootStyle, knobStyle, toggleTheme:this.toggleTheme, themeTitle: isDark?'Switch to light mode':'Switch to dark mode',
+      logoSrc: isDark ? 'canary/assets/canary-logo-white-name.png' : 'canary/assets/canary-logo-black-mark.png',
+      toast:s.toast,
+    };
+  }
+
+  navStyle(active, collapsed) {
+    return { display:'flex', alignItems:'center', gap: collapsed?'0':'11px', justifyContent: collapsed?'center':'flex-start', width:'100%', textAlign:'left', padding: collapsed?'11px 0':'9px 12px', borderRadius:'10px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'14px', fontWeight: active?600:500, background: active?'var(--gray-100)':'transparent', color: active?'var(--ink)':'var(--fg-2)' };
+  }
+  segStyle(active) {
+    return { height:'34px', padding:'0 16px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'14px', fontWeight:500, background: active?'var(--surface)':'transparent', color: active?'var(--ink)':'var(--fg-2)', boxShadow: active?'var(--shadow-1)':'none', whiteSpace:'nowrap' };
+  }
+  tabStyle(active) {
+    return { height:'34px', padding:'0 18px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13.5px', fontWeight:600, background: active?'var(--ink)':'transparent', color: active?'var(--fg-on-ink)':'var(--fg-2)', transition:'background 200ms, color 200ms' };
+  }
+}
+</script>
+</body>
+</html>
