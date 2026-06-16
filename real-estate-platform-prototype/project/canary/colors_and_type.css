@@ -1,0 +1,269 @@
+/* ============================================================
+   Canary Property Management — Core tokens
+   Import this file at the top of every kit / page.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+/* Brand sans — Optima (uploaded by brand team).
+   Optima is a humanist sans with flared terminals; covers UI body + headings.
+   Italic only available at 400; 500 and 700 italic fall back to upright. */
+@font-face {
+  font-family: 'Optima';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/OPTIMA.TTF') format('truetype');
+}
+@font-face {
+  font-family: 'Optima';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/Optima_Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Optima';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/Optima_Medium.ttf') format('truetype');
+}
+/* No 600 file shipped — alias to Medium so semibold still renders branded */
+@font-face {
+  font-family: 'Optima';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/Optima_Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Optima';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/OPTIMA_B.TTF') format('truetype');
+}
+/* No 800 file shipped — alias to Bold */
+@font-face {
+  font-family: 'Optima';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('fonts/OPTIMA_B.TTF') format('truetype');
+}
+
+:root {
+  /* --------------------------------------------------------
+     COLORS
+     -------------------------------------------------------- */
+
+  /* Brand */
+  --ink: #0E0F0C;            /* primary text, primary buttons, mark on light */
+  --paper: #FAF7F1;          /* page background — warm off-white */
+  --surface: #FFFFFF;        /* cards, sheets, modals */
+  --canary: #F5C518;         /* single accent — sparingly */
+  --canary-pressed: #DCAE0E; /* canary on press */
+  --atlantic: #2E5C7E;       /* link / informational accent */
+  --atlantic-tint: #E9F0F5;  /* informational background */
+
+  /* Warm gray ramp — body / borders / muted UI */
+  --gray-50:  #F5F2EC;
+  --gray-100: #EDEAE3;
+  --gray-200: #E8E5DD;
+  --gray-300: #D8D4CB;
+  --gray-400: #B8B3A8;
+  --gray-500: #8E8A80;
+  --gray-600: #6B6862;
+  --gray-700: #4A4844;
+  --gray-800: #2A2926;
+  --gray-900: #161513;
+
+  /* Semantic — desaturated, system-like */
+  --success: #2F7D4F;
+  --success-tint: #E6F1EA;
+  --warning: #B97A0E;
+  --warning-tint: #FBF1DE;
+  --danger:  #B43838;
+  --danger-tint: #F6E4E1;
+
+  /* Aliases — use these in components, not the raw colors above */
+  --fg-1: var(--ink);            /* primary text */
+  --fg-2: var(--gray-700);       /* secondary text */
+  --fg-3: var(--gray-500);       /* tertiary / placeholder */
+  --fg-on-ink: #FAF7F1;          /* text on ink/dark surfaces */
+  --bg-page: var(--paper);
+  --bg-surface: var(--surface);
+  --bg-muted: var(--gray-50);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --link: var(--atlantic);
+
+  /* --------------------------------------------------------
+     TYPOGRAPHY
+     -------------------------------------------------------- */
+  --font-sans: 'Optima', 'Optima Nova', 'URW Classico', 'Palatino', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale (px) */
+  --text-12: 0.75rem;     /* 12 — caption, label */
+  --text-13: 0.8125rem;   /* 13 — small UI */
+  --text-14: 0.875rem;    /* 14 — secondary body */
+  --text-15: 0.9375rem;   /* 15 — UI body */
+  --text-16: 1rem;        /* 16 — body */
+  --text-18: 1.125rem;    /* 18 — large body */
+  --text-20: 1.25rem;     /* 20 — h4 */
+  --text-24: 1.5rem;      /* 24 — h3 */
+  --text-32: 2rem;        /* 32 — h2 */
+  --text-44: 2.75rem;     /* 44 — h1 */
+  --text-64: 4rem;        /* 64 — display */
+
+  /* Weights */
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+  --w-heavy: 800;
+
+  /* Line heights */
+  --lh-tight: 1.05;
+  --lh-snug: 1.2;
+  --lh-normal: 1.45;
+  --lh-body: 1.55;
+
+  /* Tracking */
+  --track-tight: -0.02em;
+  --track-snug: -0.01em;
+  --track-normal: 0;
+  --track-wide: 0.02em;
+
+  /* --------------------------------------------------------
+     SPACING (4px base)
+     -------------------------------------------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-14: 56px;
+  --s-20: 80px;
+  --s-30: 120px;
+
+  /* --------------------------------------------------------
+     RADII — squircle-ish
+     -------------------------------------------------------- */
+  --r-sm: 8px;
+  --r-md: 12px;     /* inputs, small cards */
+  --r-lg: 16px;     /* default card */
+  --r-xl: 20px;     /* sheets */
+  --r-2xl: 28px;    /* hero panels */
+  --r-pill: 9999px;
+
+  /* Heights for pill buttons */
+  --pill-sm: 32px;
+  --pill-md: 40px;
+  --pill-lg: 48px;
+
+  /* --------------------------------------------------------
+     SHADOWS
+     -------------------------------------------------------- */
+  --shadow-1: 0 1px 2px rgba(20, 18, 12, 0.04), 0 1px 1px rgba(20, 18, 12, 0.03);
+  --shadow-2: 0 8px 24px -8px rgba(20, 18, 12, 0.10), 0 2px 4px rgba(20, 18, 12, 0.04);
+  --shadow-3: 0 24px 48px -16px rgba(20, 18, 12, 0.18), 0 4px 8px rgba(20, 18, 12, 0.06);
+  --focus-ring: 0 0 0 3px rgba(245, 197, 24, 0.5);
+
+  /* --------------------------------------------------------
+     MOTION
+     -------------------------------------------------------- */
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 480ms;
+
+  /* --------------------------------------------------------
+     LAYOUT
+     -------------------------------------------------------- */
+  --content-marketing: 1200px;
+  --content-product: 1440px;
+  --nav-h: 64px;
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 64px;
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT STYLES
+   Apply globally so unstyled HTML in mocks already feels on-brand.
+   ============================================================ */
+
+html, body {
+  background: var(--bg-page);
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  font-size: var(--text-16);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--fg-1);
+  letter-spacing: var(--track-tight);
+  line-height: var(--lh-snug);
+  font-weight: var(--w-semibold);
+}
+
+.display {
+  font-family: var(--font-serif);
+  font-size: var(--text-64);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  font-weight: 400;
+}
+.display em { font-style: italic; }
+
+h1 { font-size: var(--text-44); line-height: var(--lh-tight); letter-spacing: -0.025em; }
+h2 { font-size: var(--text-32); }
+h3 { font-size: var(--text-24); }
+h4 { font-size: var(--text-20); }
+h5 { font-size: var(--text-16); font-weight: var(--w-semibold); }
+h6 { font-size: var(--text-13); font-weight: var(--w-semibold); letter-spacing: var(--track-wide); text-transform: none; color: var(--fg-2); }
+
+p { margin: 0; }
+
+small, .caption {
+  font-size: var(--text-12);
+  color: var(--fg-2);
+  letter-spacing: 0;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  transition: color var(--dur-1) var(--ease-out-soft);
+}
+a:hover { color: var(--ink); text-decoration: underline; }
+
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* tabular numerals utility */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* keep button/input fonts inheriting */
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+::selection { background: rgba(245, 197, 24, 0.45); color: var(--ink); }
+
+/* focus visibility */
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-sm); }
