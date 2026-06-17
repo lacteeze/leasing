@@ -4,6 +4,7 @@ import {
   parseFlexibleDate,
   resolveOwnedPropertyRef,
 } from "./properties.js";
+import { formatImportError } from "./audit.js";
 
 const RENEWAL_STATUSES = new Set(["UNKNOWN", "RENEWING", "NOT_RENEWING"]);
 const LEASE_STATUSES = new Set(["ACTIVE", "ENDED"]);
@@ -283,7 +284,8 @@ export async function bulkInsertLeases(supabase, userId, rawRows) {
     } catch (err) {
       errors.push({
         row: rowNum,
-        message: err.message || "Import failed",
+        message: formatImportError(err),
+        code: err?.code || null,
       });
     }
   }

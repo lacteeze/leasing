@@ -9,6 +9,7 @@ import { refreshSession } from "../utils/supabase/middleware.js";
 import {
   fetchActiveListings,
   fetchManagerListings,
+  fetchPropertyListings,
   getOwnedListing,
   listingInsertPayload,
   listingUpdatePayload,
@@ -27,8 +28,10 @@ import {
   getOwnedProperty,
   mapPropertyRow,
   parseCsvText,
+  previewBulkProperties,
   propertyInsertPayload,
   propertyUpdatePayload,
+  normalizePropertyImages,
   setPropertyManagementStatus,
   setPropertyOccupancyStatus,
   updatePropertyPhotos,
@@ -57,6 +60,12 @@ import {
   mapInquiryRow,
 } from "./inquiries.js";
 import { isEmailConfigured, sendViewingConfirmationEmail } from "./email.js";
+import {
+  clearAuditLog,
+  formatImportError,
+  logAudit,
+  readAuditLog,
+} from "./audit.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -340,7 +349,7 @@ app.post("/api/properties", async (req, res) => {
 
     if (error) throw error;
 
-    const images = Array.isArray(body.images) ? body.images : [];
+    const images = normalizePropertyImages(body.images);
     if (images.length) {
       await updatePropertyPhotos(supabase, property.id, images);
     }
@@ -385,7 +394,11 @@ app.patch("/api/properties/:id", async (req, res) => {
     if (error) throw error;
 
     if (Array.isArray(body.images)) {
-      await updatePropertyPhotos(supabase, propertyId, body.images);
+      await updatePropertyPhotos(
+        supabase,
+        propertyId,
+        normalizePropertyImages(body.images)
+      );
     }
 
     const saved = await fetchPropertyWithDetails(
@@ -396,7 +409,38 @@ app.patch("/api/properties/:id", async (req, res) => {
     res.json(saved);
   } catch (err) {
     console.error("[properties] update error:", err.message);
-    res.status(500).json({ error: "Could not update property." });
+    const msg = err.message || "Could not update property.";
+    if (/management_status/i.test(msg)) {
+      return res.status(400).json({
+        error:
+          "Run supabase/properties-management-status.sql in the Supabase SQL Editor, then try again.",
+      });
+    }
+    if (/occupancy_status/i.test(msg)) {
+      return res.status(400).json({
+        error:
+          "Run supabase/properties-occupancy-status.sql in the Supabase SQL Editor, then run properties-occupancy-status-free-text.sql for custom statuses.",
+      });
+    }
+    if (/property_id/i.test(msg) && /listings/i.test(msg)) {
+      return res.status(400).json({
+        error:
+          "Run supabase/listings-property-link.sql in the Supabase SQL Editor, then try again.",
+      });
+    }
+    if (/baths|integer/i.test(msg)) {
+      return res.status(400).json({
+        error:
+          "Run supabase/properties-beds-baths-numeric.sql in the Supabase SQL Editor to allow half-bath values (e.g. 1.5).",
+      });
+    }
+    if (/property_photos/i.test(msg)) {
+      return res.status(400).json({
+        error:
+          "Run supabase/properties.sql in the Supabase SQL Editor to create the property_photos table.",
+      });
+    }
+    res.status(400).json({ error: msg });
   }
 });
 
@@ -614,6 +658,96 @@ app.get("/api/properties/bulk/template.csv", (_req, res) => {
   res.send(bulkTemplateCsv());
 });
 
+app.get("/api/audit/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json([]);
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const limit = Math.min(Number(req.query.limit) || 100, 200);
+    res.json(readAuditLog(user.id, { limit }));
+  } catch (err) {
+    console.error("[audit] read error:", err.message);
+    res.status(500).json({ error: "Could not load audit log." });
+  }
+});
+
+app.delete("/api/audit/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json({ cleared: true });
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    clearAuditLog(user.id);
+    res.json({ cleared: true });
+  } catch (err) {
+    console.error("[audit] clear error:", err.message);
+    res.status(500).json({ error: "Could not clear audit log." });
+  }
+});
+
+app.post("/api/audit/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: "Database is not configured." });
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const { level = "info", action = "app", source = "client", message, details = null } =
+      req.body || {};
+    if (!message) return res.status(400).json({ error: "message is required." });
+
+    const entry = logAudit({
+      userId: user.id,
+      level,
+      action,
+      source,
+      message: String(message),
+      details,
+    });
+    res.status(201).json(entry);
+  } catch (err) {
+    console.error("[audit] write error:", err.message);
+    res.status(500).json({ error: "Could not write audit log." });
+  }
+});
+
+app.post("/api/properties/bulk/preview", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const csv = typeof req.body?.csv === "string" ? req.body.csv : "";
+    if (!csv.trim()) {
+      return res.status(400).json({ error: "CSV text is required." });
+    }
+
+    const preview = previewBulkProperties(csv);
+    if (!preview.total) {
+      return res.status(400).json({
+        error:
+          "No data rows found in upload. Keep the header row plus one row per property.",
+        ...preview,
+      });
+    }
+
+    res.json(preview);
+  } catch (err) {
+    console.error("[properties] bulk preview error:", err.message);
+    res.status(500).json({ error: "Could not preview CSV." });
+  }
+});
+
 app.post("/api/properties/bulk", csvUpload.single("file"), async (req, res) => {
   if (!isSupabaseConfigured()) {
     return res.status(503).json({ error: "Database is not configured." });
@@ -653,12 +787,65 @@ app.post("/api/properties/bulk", csvUpload.single("file"), async (req, res) => {
     }
 
     const result = await bulkInsertProperties(supabase, user.id, rawRows);
+    const isBatchPart = !!req.body?.batchImport;
+
+    if (!isBatchPart) {
+      for (const errRow of result.errors || []) {
+        logAudit({
+          userId: user.id,
+          level: "error",
+          action: "bulk_property_import",
+          source: "properties/bulk",
+          message: `Row ${errRow.row}: ${errRow.message}`,
+          details: errRow,
+        });
+      }
+      if (result.imported?.length) {
+        logAudit({
+          userId: user.id,
+          level: "info",
+          action: "bulk_property_import",
+          source: "properties/bulk",
+          message: `Imported ${result.imported.length} of ${result.total ?? rawRows.length} properties`,
+          details: {
+            imported: result.imported.length,
+            failed: result.errors?.length || 0,
+            total: result.total ?? rawRows.length,
+          },
+        });
+      } else if (result.errors?.length) {
+        logAudit({
+          userId: user.id,
+          level: "error",
+          action: "bulk_property_import",
+          source: "properties/bulk",
+          message: `Bulk import failed — ${result.errors.length} row(s) had errors`,
+          details: { errors: result.errors.slice(0, 10) },
+        });
+      }
+    }
+
     res.status(result.errors.length && !result.imported.length ? 400 : 201).json(
       result
     );
   } catch (err) {
-    console.error("[properties] bulk import error:", err.message);
-    res.status(500).json({ error: "Bulk import failed." });
+    const message = formatImportError(err);
+    console.error("[properties] bulk import error:", message);
+    try {
+      const supabase = createClient(req, res);
+      const user = await requireUser(supabase);
+      if (user) {
+        logAudit({
+          userId: user.id,
+          level: "error",
+          action: "bulk_property_import",
+          source: "properties/bulk",
+          message,
+          details: { stack: err?.stack },
+        });
+      }
+    } catch (_) {}
+    res.status(500).json({ error: message || "Bulk import failed." });
   }
 });
 
@@ -914,6 +1101,28 @@ app.get("/api/properties/:id/publish-prefill", async (req, res) => {
   } catch (err) {
     console.error("[publish] prefill error:", err.message);
     res.status(400).json({ error: err.message || "Could not load prefill." });
+  }
+});
+
+app.get("/api/properties/:id/listings", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const listings = await fetchPropertyListings(
+      supabase,
+      user.id,
+      req.params.id
+    );
+    res.json(listings);
+  } catch (err) {
+    console.error("[listings] property fetch error:", err.message);
+    res.status(400).json({ error: err.message || "Could not load listings." });
   }
 });
 

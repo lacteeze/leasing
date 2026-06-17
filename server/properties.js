@@ -1,4 +1,13 @@
 import { decodeCsvBuffer, parseCsvText } from "./csv.js";
+import { formatImportError } from "./audit.js";
+import {
+  extendedPropertyFields,
+  heatingTypesFromRow,
+  heatingTypesLabel,
+  normalizeHeatingTypes,
+  normalizeParkingType,
+  parkingDetailLabel,
+} from "./property-fields.js";
 
 const PHOTO_BUCKET = "listing-photos";
 
@@ -18,7 +27,10 @@ const HEADER_ALIASES = {
   "utility types": "utility_types",
   "utility cap": "utility_cap",
   "year built": "year_built",
-  "heating type": "heating_type",
+  "heating type": "heating_types",
+  "heating types": "heating_types",
+  "electric company": "electric_company",
+  "parking type": "parking_type",
   "water heater": "water_heater",
   "power meter": "power_meter",
   "oil company": "oil_company",
@@ -100,10 +112,12 @@ export const BULK_CSV_HEADERS = [
   "postal",
   "beds",
   "baths",
+  "offices",
   "sqft",
   "description",
   "features",
   "parking",
+  "parking_type",
   "pet_friendly",
   "dogs",
   "cats",
@@ -112,10 +126,11 @@ export const BULK_CSV_HEADERS = [
   "utility_cap",
   "year_built",
   "storeys",
-  "heating_type",
+  "heating_types",
   "water_heater",
   "firewall",
   "power_meter",
+  "electric_company",
   "oil_company",
   "internal_notes",
   "suggested_rate",
@@ -265,6 +280,8 @@ export function mapPropertyRow(row, photos = [], activeLease = null, listingSumm
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p) => p.public_url);
 
+  const heatingTypes = heatingTypesFromRow(row);
+
   return {
     id: row.id,
     propertyCode: row.property_code || null,
@@ -282,11 +299,13 @@ export function mapPropertyRow(row, photos = [], activeLease = null, listingSumm
     suggestedCleaning: Number(row.suggested_cleaning) || 0,
     beds: row.beds || 0,
     baths: row.baths || 0,
+    offices: row.offices || 0,
     sqft: row.sqft || 0,
     features: row.features || [],
     images,
     description: row.description || "",
     parking: row.parking || 0,
+    parkingType: row.parking_type || "OFF_STREET",
     petFriendly: !!row.pet_friendly,
     dogs: !!row.dogs,
     cats: !!row.cats,
@@ -295,10 +314,12 @@ export function mapPropertyRow(row, photos = [], activeLease = null, listingSumm
     utilityCap: row.utility_cap || 0,
     yearBuilt: row.year_built || 0,
     storeys: row.storeys || 0,
-    heatingType: row.heating_type || "",
+    heatingTypes,
+    heatingType: heatingTypesLabel(heatingTypes),
     waterHeater: row.water_heater || "",
     firewall: !!row.firewall,
     powerMeter: row.power_meter || "",
+    electricCompany: row.electric_company || "NL Power",
     oilCompany: row.oil_company || "",
     internalNotes: row.internal_notes || "",
     managementStatus: row.management_status || "ACTIVE",
@@ -314,7 +335,7 @@ export function mapPropertyRow(row, photos = [], activeLease = null, listingSumm
 export function bulkTemplateCsv() {
   const header = BULK_CSV_HEADERS.join(",");
   const example =
-    "GOWER-002,142 Gower Street #2,SINGLE,leased,2026-12-31,Jane Tenant,142 Gower Street,St. John's,NL,A1C 1J3,2,1,760,Bright downtown apartment with gas heat.,Gas heat;In-unit laundry,1,yes,no,no,yes,Electric;Internet,200,1920,2,Electric baseboard,Electric tank,no,12345,Local Oil Co.,Owner prefers long-term tenants.,1800,0,https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800";
+    "GOWER-002,142 Gower Street #2,SINGLE,leased,2026-12-31,Jane Tenant,142 Gower Street,St. John's,NL,A1C 1J3,2,1,0,760,Bright downtown apartment with gas heat.,Gas heat;In-unit laundry,1,OFF_STREET,yes,no,no,yes,Electric;Internet,200,1920,2,Electric baseboard,Electric tank,no,12345,NL Power,Local Oil Co.,Owner prefers long-term tenants.,1800,0,https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800";
   const guide =
     "# property_id: your stable Property ID — use the same value in lease and listing imports\n" +
     "# status: vacant | leased | renewing | not renewing | short term | archived | Owner occupied (or any custom label)\n" +
@@ -348,11 +369,16 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
   const baths = parseNum(get("baths"), 0);
   if (baths === null) throw new Error("baths must be a number");
 
+  const offices = parseNum(get("offices"), 0);
+  if (offices === null) throw new Error("offices must be a number");
+
   const sqft = parseNum(get("sqft"), 0);
   if (sqft === null) throw new Error("sqft must be a number");
 
   const parking = parseNum(get("parking"), 0);
   if (parking === null) throw new Error("parking must be a number");
+
+  const parkingType = normalizeParkingType(get("parking_type") || "OFF_STREET");
 
   const utilityCap = parseNum(get("utility_cap"), 0);
   if (utilityCap === null) throw new Error("utility_cap must be a number");
@@ -433,10 +459,12 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
     suggestedCleaning: type === "SHORT_TERM" ? suggestedCleaning : 0,
     beds,
     baths,
+    offices,
     sqft,
     features: parseList(row.features),
     description: get("description"),
     parking,
+    parkingType,
     petFriendly,
     dogs,
     cats,
@@ -445,10 +473,13 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
     utilityCap,
     yearBuilt,
     storeys,
-    heatingType: get("heating_type") || "Electric baseboard",
+    heatingTypes: normalizeHeatingTypes(
+      row.heating_types || get("heating_type") || "Electric baseboard"
+    ),
     waterHeater: get("water_heater") || "Electric tank",
     firewall,
     powerMeter: get("power_meter"),
+    electricCompany: get("electric_company") || "NL Power",
     oilCompany: get("oil_company"),
     internalNotes: get("internal_notes"),
     images: imageUrls.map((url) => ({ url, path: null })),
@@ -501,7 +532,6 @@ export function propertyInsertPayload(body, userId) {
     utility_cap: body.utilityCap,
     year_built: body.yearBuilt || null,
     storeys: body.storeys || null,
-    heating_type: body.heatingType,
     water_heater: body.waterHeater,
     firewall: body.firewall,
     power_meter: body.powerMeter,
@@ -510,6 +540,7 @@ export function propertyInsertPayload(body, userId) {
     management_status,
     occupancy_status,
     created_by: userId,
+    ...extendedPropertyFields({ ...body, offices: body.offices ?? 0 }),
   };
 }
 
@@ -528,10 +559,12 @@ const UPDATE_FIELD_MAP = {
   suggestedCleaning: "suggested_cleaning",
   beds: "beds",
   baths: "baths",
+  offices: "offices",
   sqft: "sqft",
   features: "features",
   description: "description",
   parking: "parking",
+  parkingType: "parking_type",
   petFriendly: "pet_friendly",
   dogs: "dogs",
   cats: "cats",
@@ -540,10 +573,10 @@ const UPDATE_FIELD_MAP = {
   utilityCap: "utility_cap",
   yearBuilt: "year_built",
   storeys: "storeys",
-  heatingType: "heating_type",
   waterHeater: "water_heater",
   firewall: "firewall",
   powerMeter: "power_meter",
+  electricCompany: "electric_company",
   oilCompany: "oil_company",
   internalNotes: "internal_notes",
   managementStatus: "management_status",
@@ -565,7 +598,32 @@ export function propertyUpdatePayload(body) {
   if (input.city !== undefined && input.area === undefined) {
     payload.area = input.city;
   }
+  if (payload.baths !== undefined) payload.baths = Number(payload.baths) || 0;
+  if (payload.offices !== undefined) payload.offices = Number(payload.offices) || 0;
+  if (payload.year_built === 0) payload.year_built = null;
+  if (payload.storeys === 0) payload.storeys = null;
+  if (input.heatingTypes !== undefined || input.heatingType !== undefined) {
+    Object.assign(
+      payload,
+      extendedPropertyFields({
+        heatingTypes: input.heatingTypes,
+        heatingType: input.heatingType,
+      })
+    );
+  }
   return payload;
+}
+
+export function normalizePropertyImages(images) {
+  if (!Array.isArray(images)) return [];
+  return images
+    .map((img) => {
+      if (typeof img === "string") return { url: img.trim(), path: null };
+      const url = String(img?.url || "").trim();
+      const path = img?.path ? String(img.path).trim() : null;
+      return url ? { url, path } : null;
+    })
+    .filter(Boolean);
 }
 
 export async function setPropertyManagementStatus(
@@ -753,6 +811,7 @@ export async function fetchPropertyWithDetails(supabase, userId, propertyId) {
 }
 
 export async function updatePropertyPhotos(supabase, propertyId, images) {
+  const normalized = normalizePropertyImages(images);
   if (!Array.isArray(images)) return;
 
   const { error: deleteError } = await supabase
@@ -762,9 +821,9 @@ export async function updatePropertyPhotos(supabase, propertyId, images) {
 
   if (deleteError) throw deleteError;
 
-  if (!images.length) return;
+  if (!normalized.length) return;
 
-  const photoRows = images.map((img, i) => ({
+  const photoRows = normalized.map((img, i) => ({
     property_id: propertyId,
     storage_path: img.path || img.url,
     public_url: img.url,
@@ -775,7 +834,9 @@ export async function updatePropertyPhotos(supabase, propertyId, images) {
     .from("property_photos")
     .insert(photoRows);
 
-  if (insertError) throw insertError;
+  if (insertError) {
+    throw new Error(`Could not save property photos: ${insertError.message}`);
+  }
 }
 
 export async function uploadPropertyPhoto(supabase, userId, file) {
@@ -796,7 +857,7 @@ export async function uploadPropertyPhoto(supabase, userId, file) {
   return { path, url: data.publicUrl };
 }
 
-export async function bulkInsertProperties(supabase, userId, rawRows) {
+export async function bulkInsertProperties(supabase, userId, rawRows, { onRowComplete } = {}) {
   const imported = [];
   const errors = [];
 
@@ -845,12 +906,40 @@ export async function bulkInsertProperties(supabase, userId, rawRows) {
     } catch (err) {
       errors.push({
         row: rowNum,
-        message: err.message || "Import failed",
+        message: formatImportError(err),
+        code: err?.code || null,
+      });
+    }
+    if (onRowComplete) onRowComplete(i + 1, rawRows.length);
+  }
+
+  return { imported, errors, total: rawRows.length };
+}
+
+export function previewBulkProperties(csvText) {
+  const rawRows = parseCsvText(csvText);
+  const parseErrors = [];
+  const rows = [];
+
+  for (let i = 0; i < rawRows.length; i++) {
+    const rowNum = i + 2;
+    try {
+      parseBulkPropertyRow(rawRows[i], i);
+      rows.push(rawRows[i]);
+    } catch (err) {
+      parseErrors.push({
+        row: rowNum,
+        message: formatImportError(err),
       });
     }
   }
 
-  return { imported, errors };
+  return {
+    total: rawRows.length,
+    valid: rows.length,
+    rows,
+    parseErrors,
+  };
 }
 
 export async function deleteAllOwnedProperties(supabase, userId) {
