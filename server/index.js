@@ -18,6 +18,40 @@ import {
   uploadListingPhoto,
 } from "./listings.js";
 import {
+  bulkInsertProperties,
+  bulkTemplateCsv,
+  decodeCsvBuffer,
+  deleteAllOwnedProperties,
+  fetchManagerProperties,
+  fetchPropertyWithDetails,
+  getOwnedProperty,
+  mapPropertyRow,
+  parseCsvText,
+  propertyInsertPayload,
+  propertyUpdatePayload,
+  setPropertyManagementStatus,
+  setPropertyOccupancyStatus,
+  updatePropertyPhotos,
+  uploadPropertyPhoto,
+} from "./properties.js";
+import {
+  archiveActiveListingForProperty,
+  buildQuickLeaseBody,
+  bulkInsertLeases,
+  bulkLeaseTemplateCsv,
+  fetchManagerLeases,
+  fetchPropertyLeases,
+  getOwnedLease,
+  leaseInsertPayload,
+  leaseUpdatePayload,
+  mapLeaseRow,
+  validateLeaseBody,
+} from "./leases.js";
+import {
+  getPublishPrefill,
+  publishListingFromProperty,
+} from "./publish.js";
+import {
   fetchInquiries,
   inquiryInsertPayload,
   mapInquiryRow,
@@ -30,6 +64,11 @@ const upload = multer({
   fileFilter: (_req, file, cb) => {
     cb(null, file.mimetype.startsWith("image/"));
   },
+});
+
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -49,7 +88,7 @@ if (!isSupabaseConfigured()) {
 
 const app = express();
 app.set("trust proxy", 1);
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 app.use((req, res, next) => {
   if (!isSupabaseConfigured()) return next();
@@ -232,6 +271,680 @@ app.get("/api/listings/mine", async (req, res) => {
   }
 });
 
+app.get("/api/listings/bulk/template.csv", (_req, res) => {
+  res.redirect("/api/properties/bulk/template.csv");
+});
+
+app.get("/api/properties/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json([]);
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const properties = await fetchManagerProperties(supabase, user.id);
+    res.json(properties);
+  } catch (err) {
+    if (err.code === "PGRST205" || /properties|leases/.test(err.message)) {
+      return res.json([]);
+    }
+    console.error("[properties] manager fetch error:", err.message);
+    res.status(500).json({ error: "Could not load your properties." });
+  }
+});
+
+app.get("/api/properties/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const property = await fetchPropertyWithDetails(
+      supabase,
+      user.id,
+      req.params.id
+    );
+    res.json(property);
+  } catch (err) {
+    console.error("[properties] fetch error:", err.message);
+    res.status(404).json({ error: "Property not found." });
+  }
+});
+
+app.post("/api/properties", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const body = req.body ?? {};
+    if (!body.title?.trim()) {
+      return res.status(400).json({ error: "Title is required." });
+    }
+
+    const payload = propertyInsertPayload(body, user.id);
+    const { data: property, error } = await supabase
+      .from("properties")
+      .insert(payload)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    const images = Array.isArray(body.images) ? body.images : [];
+    if (images.length) {
+      await updatePropertyPhotos(supabase, property.id, images);
+    }
+
+    const saved = await fetchPropertyWithDetails(
+      supabase,
+      user.id,
+      property.id
+    );
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error("[properties] create error:", err.message);
+    res.status(500).json({ error: "Could not create property." });
+  }
+});
+
+app.patch("/api/properties/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const propertyId = req.params.id;
+    await getOwnedProperty(supabase, user.id, propertyId);
+
+    const body = req.body ?? {};
+    const payload = propertyUpdatePayload(body);
+    if (Object.keys(payload).length <= 1) {
+      return res.status(400).json({ error: "No updates provided." });
+    }
+
+    const { error } = await supabase
+      .from("properties")
+      .update(payload)
+      .eq("id", propertyId)
+      .eq("created_by", user.id);
+
+    if (error) throw error;
+
+    if (Array.isArray(body.images)) {
+      await updatePropertyPhotos(supabase, propertyId, body.images);
+    }
+
+    const saved = await fetchPropertyWithDetails(
+      supabase,
+      user.id,
+      propertyId
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] update error:", err.message);
+    res.status(500).json({ error: "Could not update property." });
+  }
+});
+
+app.post("/api/properties/:id/archive", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const saved = await setPropertyManagementStatus(
+      supabase,
+      user.id,
+      req.params.id,
+      "ARCHIVED"
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] archive error:", err.message);
+    const msg = err.message?.includes("management_status")
+      ? "Run supabase/properties-management-status.sql in the Supabase SQL Editor, then try again."
+      : "Could not archive property.";
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.post("/api/properties/:id/restore", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const saved = await setPropertyManagementStatus(
+      supabase,
+      user.id,
+      req.params.id,
+      "ACTIVE"
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] restore error:", err.message);
+    const msg = err.message?.includes("management_status")
+      ? "Run supabase/properties-management-status.sql in the Supabase SQL Editor, then try again."
+      : "Could not restore property.";
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.post("/api/properties/:id/set-occupancy-status", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const status = String(req.body?.status || "").trim();
+    if (!status || status.length > 64 || !/^[a-z0-9_]+$/i.test(status)) {
+      return res.status(400).json({ error: "Invalid occupancy status." });
+    }
+
+    const saved = await setPropertyOccupancyStatus(
+      supabase,
+      user.id,
+      req.params.id,
+      status
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] set-occupancy-status error:", err.message);
+    const msg = err.message?.includes("occupancy_status")
+      ? "Run supabase/properties-occupancy-status.sql in the Supabase SQL Editor, then run properties-occupancy-status-free-text.sql for custom statuses."
+      : "Could not update occupancy status.";
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.post("/api/properties/:id/mark-short-term", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const saved = await setPropertyOccupancyStatus(
+      supabase,
+      user.id,
+      req.params.id,
+      "short_term"
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] mark-short-term error:", err.message);
+    const msg = err.message?.includes("occupancy_status")
+      ? "Run supabase/properties-occupancy-status.sql in the Supabase SQL Editor, then try again."
+      : "Could not mark property as short term.";
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.post("/api/properties/:id/mark-standard-occupancy", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const saved = await setPropertyOccupancyStatus(
+      supabase,
+      user.id,
+      req.params.id,
+      "standard"
+    );
+    res.json(saved);
+  } catch (err) {
+    console.error("[properties] mark-standard-occupancy error:", err.message);
+    const msg = err.message?.includes("occupancy_status")
+      ? "Run supabase/properties-occupancy-status.sql in the Supabase SQL Editor, then try again."
+      : "Could not update occupancy mode.";
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.delete("/api/properties/mine/all", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const result = await deleteAllOwnedProperties(supabase, user.id);
+    res.json(result);
+  } catch (err) {
+    console.error("[properties] delete-all error:", err.message);
+    res.status(500).json({ error: "Could not delete properties." });
+  }
+});
+
+app.delete("/api/properties/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const propertyId = req.params.id;
+    await getOwnedProperty(supabase, user.id, propertyId);
+
+    const { error } = await supabase
+      .from("properties")
+      .delete()
+      .eq("id", propertyId)
+      .eq("created_by", user.id);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[properties] delete error:", err.message);
+    res.status(500).json({ error: "Could not delete property." });
+  }
+});
+
+app.post("/api/properties/photos", upload.single("photo"), async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Storage is not configured." });
+  }
+  if (!req.file) {
+    return res.status(400).json({ error: "Photo file is required." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const { path: storagePath, url } = await uploadPropertyPhoto(
+      supabase,
+      user.id,
+      req.file
+    );
+    res.json({ url, path: storagePath });
+  } catch (err) {
+    console.error("[properties] upload error:", err.message);
+    res.status(500).json({ error: "Photo upload failed." });
+  }
+});
+
+app.get("/api/properties/bulk/template.csv", (_req, res) => {
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=properties-bulk-template.csv"
+  );
+  res.send(bulkTemplateCsv());
+});
+
+app.post("/api/properties/bulk", csvUpload.single("file"), async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    let rawRows = [];
+    if (typeof req.body?.csv === "string" && req.body.csv.trim()) {
+      rawRows = parseCsvText(req.body.csv);
+    } else if (req.file?.buffer) {
+      const decoded = decodeCsvBuffer(req.file.buffer);
+      if (decoded === null) {
+        return res.status(400).json({
+          error:
+            "This file looks like an Excel workbook (.xlsx). In Excel use File → Save As → CSV UTF-8, then upload that file.",
+        });
+      }
+      rawRows = parseCsvText(decoded);
+    } else if (Array.isArray(req.body?.rows)) {
+      rawRows = req.body.rows;
+    } else {
+      return res.status(400).json({ error: "CSV file or JSON rows are required." });
+    }
+
+    if (!rawRows.length) {
+      const bytes = req.file?.size ?? req.body?.csv?.length ?? 0;
+      return res.status(400).json({
+        error:
+          bytes > 0
+            ? `No data rows found (${bytes} bytes received). Save as CSV UTF-8 from Excel — not .xlsx — and keep the header row plus one row per property.`
+            : "No data rows found in upload.",
+      });
+    }
+
+    const result = await bulkInsertProperties(supabase, user.id, rawRows);
+    res.status(result.errors.length && !result.imported.length ? 400 : 201).json(
+      result
+    );
+  } catch (err) {
+    console.error("[properties] bulk import error:", err.message);
+    res.status(500).json({ error: "Bulk import failed." });
+  }
+});
+
+app.get("/api/leases/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json([]);
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const leases = await fetchManagerLeases(supabase, user.id);
+    res.json(leases);
+  } catch (err) {
+    console.error("[leases] list mine error:", err.message);
+    res.status(500).json({ error: "Could not load leases." });
+  }
+});
+
+app.get("/api/leases/bulk/template.csv", (_req, res) => {
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=leases-bulk-template.csv"
+  );
+  res.send(bulkLeaseTemplateCsv());
+});
+
+app.post("/api/leases/bulk", csvUpload.single("file"), async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    let rawRows = [];
+    if (typeof req.body?.csv === "string" && req.body.csv.trim()) {
+      rawRows = parseCsvText(req.body.csv);
+    } else if (req.file?.buffer) {
+      const decoded = decodeCsvBuffer(req.file.buffer);
+      if (decoded === null) {
+        return res.status(400).json({
+          error:
+            "This file looks like an Excel workbook (.xlsx). Save as CSV UTF-8 and upload again.",
+        });
+      }
+      rawRows = parseCsvText(decoded);
+    } else if (Array.isArray(req.body?.rows)) {
+      rawRows = req.body.rows;
+    } else {
+      return res.status(400).json({ error: "CSV file or JSON rows are required." });
+    }
+
+    if (!rawRows.length) {
+      return res.status(400).json({ error: "No data rows found in upload." });
+    }
+
+    const result = await bulkInsertLeases(supabase, user.id, rawRows);
+    res.status(result.errors.length && !result.imported.length ? 400 : 201).json(
+      result
+    );
+  } catch (err) {
+    console.error("[leases] bulk import error:", err.message);
+    res.status(500).json({ error: "Bulk import failed." });
+  }
+});
+
+app.get("/api/properties/:id/leases", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json([]);
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    await getOwnedProperty(supabase, user.id, req.params.id);
+    const leases = await fetchPropertyLeases(supabase, req.params.id);
+    res.json(leases);
+  } catch (err) {
+    console.error("[leases] list error:", err.message);
+    res.status(500).json({ error: "Could not load leases." });
+  }
+});
+
+app.post("/api/properties/:id/leases/quick", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const propertyId = req.params.id;
+    const property = await getOwnedProperty(supabase, user.id, propertyId);
+
+    const { data: existing } = await supabase
+      .from("leases")
+      .select("id")
+      .eq("property_id", propertyId)
+      .eq("status", "ACTIVE")
+      .maybeSingle();
+
+    if (existing) {
+      return res.status(400).json({
+        error: "This property already has an active lease. End it before adding another.",
+      });
+    }
+
+    const renewalStatus =
+      req.body?.renewalStatus === "RENEWING"
+        ? "RENEWING"
+        : req.body?.renewalStatus === "NOT_RENEWING"
+          ? "NOT_RENEWING"
+          : "UNKNOWN";
+    const body = buildQuickLeaseBody(property, { renewalStatus });
+    validateLeaseBody(body, { requireTenant: false });
+
+    const payload = leaseInsertPayload(body, user.id, propertyId);
+    const { data: lease, error } = await supabase
+      .from("leases")
+      .insert(payload)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    if (renewalStatus === "RENEWING") {
+      await archiveActiveListingForProperty(supabase, propertyId);
+    }
+
+    res.status(201).json(mapLeaseRow(lease));
+  } catch (err) {
+    console.error("[leases] quick create error:", err.message);
+    res.status(400).json({ error: err.message || "Could not create lease." });
+  }
+});
+
+app.post("/api/properties/:id/leases", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const propertyId = req.params.id;
+    await getOwnedProperty(supabase, user.id, propertyId);
+
+    const body = req.body ?? {};
+    validateLeaseBody(body);
+
+    const { data: existing } = await supabase
+      .from("leases")
+      .select("id")
+      .eq("property_id", propertyId)
+      .eq("status", "ACTIVE")
+      .maybeSingle();
+
+    if (existing) {
+      return res.status(400).json({
+        error: "This property already has an active lease. End it before adding another.",
+      });
+    }
+
+    const payload = leaseInsertPayload(body, user.id, propertyId);
+    const { data: lease, error } = await supabase
+      .from("leases")
+      .insert(payload)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    if (body.renewalStatus === "RENEWING") {
+      await archiveActiveListingForProperty(supabase, propertyId);
+    }
+
+    res.status(201).json(mapLeaseRow(lease));
+  } catch (err) {
+    console.error("[leases] create error:", err.message);
+    res.status(400).json({ error: err.message || "Could not create lease." });
+  }
+});
+
+app.patch("/api/leases/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const lease = await getOwnedLease(supabase, user.id, req.params.id);
+    const body = req.body ?? {};
+
+    if (body.monthlyRate || body.startDate || body.endDate || body.tenantName) {
+      validateLeaseBody({
+        tenantName: body.tenantName || lease.tenant_name,
+        monthlyRate: body.monthlyRate ?? lease.monthly_rate,
+        startDate: body.startDate || lease.start_date,
+        endDate: body.endDate || lease.end_date,
+        renewalStatus: body.renewalStatus,
+        status: body.status,
+      });
+    }
+
+    const payload = leaseUpdatePayload(body);
+    if (Object.keys(payload).length <= 1) {
+      return res.status(400).json({ error: "No updates provided." });
+    }
+
+    const { data: updated, error } = await supabase
+      .from("leases")
+      .update(payload)
+      .eq("id", req.params.id)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    if (updated.renewal_status === "RENEWING" && updated.status === "ACTIVE") {
+      await archiveActiveListingForProperty(supabase, updated.property_id);
+    }
+
+    res.json(mapLeaseRow(updated));
+  } catch (err) {
+    console.error("[leases] update error:", err.message);
+    res.status(400).json({ error: err.message || "Could not update lease." });
+  }
+});
+
+app.get("/api/properties/:id/publish-prefill", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const data = await getPublishPrefill(supabase, user.id, req.params.id);
+    res.json(data);
+  } catch (err) {
+    console.error("[publish] prefill error:", err.message);
+    res.status(400).json({ error: err.message || "Could not load prefill." });
+  }
+});
+
+app.post("/api/listings/publish", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const { propertyId, ...overrides } = req.body ?? {};
+    if (!propertyId) {
+      return res.status(400).json({ error: "propertyId is required." });
+    }
+
+    const listing = await publishListingFromProperty(
+      supabase,
+      user.id,
+      propertyId,
+      overrides
+    );
+    res.status(201).json(listing);
+  } catch (err) {
+    console.error("[publish] error:", err.message);
+    res.status(400).json({ error: err.message || "Could not publish listing." });
+  }
+});
+
 app.patch("/api/listings/:id", async (req, res) => {
   if (!isSupabaseConfigured()) {
     return res.status(503).json({ error: "Database is not configured." });
@@ -292,7 +1005,9 @@ app.delete("/api/listings/:id", async (req, res) => {
     const owned = await getOwnedListing(supabase, user.id, listingId);
 
     if (owned.status !== "ARCHIVED") {
-      return res.status(400).json({ error: "Only archived listings can be deleted." });
+      return res.status(400).json({
+        error: "Only archived listings can be deleted.",
+      });
     }
 
     const { error } = await supabase
