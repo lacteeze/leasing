@@ -19,6 +19,7 @@ create table if not exists public.listings (
   beds integer not null default 0,
   baths integer not null default 0,
   sqft integer not null default 0,
+  available_date date,
   status text not null default 'ACTIVE' check (status in ('ACTIVE', 'DRAFT', 'ARCHIVED')),
   features jsonb not null default '[]'::jsonb,
   description text,

@@ -101,6 +101,9 @@
                   <span class="tnum" style="font-size:17px;font-weight:600;white-space:nowrap">{{ l.priceMain }}<span style="font-size:13px;font-weight:400;color:var(--fg-2)">{{ l.priceUnit }}</span></span>
                 </div>
                 <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.area }} · {{ l.specs }}</div>
+                <sc-if value="{{ l.hasAvailLine }}" hint-placeholder-val="{{ false }}">
+                <div style="color:var(--fg-2);font-size:13px;margin-top:4px">{{ l.availLine }}</div>
+                </sc-if>
                 <div style="display:flex;gap:7px;margin-top:14px;flex-wrap:wrap">
                   <span style="font-size:12.5px;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:4px 10px;border-radius:9999px">{{ l.feat0 }}</span>
                   <span style="font-size:12.5px;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:4px 10px;border-radius:9999px">{{ l.feat1 }}</span>
@@ -131,6 +134,12 @@
           </span>
           <h1 style="font-size:38px;letter-spacing:-0.025em;margin-top:14px">{{ selProp.title }}</h1>
           <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.area }}, {{ selProp.city }} · {{ selProp.specs }}</p>
+          <sc-if value="{{ selProp.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
+          <p style="color:var(--fg-2);font-size:15px;margin-top:10px;display:flex;align-items:center;gap:8px">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--atlantic)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            Available for move-in: <span style="font-weight:600;color:var(--fg-1)">{{ selProp.availableDateLabel }}</span>
+          </p>
+          </sc-if>
 
           <div style="height:1px;background:var(--border);margin:32px 0"></div>
           <h4 style="font-size:20px">About this home</h4>
@@ -156,6 +165,12 @@
               <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Pets</div>
               <div style="font-size:15px;font-weight:500;margin-top:4px">{{ selProp.petLabel }}</div>
             </div>
+            <sc-if value="{{ selProp.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+              <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Move-in</div>
+              <div style="font-size:15px;font-weight:500;margin-top:4px">{{ selProp.availableDateLabel }}</div>
+            </div>
+            </sc-if>
             <div style="grid-column:span 2;background:var(--gray-50);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
               <div style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.02em">Utilities</div>
               <sc-if value="{{ selProp.utilIncluded }}" hint-placeholder-val="{{ false }}">
@@ -241,6 +256,12 @@
                 <span class="tnum" style="font-size:28px;font-weight:600">{{ selProp.priceMain }}</span>
                 <span style="color:var(--fg-2);font-size:15px">/ month</span>
               </div>
+              <sc-if value="{{ selProp.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
+              <p style="color:var(--fg-2);font-size:14px;margin-top:10px;display:flex;align-items:center;gap:7px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--atlantic)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                Available for move-in <span style="font-weight:600;color:var(--fg-1)">{{ selProp.availableDateLabel }}</span>
+              </p>
+              </sc-if>
               <p style="color:var(--fg-2);font-size:14px;margin-top:6px">Request a viewing, or apply directly online.</p>
 
               <sc-if value="{{ viewOpen }}" hint-placeholder-val="{{ true }}">
@@ -621,6 +642,9 @@
               <sc-if value="{{ isShortType }}" hint-placeholder-val="{{ false }}">
               <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cleaning fee <span style="color:var(--fg-3);font-weight:400">· separate line</span></label><div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--fg-3)">$</span><input value="{{ up.cleaning }}" onChange="{{ onUpCleaning }}" placeholder="0" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px 0 26px;font-family:inherit;font-size:15px;background:var(--paper)"/></div></div>
               </sc-if>
+              <sc-if value="{{ showLongTermAvailableDate }}" hint-placeholder-val="{{ true }}">
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">{{ availableDateLabel }}</label><input type="date" value="{{ up.availableDate }}" onChange="{{ onUpAvailableDate }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/></div>
+              </sc-if>
             </div>
             <div>
               <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Description</label>
@@ -969,6 +993,9 @@
           </div>
           <h3 style="font-size:22px;margin-top:10px">{{ propDrawer.title }}</h3>
           <div style="font-size:14px;color:var(--fg-2);margin-top:3px">{{ propDrawer.area }}, {{ propDrawer.city }} · {{ propDrawer.specs }}</div>
+          <sc-if value="{{ propDrawer.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:14px;color:var(--fg-2);margin-top:8px">Available for move-in: <span style="font-weight:600;color:var(--fg-1)">{{ propDrawer.availableMoveInLabel }}</span></div>
+          </sc-if>
           <sc-if value="{{ propDrawer.showQuickEditLabel }}" hint-placeholder-val="{{ false }}">
           <div class="tnum" style="font-size:18px;font-weight:600;margin-top:10px">{{ propDrawer.rateLabel }}</div>
           </sc-if>
@@ -1086,7 +1113,7 @@ class Component extends DCLogic {
   }
 
   blankUploader() {
-    return { title:'', type:'SINGLE', address:'', area:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', baths:'', sqft:'', description:'', features:[], images:[],
+    return { title:'', type:'SINGLE', address:'', area:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', baths:'', sqft:'', availableDate:'', description:'', features:[], images:[],
       parking:'', petFriendly:false, dogs:false, cats:false, utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
       yearBuilt:'', storeys:'', heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false,
       powerMeter:'', oilCompany:'', internalNotes:'' };
@@ -1352,6 +1379,7 @@ class Component extends DCLogic {
     beds: String(p.beds || ''),
     baths: String(p.baths || ''),
     sqft: String(p.sqft || ''),
+    availableDate: p.availableDate || '',
     description: p.description || '',
     features: (p.features || []).slice(),
     images: (p.images || []).map(url => ({ url })),
@@ -1477,6 +1505,12 @@ class Component extends DCLogic {
 
   money(n) { return '$' + Number(n).toLocaleString('en-CA', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
   moneyShort(n) { return '$' + Number(n).toLocaleString('en-CA'); }
+  formatDateLabel(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(String(dateStr).slice(0, 10) + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return String(dateStr);
+    return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
   getProp(id) { return this.state.properties.find(p => p.id === id); }
   refCode(seed) { let h=0; for (let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return 'APP-' + h.toString(36).toUpperCase().slice(0,4).padEnd(4,'0'); }
   showToast(msg) { clearTimeout(this._toastT); this.setState({ toast: msg }); this._toastT = setTimeout(() => this.setState({ toast: null }), 2600); }
@@ -1503,7 +1537,17 @@ class Component extends DCLogic {
   toggleSide = () => this.setState(s => ({ sideCollapsed: !s.sideCollapsed }));
   confirmViewing = (id) => { this.setState(s => ({ viewings: s.viewings.map(v => v.id===id ? {...v, status:'CONFIRMED'} : v) })); this.showToast('Viewing confirmed'); };
   rescheduleViewing = (id) => this.showToast('Reschedule link sent to prospect');
-  openProperty = (id) => this.setState({ surface:'public', pubView:'detail', propId:id, bookSubmitted:false, viewSubmitted:false, vFirst:'', vLast:'', vEmail:'', vPhone:'', vDate:'', vMinBeds:'', vMinBaths:'', vMinParking:'', vPets:'', vMoveIn:'', vOtherDetails:'', vLeaseType:'Long-term', vMaxPrice:'', rangeStart:'2026-06-20', rangeEnd:'2026-06-24' });
+  openProperty = (id) => {
+    const prop = this.getProp(id);
+    this.setState({
+      surface:'public', pubView:'detail', propId:id, bookSubmitted:false, viewSubmitted:false,
+      vFirst:'', vLast:'', vEmail:'', vPhone:'', vDate:'',
+      vMinBeds:'', vMinBaths:'', vMinParking:'', vPets:'',
+      vMoveIn: prop?.availableDate || '',
+      vOtherDetails:'', vLeaseType:'Long-term', vMaxPrice:'',
+      rangeStart:'2026-06-20', rangeEnd:'2026-06-24',
+    });
+  };
   goApply = () => this.setState({ pubView:'apply' });
   goBackDetail = () => this.setState({ pubView:'detail' });
 
@@ -1630,6 +1674,7 @@ class Component extends DCLogic {
   onUpProvince = e => this.setUp('province', e.target.value);
   onUpPostal = e => this.setUp('postal', e.target.value);
   onUpRate = e => this.setUp('rate', e.target.value);
+  onUpAvailableDate = e => this.setUp('availableDate', e.target.value);
   onUpCleaning = e => this.setUp('cleaning', e.target.value);
   onUpBeds = e => this.setUp('beds', e.target.value);
   onUpBaths = e => this.setUp('baths', e.target.value);
@@ -1721,6 +1766,7 @@ class Component extends DCLogic {
       latitude: u.latitude ?? null, longitude: u.longitude ?? null,
       rate: Number(u.rate) || 0, cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
       beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
+      availableDate: u.availableDate || null,
       status: editingId ? (this.getProp(editingId)?.status || 'ACTIVE') : 'ACTIVE',
       features: u.features.slice(), description: u.description || '',
       parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
@@ -1753,6 +1799,7 @@ class Component extends DCLogic {
       address: payload.address, area: payload.area, city: payload.city, province: payload.province, postal: payload.postal,
       latitude: payload.latitude, longitude: payload.longitude,
       rate: payload.rate, cleaning: payload.cleaning, beds: payload.beds, baths: payload.baths, sqft: payload.sqft,
+      availableDate: payload.availableDate,
       status: 'ACTIVE', features: payload.features, images: imgs.map(im => im.url),
       parking: payload.parking, petFriendly: payload.petFriendly, dogs: payload.dogs, cats: payload.cats,
       utilitiesIncluded: payload.utilitiesIncluded, utilityTypes: payload.utilityTypes, utilityCap: payload.utilityCap,
@@ -1913,6 +1960,8 @@ class Component extends DCLogic {
         priceMain:this.moneyShort(p.rate), priceUnit:isShort?'/night':'/mo',
         specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
         imgCss:`url('${imgUrl}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
+        hasAvailLine: !isShort && p.availableDate,
+        availLine: !isShort && p.availableDate ? ('Move-in ' + this.formatDateLabel(p.availableDate)) : '',
         hasMultiPhotos: p.images.length > 1,
         leftSemiStyle:`position:absolute;left:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:0 ${semiR}px ${semiR}px 0;background:${barTint};opacity:${showLeft?1:0};${fade}z-index:1;`,
         rightSemiStyle:`position:absolute;right:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:${semiR}px 0 0 ${semiR}px;background:${barTint};opacity:${showRight?1:0};${fade}z-index:1;`,
@@ -1953,6 +2002,8 @@ class Component extends DCLogic {
       selProp.utilCapLabel = this.capText(p.utilityCap);
       selProp.locationLine = [p.address || p.title, p.city, p.province, p.postal].filter(Boolean).join(', ');
       selProp.hasMap = !!(p.latitude && p.longitude);
+      selProp.hasAvailableDate = !shortTerm && !!p.availableDate;
+      selProp.availableDateLabel = p.availableDate ? this.formatDateLabel(p.availableDate) : '';
       applyRef = this.refCode(p.id);
     }
     const applySteps = [
@@ -2048,6 +2099,8 @@ class Component extends DCLogic {
     const typeOpts = [typeOpt('SINGLE','Single unit'), typeOpt('MULTI','Multi-unit'), typeOpt('SHORT_TERM','Short-term')];
     const isShortType = s.up.type==='SHORT_TERM';
     const rateLabel = isShortType ? 'Nightly rate' : 'Monthly rent';
+    const showLongTermAvailableDate = !isShortType;
+    const availableDateLabel = isShortType ? 'Available from' : 'Available for move-in';
     const upFeatures = s.up.features.map((f,i)=>({ label:f, onRemove:()=>this.removeFeat(i) }));
     const upImages = s.up.images.map((im, i) => ({ css: `url('${im.url || im}')`, onRemove: () => this.removeImg(i) }));
     const photoUploadLabel = s.photoUploading && s.photoUploadProgress
@@ -2154,6 +2207,8 @@ class Component extends DCLogic {
           img0: `url('${pr.images[0]}')`,
           oilCompanyLabel: pr.oilCompany || '\u2014',
           internalNotesLabel: pr.internalNotes || 'No internal notes yet.',
+          hasAvailableDate: pr.type !== 'SHORT_TERM',
+          availableMoveInLabel: pr.availableDate ? this.formatDateLabel(pr.availableDate) : 'Not set',
           canArchive: pr.status !== 'ARCHIVED',
           canDelete: pr.status === 'ARCHIVED',
           onArchive: () => this.archiveProp(pr.id),
@@ -2228,9 +2283,9 @@ class Component extends DCLogic {
       propsRows, propFilters,
       isEditingListing: !!s.editListingId,
       publishLabel: s.editListingId ? (s.publishSubmitting ? 'Saving…' : 'Save changes') : (s.publishSubmitting ? 'Publishing…' : 'Publish listing'),
-      typeOpts, isShortType, rateLabel, up:s.up,
+      typeOpts, isShortType, rateLabel, showLongTermAvailableDate, availableDateLabel, up:s.up,
       onUpTitle:this.onUpTitle, onUpAddress:this.onUpAddress, onUpCity:this.onUpCity, onUpProvince:this.onUpProvince, onUpPostal:this.onUpPostal,
-      onUpRate:this.onUpRate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
+      onUpRate:this.onUpRate, onUpAvailableDate:this.onUpAvailableDate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
       featDraft:s.featDraft, onFeatDraft:this.onFeatDraft, onFeatKey:this.onFeatKey, addFeat:this.addFeat, upFeatures,
       imgDraft:s.imgDraft, onImgDraft:this.onImgDraft, onImgKey:this.onImgKey, addImg:this.addImg, upImages,
       photoUploadLabel, photoUploadOpacity, onPhotoPick:this.onPhotoPick, onPhotoDragOver:this.onPhotoDragOver, onPhotoDrop:this.onPhotoDrop,
