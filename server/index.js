@@ -3,8 +3,9 @@ import express from "express";
 import path from "node:path";
 import multer from "multer";
 import { fileURLToPath } from "node:url";
-import { isSupabaseConfigured, isGoogleMapsConfigured, googleMapsApiKey } from "./env.js";
+import { isSupabaseConfigured, isGoogleMapsConfigured, googleMapsApiKey, isServiceRoleConfigured } from "./env.js";
 import { createClient } from "../utils/supabase/server.js";
+import { createAdminClient } from "../utils/supabase/admin.js";
 import { refreshSession } from "../utils/supabase/middleware.js";
 import {
   fetchActiveListings,
@@ -55,6 +56,7 @@ import {
   publishListingFromProperty,
 } from "./publish.js";
 import {
+  deleteInquiry,
   fetchInquiries,
   inquiryInsertPayload,
   mapInquiryRow,
@@ -1371,6 +1373,28 @@ app.patch("/api/inquiries/:id", async (req, res) => {
   }
 });
 
+app.delete("/api/inquiries/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const userClient = createClient(req, res);
+    const user = await requireUser(userClient);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const admin = createAdminClient();
+    await deleteInquiry(admin ?? userClient, req.params.id, { privileged: !!admin });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[inquiries] delete error:", err.message);
+    if (err.code === "NOT_FOUND") {
+      return res.status(404).json({ error: err.message || "Inquiry not found." });
+    }
+    res.status(500).json({ error: err.message || "Could not delete inquiry." });
+  }
+});
+
 app.get("/", (_req, res) => {
   res.redirect(appPage);
 });
@@ -1398,5 +1422,8 @@ if (!process.env.VERCEL) {
         ? "Maps: Google Places autocomplete enabled"
         : "Maps: not configured (set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)"
     );
+    if (isSupabaseConfigured() && !isServiceRoleConfigured()) {
+      console.log("Tip: set SUPABASE_SECRET_KEY in .env.local for reliable inquiry deletes");
+    }
   });
 }

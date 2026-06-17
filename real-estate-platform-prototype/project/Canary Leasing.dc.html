@@ -537,8 +537,8 @@
         <!-- OVERVIEW -->
         <sc-if value="{{ mgrIsOverview }}" hint-placeholder-val="{{ false }}">
         <div style="padding:28px 32px;max-width:1200px">
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
-            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="3">
               <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
                 <div style="font-size:13px;color:var(--fg-2)">{{ k.label }}</div>
                 <div class="tnum" style="font-size:32px;font-weight:600;letter-spacing:-0.02em;margin-top:8px">{{ k.value }}</div>
@@ -1023,7 +1023,7 @@
 
         <!-- FUNNEL -->
         <sc-if value="{{ mgrIsFunnel }}" hint-placeholder-val="{{ false }}">
-        <div style="padding:24px 32px">
+        <div style="padding:24px 32px;max-width:1400px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
             <p style="font-size:14px;color:var(--fg-2)">{{ funnelCount }} inquiries in the pipeline{{ funnelFilteredLabel }}</p>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1036,8 +1036,64 @@
                 <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
               </sc-for>
               <input value="{{ inqFilterMinBeds }}" onChange="{{ setInqFilterMinBeds }}" placeholder="Min beds" inputmode="numeric" style="width:88px;height:36px;border:1px solid var(--border-strong);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:13px;background:var(--surface)"/>
+              <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+                <button onClick="{{ setInqViewTable }}" style="{{ inqViewTableStyle }}">Table</button>
+                <button onClick="{{ setInqViewKanban }}" style="{{ inqViewKanbanStyle }}">Board</button>
+              </div>
             </div>
           </div>
+
+          <!-- TABLE VIEW -->
+          <sc-if value="{{ inqIsTable }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:visible">
+            <div style="display:grid;grid-template-columns:1.25fr 1.35fr 0.85fr 1.1fr 1.35fr 1.15fr 1fr 48px;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2;border-radius:16px 16px 0 0">
+              <span onClick="{{ sortInqByName }}" style="cursor:pointer;user-select:none">{{ inqSortName }}</span>
+              <span onClick="{{ sortInqByProperty }}" style="cursor:pointer;user-select:none">{{ inqSortProperty }}</span>
+              <span onClick="{{ sortInqByType }}" style="cursor:pointer;user-select:none">{{ inqSortType }}</span>
+              <span onClick="{{ sortInqByStatus }}" style="cursor:pointer;user-select:none">{{ inqSortStatus }}</span>
+              <span onClick="{{ sortInqByDesired }}" style="cursor:pointer;user-select:none">{{ inqSortDesired }}</span>
+              <span onClick="{{ sortInqByMaxPrice }}" style="cursor:pointer;user-select:none;text-align:right">{{ inqSortMaxPrice }}</span>
+              <span>Contact</span>
+              <span></span>
+            </div>
+            <sc-if value="{{ inqEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:48px 22px;text-align:center;color:var(--fg-3);font-size:14px">{{ inqEmptyLabel }}</div>
+            </sc-if>
+            <sc-for list="{{ inqTableRows }}" as="r" hint-placeholder-count="5">
+              <div onClick="{{ r.onOpen }}" style="display:grid;grid-template-columns:1.25fr 1.35fr 0.85fr 1.1fr 1.35fr 1.15fr 1fr 48px;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
+                <span>
+                  <span style="display:block;font-weight:600;font-size:15px">{{ r.name }}</span>
+                  <span style="display:block;font-size:12.5px;color:var(--fg-3);margin-top:2px">{{ r.email }}</span>
+                </span>
+                <span style="font-size:14px;color:var(--fg-1);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.prop }}</span>
+                <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:{{ r.typeFg }};background:{{ r.typeBg }};justify-self:start;white-space:nowrap">{{ r.typeLabel }}</span>
+                <span onClick="{{ stop }}">
+                  <select value="{{ r.statusValue }}" onChange="{{ r.onStatusChange }}" style="height:32px;border:1px solid var(--border);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:12px;font-weight:600;color:{{ r.stageFg }};background:{{ r.stageBg }};cursor:pointer;max-width:100%">
+                    <sc-for list="{{ r.stageOptions }}" as="opt" hint-placeholder-count="4">
+                      <option value="{{ opt.value }}">{{ opt.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
+                <span style="font-size:13px;color:var(--fg-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ r.desired }}">{{ r.desired }}</span>
+                <span class="tnum" style="text-align:right;font-size:14px;color:var(--fg-2)">{{ r.maxPriceLabel }}</span>
+                <span style="font-size:13px;color:var(--fg-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.contactLabel }}</span>
+                <div onClick="{{ stop }}" style="position:relative;display:flex;justify-content:center">
+                  <button onClick="{{ r.onToggleMenu }}" title="Actions" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px">&#8942;</button>
+                  <sc-if value="{{ r.menuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;bottom:calc(100% + 4px);right:0;top:auto;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-2);padding:4px;z-index:200">
+                    <sc-for list="{{ r.menuItems }}" as="mi" hint-placeholder-count="4">
+                      <button onClick="{{ mi.onClick }}" style="display:block;width:100%;text-align:left;height:34px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:{{ mi.color }};font-family:inherit;font-size:13px;font-weight:{{ mi.weight }};cursor:pointer" style-hover="background:var(--gray-50)">{{ mi.label }}</button>
+                    </sc-for>
+                  </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <!-- KANBAN VIEW -->
+          <sc-if value="{{ inqIsKanban }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3);margin:-8px 0 14px">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9 2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
               Drag a card between stages, or use → to advance
@@ -1087,6 +1143,9 @@
                           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                         </button>
                         </sc-if>
+                        <button onClick="{{ q.onDelete }}" title="Delete inquiry" style="flex-shrink:0;width:34px;height:34px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center">
+                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                        </button>
                       </div>
                     </article>
                   </sc-for>
@@ -1097,6 +1156,7 @@
               </div>
             </sc-for>
           </div>
+          </sc-if>
         </div>
         </sc-if>
 
@@ -1259,6 +1319,11 @@
             <p style="font-size:13.5px;color:var(--fg-3)">No notes yet. Log your first call or email above.</p>
             </sc-if>
           </div>
+
+          <button onClick="{{ drawer.onDelete }}" style="width:100%;height:44px;margin-top:28px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            Delete inquiry
+          </button>
         </div>
       </div>
     </div>
@@ -1546,6 +1611,7 @@ class Component extends DCLogic {
       vOtherDetails: '', vLeaseType: 'Long-term', vMaxPrice: '',
       viewSubmitting: false,
       inqFilterProperty: 'all', inqFilterLeaseType: 'all', inqFilterMinBeds: '',
+      inqViewMode: 'kanban', inqSortKey: 'status', inqSortDir: 'asc', inqActionMenuId: null,
       mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false, mgrSearch: '',
       properties: [], portfolio: [], managerListings: [], managerLeases: [], inquiries: [], bookings: [], viewings: [],
       noteDrafts: {}, draggingId: null, dragOverCol: null,
@@ -1588,8 +1654,8 @@ class Component extends DCLogic {
     };
     this._onDocClick = (e) => {
       if (e?.target?.closest?.('[data-bulk-status-root]') || e?.target?.closest?.('[data-create-status-modal]')) return;
-      if (this.state.propActionMenuId || this.state.listActionMenuId || this.state.propBulkStatusMenuOpen) {
-        this.setState({ propActionMenuId: null, listActionMenuId: null, propBulkStatusMenuOpen: false });
+      if (this.state.propActionMenuId || this.state.listActionMenuId || this.state.inqActionMenuId || this.state.propBulkStatusMenuOpen) {
+        this.setState({ propActionMenuId: null, listActionMenuId: null, inqActionMenuId: null, propBulkStatusMenuOpen: false });
       }
     };
   }
@@ -2239,6 +2305,7 @@ class Component extends DCLogic {
   setVMaxPrice = (e) => this.setState({ vMaxPrice: e.target.value });
   setInqFilterMinBeds = (e) => this.setState({ inqFilterMinBeds: e.target.value });
   setInqFilterProperty = (e) => this.setState({ inqFilterProperty: e.target.value });
+  setInqViewMode = (mode) => this.setState({ inqViewMode: mode, inqActionMenuId: null });
   submitViewing = async () => {
     const p = this.getProp(this.state.propId); if (!p) return;
     const s = this.state;
@@ -2325,6 +2392,35 @@ class Component extends DCLogic {
   };
   openDrawer = (id) => this.setState({ openInq:id });
   closeDrawer = () => this.setState({ openInq:null });
+  deleteInquiry = async (id) => {
+    const q = this.state.inquiries.find(x => x.id === id);
+    if (!q) return;
+    const name = ((q.first || '') + ' ' + (q.last || '')).trim() || 'this inquiry';
+    if (!window.confirm(`Delete inquiry from ${name}? This cannot be undone.`)) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
+    try {
+      if (q.fromDb || isUuid) {
+        const res = await fetch('/api/inquiries/' + encodeURIComponent(id), { method: 'DELETE', credentials: 'include' });
+        let data = {};
+        const text = await res.text();
+        try { data = text ? JSON.parse(text) : {}; } catch (_) {}
+        if (!res.ok) {
+          if (res.status === 404 && !data.error) {
+            throw new Error('Delete is not available yet — restart your local server or redeploy to Vercel.');
+          }
+          throw new Error(data.error || `Delete failed (${res.status})`);
+        }
+      }
+      this.setState(s => ({
+        inquiries: s.inquiries.filter(x => x.id !== id),
+        openInq: s.openInq === id ? null : s.openInq,
+        noteDrafts: Object.fromEntries(Object.entries(s.noteDrafts || {}).filter(([k]) => k !== id)),
+      }));
+      this.showToast('Inquiry deleted');
+    } catch (err) {
+      this.showToast(err.message || 'Could not delete inquiry');
+    }
+  };
   stop = (e) => e.stopPropagation();
   openPhotoLightbox = (idx) => {
     const p = this.getProp(this.state.propId);
@@ -2647,6 +2743,7 @@ class Component extends DCLogic {
       copyBg:copied?'var(--success-tint)':'var(--surface)', copyFg:copied?'var(--success)':'var(--ink)',
       onCopy:()=>this.copyLink(q),
       canAdvance:q.status!=='SIGNED', onAdvance:()=>this.advanceInq(q.id),
+      onDelete:()=>this.deleteInquiry(q.id),
       onOpen:()=>this.openDrawer(q.id),
       mailto:'mailto:'+q.email, tel:'tel:'+q.phone.replace(/[^0-9]/g,''),
       onDragStart:(e)=>{ this.setState({ draggingId:q.id }); if(e.dataTransfer){ e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',q.id);}catch(_){} } },
@@ -2961,6 +3058,36 @@ class Component extends DCLogic {
       return 0;
     });
   }
+  sortInquiries(list, key, dir) {
+    const mul = dir === 'desc' ? -1 : 1;
+    const stageOrder = Object.fromEntries(this.STAGES.map(([k], i) => [k, i]));
+    const propTitle = (q) => (this.getProp(q.propId)?.title || q.propertyTitle || '').toLowerCase();
+    const nameOf = (q) => ((q.first || '') + ' ' + (q.last || '')).trim().toLowerCase();
+    return [...list].sort((a, b) => {
+      let av; let bv;
+      switch (key) {
+        case 'name': av = nameOf(a); bv = nameOf(b); break;
+        case 'property': av = propTitle(a); bv = propTitle(b); break;
+        case 'type': av = a.type || ''; bv = b.type || ''; break;
+        case 'status': av = stageOrder[a.status] ?? 99; bv = stageOrder[b.status] ?? 99; break;
+        case 'desired': av = a.desired || ''; bv = b.desired || ''; break;
+        case 'maxPrice': av = a.maxPrice ?? 0; bv = b.maxPrice ?? 0; break;
+        default: return 0;
+      }
+      if (av < bv) return -1 * mul;
+      if (av > bv) return 1 * mul;
+      return 0;
+    });
+  }
+  inqStageMeta(status) {
+    const map = {
+      NEW: { label: 'New', fg: 'var(--warning)', bg: 'var(--warning-tint)' },
+      CONTACTED: { label: 'Contacted', fg: 'var(--atlantic)', bg: 'var(--atlantic-tint)' },
+      APPLICATION_SENT: { label: 'Application sent', fg: '#5a4a12', bg: 'var(--warning-tint)' },
+      SIGNED: { label: 'Signed', fg: 'var(--success)', bg: 'var(--success-tint)' },
+    };
+    return map[status] || map.NEW;
+  }
   leaseStatusMeta(status) {
     if (status === 'ACTIVE') return { label: 'Active', fg: 'var(--atlantic)', bg: 'var(--atlantic-tint)' };
     return { label: 'Ended', fg: 'var(--fg-3)', bg: 'var(--gray-100)' };
@@ -2984,6 +3111,13 @@ class Component extends DCLogic {
       if (s.leaseSortKey !== key) return { leaseSortKey: key, leaseSortDir: 'asc' };
       if (s.leaseSortDir === 'asc') return { leaseSortDir: 'desc' };
       return { leaseSortKey: 'start', leaseSortDir: 'desc' };
+    });
+  };
+  toggleInqSort = (key) => {
+    this.setState(s => {
+      if (s.inqSortKey !== key) return { inqSortKey: key, inqSortDir: 'asc' };
+      if (s.inqSortDir === 'asc') return { inqSortDir: 'desc' };
+      return { inqSortKey: 'status', inqSortDir: 'asc' };
     });
   };
   sortHeaderLabel(key, label, sortKey, sortDir) {
@@ -4046,6 +4180,43 @@ class Component extends DCLogic {
       onDrop:(e)=>{ e.preventDefault(); this.moveInq(s.draggingId, key); },
     }));
     const funnelCount = filteredInquiries.length;
+    const inqStageOptions = this.STAGES.map(([value, label]) => ({ value, label }));
+    const inqSorted = this.sortInquiries(filteredInquiries, s.inqSortKey, s.inqSortDir);
+    const inqTableRows = inqSorted.map(q => {
+      const base = this.inqVM(q);
+      const stage = this.inqStageMeta(q.status);
+      const menuId = 'inq-' + q.id;
+      const menuItems = [
+        { label: 'View details', onClick: () => { this.setState({ inqActionMenuId: null }); this.openDrawer(q.id); } },
+        ...(q.status !== 'SIGNED' ? [{ label: 'Advance stage', onClick: () => { this.setState({ inqActionMenuId: null }); this.advanceInq(q.id); } }] : []),
+        { label: base.copyLabel, onClick: () => { this.setState({ inqActionMenuId: null }); this.copyLink(q); } },
+        { label: 'Delete inquiry', destructive: true, onClick: () => { this.setState({ inqActionMenuId: null }); this.deleteInquiry(q.id); } },
+      ];
+      return {
+        ...base,
+        statusValue: q.status,
+        stageLabel: stage.label,
+        stageFg: stage.fg,
+        stageBg: stage.bg,
+        criteriaShort: base.criteria || '\u2014',
+        hasCriteriaShort: !!base.criteria,
+        contactLabel: q.phone || q.email || '\u2014',
+        stageOptions: inqStageOptions,
+        onStatusChange: (e) => { e.stopPropagation(); this.moveInq(q.id, e.target.value); },
+        menuOpen: s.inqActionMenuId === menuId,
+        onToggleMenu: (e) => { e.stopPropagation(); this.setState(st => ({ inqActionMenuId: st.inqActionMenuId === menuId ? null : menuId })); },
+        menuItems: menuItems.map(mi => ({
+          label: mi.label,
+          onClick: (e) => { if (e) e.stopPropagation(); mi.onClick(); },
+          color: mi.destructive ? '#c0392b' : 'var(--fg-1)',
+          weight: mi.destructive ? 600 : 500,
+        })),
+      };
+    });
+    const inqEmpty = inqTableRows.length === 0;
+    const inqEmptyLabel = s.inquiries.length > 0
+      ? 'No inquiries match your filters.'
+      : 'No inquiries yet \u2014 they will appear here when tenants submit viewing requests.';
 
     const propsFiltered = s.portfolio.filter(pr => {
       const mgmtArchived = this.isPropertyArchived(pr);
@@ -4308,7 +4479,15 @@ class Component extends DCLogic {
     const leaseCount = s.managerLeases.length;
 
     const liveListingCount = s.managerListings.filter(l => l.status === 'ACTIVE').length;
-    const activePropCount = s.portfolio.filter(pr => !this.isPropertyArchived(pr)).length;
+    const activeProps = s.portfolio.filter(pr => !this.isPropertyArchived(pr));
+    const activePropCount = activeProps.length;
+    const occupiedPropCount = activeProps.filter(pr => this.getOccupancyStatus(pr) !== 'vacant').length;
+    const occupancyPct = activePropCount > 0
+      ? (occupiedPropCount / activePropCount * 100).toFixed(1)
+      : null;
+    const occupancySub = activePropCount === 0
+      ? 'No properties yet'
+      : `${occupiedPropCount} of ${activePropCount} propert${activePropCount === 1 ? 'y' : 'ies'}`;
 
     // uploader view-models
     const typeOpt = (key,label) => ({ key, label, onClick:()=>this.setUp('type',key), style:this.segStyle(s.up.type===key) });
@@ -4371,8 +4550,7 @@ class Component extends DCLogic {
 
     // overview
     const kpis = [
-      { label:'Collected this month', value:'$182,400', sub:'100% of expected', subColor:'var(--success)' },
-      { label:'Occupancy', value:'96.2%', sub:'231 of 240 doors', subColor:'var(--fg-2)' },
+      { label:'Occupancy', value: occupancyPct != null ? occupancyPct + '%' : '\u2014', sub: occupancySub, subColor:'var(--fg-2)' },
       { label:'Open inquiries', value:String(newCount), sub:'in the New column', subColor:'var(--warning)' },
       { label:'Avg. days to lease', value:'11', sub:'\u22124 vs last quarter', subColor:'var(--success)' },
     ];
@@ -4664,6 +4842,25 @@ class Component extends DCLogic {
       columns, funnelCount, funnelFilteredLabel, inqPropertyOptions, inqLeaseTypeOptions,
       inqFilterProperty:s.inqFilterProperty, inqFilterLeaseType:s.inqFilterLeaseType, inqFilterMinBeds:s.inqFilterMinBeds,
       setInqFilterProperty:this.setInqFilterProperty, setInqFilterMinBeds:this.setInqFilterMinBeds,
+      inqIsTable: s.inqViewMode === 'table',
+      inqIsKanban: s.inqViewMode === 'kanban',
+      inqViewTableStyle: this.segStyle(s.inqViewMode === 'table'),
+      inqViewKanbanStyle: this.segStyle(s.inqViewMode === 'kanban'),
+      setInqViewTable: () => this.setInqViewMode('table'),
+      setInqViewKanban: () => this.setInqViewMode('kanban'),
+      inqTableRows, inqEmpty, inqEmptyLabel,
+      inqSortName: this.sortHeaderLabel('name', 'Name', s.inqSortKey, s.inqSortDir),
+      inqSortProperty: this.sortHeaderLabel('property', 'Property', s.inqSortKey, s.inqSortDir),
+      inqSortType: this.sortHeaderLabel('type', 'Type', s.inqSortKey, s.inqSortDir),
+      inqSortStatus: this.sortHeaderLabel('status', 'Stage', s.inqSortKey, s.inqSortDir),
+      inqSortDesired: this.sortHeaderLabel('desired', 'Timeline', s.inqSortKey, s.inqSortDir),
+      inqSortMaxPrice: this.sortHeaderLabel('maxPrice', 'Budget', s.inqSortKey, s.inqSortDir),
+      sortInqByName: () => this.toggleInqSort('name'),
+      sortInqByProperty: () => this.toggleInqSort('property'),
+      sortInqByType: () => this.toggleInqSort('type'),
+      sortInqByStatus: () => this.toggleInqSort('status'),
+      sortInqByDesired: () => this.toggleInqSort('desired'),
+      sortInqByMaxPrice: () => this.toggleInqSort('maxPrice'),
       propsRows, propFiltersLeft, propFilterArchived, propKanbanCols, propKanbanGridStyle, bulkStatusOptions, bulkUploading: s.bulkUploading,
       propIsTable: s.propViewMode === 'table',
       propIsKanban: s.propViewMode === 'kanban',

@@ -36,6 +36,7 @@ alter table public.inquiries enable row level security;
 
 create policy "Anyone can submit an inquiry"
   on public.inquiries for insert
+  to anon, authenticated
   with check (true);
 
 create policy "Authenticated managers can read inquiries"
@@ -47,3 +48,28 @@ create policy "Authenticated managers can update inquiries"
   on public.inquiries for update
   to authenticated
   using (true);
+
+create policy "Authenticated managers can delete inquiries"
+  on public.inquiries for delete
+  to authenticated
+  using (true);
+
+create or replace function public.delete_inquiry_manager(inquiry_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Sign in required';
+  end if;
+
+  delete from public.inquiries where id = inquiry_id;
+  return found;
+end;
+$$;
+
+revoke all on function public.delete_inquiry_manager(uuid) from public;
+grant execute on function public.delete_inquiry_manager(uuid) to authenticated;
+grant execute on function public.delete_inquiry_manager(uuid) to service_role;

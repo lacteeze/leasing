@@ -15,6 +15,19 @@ export function isSupabaseConfigured() {
   return !!(url && key);
 }
 
+export function supabaseServiceRoleKey() {
+  return (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    ""
+  );
+}
+
+export function isServiceRoleConfigured() {
+  const { url } = supabaseEnv();
+  return !!(url && supabaseServiceRoleKey());
+}
+
 export function googleMapsApiKey() {
   return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 }

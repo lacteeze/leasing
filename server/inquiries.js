@@ -76,6 +76,66 @@ export async function fetchInquiries(supabase) {
   return (data || []).map(mapInquiryRow);
 }
 
+export async function deleteInquiry(supabase, id, { privileged = false } = {}) {
+  const errors = [];
+
+  if (privileged) {
+    try {
+      return await deleteInquiryDirect(supabase, id);
+    } catch (err) {
+      errors.push(err.message || String(err));
+    }
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("delete_inquiry_manager", {
+      inquiry_id: id,
+    });
+    if (error) throw error;
+    if (!data) {
+      const err = new Error("Inquiry not found.");
+      err.code = "NOT_FOUND";
+      throw err;
+    }
+    return;
+  } catch (err) {
+    if (err.code === "NOT_FOUND") throw err;
+    errors.push(err.message || String(err));
+  }
+
+  try {
+    return await deleteInquiryDirect(supabase, id);
+  } catch (err) {
+    if (err.code === "NOT_FOUND") throw err;
+    errors.push(err.message || String(err));
+  }
+
+  const err = new Error(
+    errors[0] ||
+      "Could not delete inquiry. Add SUPABASE_SECRET_KEY to your server env, or run supabase/inquiries-delete-policy.sql."
+  );
+  err.code = "DELETE_FAILED";
+  throw err;
+}
+
+async function deleteInquiryDirect(supabase, id) {
+  const { data, error } = await supabase
+    .from("inquiries")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) {
+    const err = new Error(
+      "Inquiry not found or delete not permitted. Run supabase/inquiries-delete-policy.sql in Supabase."
+    );
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+}
+
 export function criteriaLabel(q) {
   const parts = [];
   if (q.minBedrooms != null) parts.push(`${q.minBedrooms}+ bed`);
