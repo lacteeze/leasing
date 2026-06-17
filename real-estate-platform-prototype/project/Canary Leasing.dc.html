@@ -36,7 +36,6 @@
         </a>
         <nav style="display:flex;gap:26px;align-items:center">
           <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
-          <a onClick="{{ goShortStays }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Short-term</a>
         </nav>
         <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;background:var(--paper);width:min(320px,100%);flex-shrink:1">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--fg-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -755,13 +754,12 @@
           <!-- TABLE VIEW -->
           <sc-if value="{{ propIsTable }}" hint-placeholder-val="{{ true }}">
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:visible">
-            <div style="display:grid;grid-template-columns:36px 1fr 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2;border-radius:16px 16px 0 0">
+            <div style="display:grid;grid-template-columns:36px 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2;border-radius:16px 16px 0 0">
               <span onClick="{{ togglePropSelectAllAction }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ propAllSelectedBorder }};border-radius:4px;background:{{ propAllSelectedBg }};transition:background 120ms,border-color 120ms">
                 <sc-if value="{{ propAllSelected }}" hint-placeholder-val="{{ false }}">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
                 </sc-if>
               </span>
-              <span onClick="{{ sortByPropertyCode }}" style="cursor:pointer;user-select:none">{{ propSortPropertyCode }}</span>
               <span onClick="{{ sortByTitle }}" style="cursor:pointer;user-select:none">{{ propSortTitle }}</span>
               <span onClick="{{ sortByType }}" style="cursor:pointer;user-select:none">{{ propSortType }}</span>
               <span onClick="{{ sortByStatus }}" style="cursor:pointer;user-select:none">{{ propSortStatus }}</span>
@@ -773,13 +771,12 @@
             <div style="padding:48px 22px;text-align:center;color:var(--fg-3);font-size:14px">{{ propsEmptyLabel }}</div>
             </sc-if>
             <sc-for list="{{ propsRows }}" as="p" hint-placeholder-count="6">
-              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:36px 1fr 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
+              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:36px 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
                 <span onClick="{{ p.onToggleSelect }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ p.checkBorder }};border-radius:4px;background:{{ p.checkBg }};transition:background 120ms,border-color 120ms">
                   <sc-if value="{{ p.selected }}" hint-placeholder-val="{{ false }}">
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
                   </sc-if>
                 </span>
-                <span class="tnum" style="font-size:12px;font-weight:600;color:var(--fg-2)">{{ p.propertyCode }}</span>
                 <span>
                   <span style="display:block;font-weight:600;font-size:15px">{{ p.title }}</span>
                   <span style="font-size:13px;color:var(--fg-3)">{{ p.city }}</span>
