@@ -22,6 +22,7 @@ export function mapListingRow(row, photos = []) {
     beds: row.beds || 0,
     baths: row.baths || 0,
     sqft: row.sqft || 0,
+    availableDate: row.available_date || null,
     status: row.status,
     features: row.features || [],
     images,
@@ -62,6 +63,7 @@ export function listingInsertPayload(body, userId) {
     beds: body.beds,
     baths: body.baths,
     sqft: body.sqft,
+    available_date: body.availableDate || null,
     status: body.status || "ACTIVE",
     features: body.features || [],
     description: body.description,
@@ -93,14 +95,7 @@ export async function requireUser(supabase) {
   return user;
 }
 
-export async function fetchActiveListings(supabase) {
-  const { data: listings, error } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("status", "ACTIVE")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
+async function fetchListingsWithPhotos(supabase, listings) {
   if (!listings?.length) return [];
 
   const ids = listings.map((l) => l.id);
@@ -119,6 +114,110 @@ export async function fetchActiveListings(supabase) {
   }
 
   return listings.map((row) => mapListingRow(row, photosByListing[row.id] || []));
+}
+
+export async function fetchActiveListings(supabase) {
+  const { data: listings, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("status", "ACTIVE")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return fetchListingsWithPhotos(supabase, listings);
+}
+
+export async function fetchManagerListings(supabase, userId) {
+  const { data: listings, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("created_by", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return fetchListingsWithPhotos(supabase, listings);
+}
+
+const UPDATE_FIELD_MAP = {
+  title: "title",
+  type: "type",
+  area: "area",
+  address: "address",
+  city: "city",
+  province: "province",
+  postal: "postal",
+  latitude: "latitude",
+  longitude: "longitude",
+  rate: "rate",
+  cleaning: "cleaning",
+  beds: "beds",
+  baths: "baths",
+  sqft: "sqft",
+  availableDate: "available_date",
+  status: "status",
+  features: "features",
+  description: "description",
+  parking: "parking",
+  petFriendly: "pet_friendly",
+  dogs: "dogs",
+  cats: "cats",
+  utilitiesIncluded: "utilities_included",
+  utilityTypes: "utility_types",
+  utilityCap: "utility_cap",
+  yearBuilt: "year_built",
+  storeys: "storeys",
+  heatingType: "heating_type",
+  waterHeater: "water_heater",
+  firewall: "firewall",
+  powerMeter: "power_meter",
+  oilCompany: "oil_company",
+  internalNotes: "internal_notes",
+};
+
+export function listingUpdatePayload(body) {
+  const payload = { updated_at: new Date().toISOString() };
+  for (const [camel, snake] of Object.entries(UPDATE_FIELD_MAP)) {
+    if (body[camel] !== undefined) payload[snake] = body[camel];
+  }
+  return payload;
+}
+
+export async function getOwnedListing(supabase, userId, listingId) {
+  const { data, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", listingId)
+    .eq("created_by", userId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateListingPhotos(supabase, listingId, images) {
+  if (!Array.isArray(images)) return;
+
+  const { error: deleteError } = await supabase
+    .from("listing_photos")
+    .delete()
+    .eq("listing_id", listingId);
+
+  if (deleteError) throw deleteError;
+
+  if (!images.length) return;
+
+  const photoRows = images.map((img, i) => ({
+    listing_id: listingId,
+    storage_path: img.path || img.url,
+    public_url: img.url,
+    sort_order: i,
+  }));
+
+  const { error: insertError } = await supabase
+    .from("listing_photos")
+    .insert(photoRows);
+
+  if (insertError) throw insertError;
 }
 
 export async function uploadListingPhoto(supabase, userId, file) {

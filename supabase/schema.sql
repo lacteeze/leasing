@@ -19,6 +19,7 @@ create table if not exists public.listings (
   beds integer not null default 0,
   baths integer not null default 0,
   sqft integer not null default 0,
+  available_date date,
   status text not null default 'ACTIVE' check (status in ('ACTIVE', 'DRAFT', 'ARCHIVED')),
   features jsonb not null default '[]'::jsonb,
   description text,
@@ -71,6 +72,16 @@ create policy "Managers can update own listings"
   to authenticated
   using (auth.uid() = created_by);
 
+create policy "Managers can read own listings"
+  on public.listings for select
+  to authenticated
+  using (auth.uid() = created_by);
+
+create policy "Managers can delete own archived listings"
+  on public.listings for delete
+  to authenticated
+  using (auth.uid() = created_by and status = 'ARCHIVED');
+
 create policy "Public can read listing photos"
   on public.listing_photos for select
   using (
@@ -84,6 +95,26 @@ create policy "Managers can insert listing photos"
   on public.listing_photos for insert
   to authenticated
   with check (
+    exists (
+      select 1 from public.listings l
+      where l.id = listing_id and l.created_by = auth.uid()
+    )
+  );
+
+create policy "Managers can read own listing photos"
+  on public.listing_photos for select
+  to authenticated
+  using (
+    exists (
+      select 1 from public.listings l
+      where l.id = listing_id and l.created_by = auth.uid()
+    )
+  );
+
+create policy "Managers can delete own listing photos"
+  on public.listing_photos for delete
+  to authenticated
+  using (
     exists (
       select 1 from public.listings l
       where l.id = listing_id and l.created_by = auth.uid()

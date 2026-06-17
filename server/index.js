@@ -8,9 +8,13 @@ import { createClient } from "../utils/supabase/server.js";
 import { refreshSession } from "../utils/supabase/middleware.js";
 import {
   fetchActiveListings,
+  fetchManagerListings,
+  getOwnedListing,
   listingInsertPayload,
+  listingUpdatePayload,
   mapListingRow,
   requireUser,
+  updateListingPhotos,
   uploadListingPhoto,
 } from "./listings.js";
 import {
@@ -206,6 +210,102 @@ app.post("/api/listings/photos", upload.single("photo"), async (req, res) => {
   } catch (err) {
     console.error("[listings] upload error:", err.message);
     res.status(500).json({ error: "Photo upload failed." });
+  }
+});
+
+app.get("/api/listings/mine", async (req, res) => {
+  if (!isSupabaseConfigured()) return res.json([]);
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const listings = await fetchManagerListings(supabase, user.id);
+    res.json(listings);
+  } catch (err) {
+    if (err.code === "PGRST205" || /listings/.test(err.message)) {
+      return res.json([]);
+    }
+    console.error("[listings] manager fetch error:", err.message);
+    res.status(500).json({ error: "Could not load your listings." });
+  }
+});
+
+app.patch("/api/listings/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const listingId = req.params.id;
+    await getOwnedListing(supabase, user.id, listingId);
+
+    const body = req.body ?? {};
+    const payload = listingUpdatePayload(body);
+    if (Object.keys(payload).length <= 1) {
+      return res.status(400).json({ error: "No updates provided." });
+    }
+
+    const { data: listing, error } = await supabase
+      .from("listings")
+      .update(payload)
+      .eq("id", listingId)
+      .eq("created_by", user.id)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    if (Array.isArray(body.images)) {
+      await updateListingPhotos(supabase, listingId, body.images);
+    }
+
+    const { data: photos } = await supabase
+      .from("listing_photos")
+      .select("*")
+      .eq("listing_id", listingId)
+      .order("sort_order", { ascending: true });
+
+    res.json(mapListingRow(listing, photos || []));
+  } catch (err) {
+    console.error("[listings] update error:", err.message);
+    res.status(500).json({ error: "Could not update listing." });
+  }
+});
+
+app.delete("/api/listings/:id", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+
+  try {
+    const supabase = createClient(req, res);
+    const user = await requireUser(supabase);
+    if (!user) return res.status(401).json({ error: "Sign in required." });
+
+    const listingId = req.params.id;
+    const owned = await getOwnedListing(supabase, user.id, listingId);
+
+    if (owned.status !== "ARCHIVED") {
+      return res.status(400).json({ error: "Only archived listings can be deleted." });
+    }
+
+    const { error } = await supabase
+      .from("listings")
+      .delete()
+      .eq("id", listingId)
+      .eq("created_by", user.id);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[listings] delete error:", err.message);
+    res.status(500).json({ error: "Could not delete listing." });
   }
 });
 
