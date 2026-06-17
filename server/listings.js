@@ -1,9 +1,17 @@
 const PHOTO_BUCKET = "listing-photos";
 
+import {
+  extendedPropertyFields,
+  heatingTypesFromRow,
+  heatingTypesLabel,
+} from "./property-fields.js";
+
 export function mapListingRow(row, photos = []) {
   const images = photos
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p) => p.public_url);
+
+  const heatingTypes = heatingTypesFromRow(row);
 
   return {
     id: row.id,
@@ -23,6 +31,7 @@ export function mapListingRow(row, photos = []) {
     cleaning: Number(row.cleaning) || 0,
     beds: row.beds || 0,
     baths: row.baths || 0,
+    offices: row.offices || 0,
     sqft: row.sqft || 0,
     availableDate: row.available_date || null,
     status: row.status,
@@ -30,6 +39,7 @@ export function mapListingRow(row, photos = []) {
     images,
     description: row.description || "",
     parking: row.parking || 0,
+    parkingType: row.parking_type || "OFF_STREET",
     petFriendly: !!row.pet_friendly,
     dogs: !!row.dogs,
     cats: !!row.cats,
@@ -38,10 +48,12 @@ export function mapListingRow(row, photos = []) {
     utilityCap: row.utility_cap || 0,
     yearBuilt: row.year_built || 0,
     storeys: row.storeys || 0,
-    heatingType: row.heating_type || "",
+    heatingTypes,
+    heatingType: heatingTypesLabel(heatingTypes),
     waterHeater: row.water_heater || "",
     firewall: !!row.firewall,
     powerMeter: row.power_meter || "",
+    electricCompany: row.electric_company || "NL Power",
     oilCompany: row.oil_company || "",
     internalNotes: row.internal_notes || "",
     updatedAt: row.updated_at || null,
@@ -92,7 +104,6 @@ export function listingInsertPayload(body, userId) {
     utility_cap: body.utilityCap,
     year_built: body.yearBuilt || null,
     storeys: body.storeys || null,
-    heating_type: body.heatingType,
     water_heater: body.waterHeater,
     firewall: body.firewall,
     power_meter: body.powerMeter,
@@ -101,6 +112,7 @@ export function listingInsertPayload(body, userId) {
     property_id: body.propertyId || null,
     source_listing_id: body.sourceListingId || null,
     created_by: userId,
+    ...extendedPropertyFields({ ...body, offices: body.offices ?? 0 }),
   };
 }
 
@@ -157,6 +169,22 @@ export async function fetchManagerListings(supabase, userId) {
   return fetchListingsWithPhotos(supabase, listings);
 }
 
+export async function fetchPropertyListings(supabase, userId, propertyId) {
+  const { getOwnedProperty } = await import("./properties.js");
+  await getOwnedProperty(supabase, userId, propertyId);
+
+  const { data: listings, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("property_id", propertyId)
+    .eq("created_by", userId)
+    .in("status", ["ACTIVE", "ARCHIVED", "DRAFT"])
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return fetchListingsWithPhotos(supabase, listings || []);
+}
+
 const UPDATE_FIELD_MAP = {
   title: "title",
   type: "type",
@@ -171,12 +199,14 @@ const UPDATE_FIELD_MAP = {
   cleaning: "cleaning",
   beds: "beds",
   baths: "baths",
+  offices: "offices",
   sqft: "sqft",
   availableDate: "available_date",
   status: "status",
   features: "features",
   description: "description",
   parking: "parking",
+  parkingType: "parking_type",
   petFriendly: "pet_friendly",
   dogs: "dogs",
   cats: "cats",
@@ -185,10 +215,10 @@ const UPDATE_FIELD_MAP = {
   utilityCap: "utility_cap",
   yearBuilt: "year_built",
   storeys: "storeys",
-  heatingType: "heating_type",
   waterHeater: "water_heater",
   firewall: "firewall",
   powerMeter: "power_meter",
+  electricCompany: "electric_company",
   oilCompany: "oil_company",
   internalNotes: "internal_notes",
 };
@@ -197,6 +227,15 @@ export function listingUpdatePayload(body) {
   const payload = { updated_at: new Date().toISOString() };
   for (const [camel, snake] of Object.entries(UPDATE_FIELD_MAP)) {
     if (body[camel] !== undefined) payload[snake] = body[camel];
+  }
+  if (body.heatingTypes !== undefined || body.heatingType !== undefined) {
+    Object.assign(
+      payload,
+      extendedPropertyFields({
+        heatingTypes: body.heatingTypes,
+        heatingType: body.heatingType,
+      })
+    );
   }
   return payload;
 }

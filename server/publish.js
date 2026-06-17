@@ -1,9 +1,11 @@
 import {
   getOwnedProperty,
   mapPropertyRow,
+  updatePropertyPhotos,
 } from "./properties.js";
 import { getActiveLease, archiveActiveListingForProperty } from "./leases.js";
 import { slugFromTitle, mapListingRow, updateListingPhotos } from "./listings.js";
+import { heatingTypesFromRow } from "./property-fields.js";
 
 export function listingPrefillFromProperty(property, activeLease, overrides = {}) {
   const isShort = property.type === "SHORT_TERM";
@@ -48,12 +50,14 @@ export function propertyToListingBody(property, prefill, overrides = {}) {
     cleaning: property.type === "SHORT_TERM" ? prefill.cleaning : 0,
     beds: property.beds,
     baths: property.baths,
+    offices: property.offices ?? 0,
     sqft: property.sqft,
     availableDate: prefill.availableDate,
     status: "ACTIVE",
     features: property.features || [],
     description: property.description,
     parking: property.parking,
+    parkingType: property.parking_type || "OFF_STREET",
     petFriendly: property.pet_friendly,
     dogs: property.dogs,
     cats: property.cats,
@@ -62,10 +66,11 @@ export function propertyToListingBody(property, prefill, overrides = {}) {
     utilityCap: property.utility_cap,
     yearBuilt: property.year_built,
     storeys: property.storeys,
-    heatingType: property.heating_type,
+    heatingTypes: heatingTypesFromRow(property),
     waterHeater: property.water_heater,
     firewall: property.firewall,
     powerMeter: property.power_meter,
+    electricCompany: property.electric_company || "NL Power",
     oilCompany: property.oil_company,
     internalNotes: property.internal_notes,
     propertyId: property.id,
@@ -136,12 +141,14 @@ export async function publishListingFromProperty(
       cleaning: body.cleaning,
       beds: body.beds,
       baths: body.baths,
+      offices: body.offices ?? 0,
       sqft: body.sqft,
       available_date: body.availableDate || null,
       status: "ACTIVE",
       features: body.features,
       description: body.description,
       parking: body.parking,
+      parking_type: body.parkingType || "OFF_STREET",
       pet_friendly: body.petFriendly,
       dogs: body.dogs,
       cats: body.cats,
@@ -150,10 +157,12 @@ export async function publishListingFromProperty(
       utility_cap: body.utilityCap,
       year_built: body.yearBuilt,
       storeys: body.storeys,
-      heating_type: body.heatingType,
+      heating_types: body.heatingTypes || [],
+      heating_type: (body.heatingTypes || [])[0] || null,
       water_heater: body.waterHeater,
       firewall: body.firewall,
       power_meter: body.powerMeter,
+      electric_company: body.electricCompany || "NL Power",
       oil_company: body.oilCompany,
       internal_notes: body.internalNotes,
       property_id: propertyId,
@@ -172,7 +181,16 @@ export async function publishListingFromProperty(
     throw error;
   }
 
-  await copyPropertyPhotosToListing(supabase, propertyId, listing.id);
+  const images = overrides.images;
+  if (Array.isArray(images) && images.length) {
+    const normalized = images.map((img) =>
+      typeof img === "string" ? { url: img, path: null } : img
+    );
+    await updateListingPhotos(supabase, listing.id, normalized);
+    await updatePropertyPhotos(supabase, propertyId, normalized);
+  } else {
+    await copyPropertyPhotosToListing(supabase, propertyId, listing.id);
+  }
 
   const { data: photos } = await supabase
     .from("listing_photos")
