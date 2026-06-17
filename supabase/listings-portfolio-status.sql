@@ -1,0 +1,2 @@
+-- DEPRECATED: PORTFOLIO status replaced by properties table.
+-- Run properties.sql, leases.sql, listings-property-link.sql, and migrate-listings-to-properties.sql instead.

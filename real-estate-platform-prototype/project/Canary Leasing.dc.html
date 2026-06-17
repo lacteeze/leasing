@@ -37,6 +37,10 @@
         <nav style="display:flex;gap:26px;align-items:center">
           <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
         </nav>
+        <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;background:var(--paper);width:min(320px,100%);flex-shrink:1">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--fg-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ pubSearch }}" onChange="{{ setPubSearch }}" placeholder="Search listings, cities…" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:14px;color:var(--ink);outline:none"/>
+        </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
           <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
@@ -70,7 +74,7 @@
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap">
           <div>
             <h2 style="font-size:32px;letter-spacing:-0.02em">Available now</h2>
-            <p style="color:var(--fg-2);font-size:16px;margin-top:6px">{{ activeCount }} homes ready for viewings and bookings.</p>
+            <p style="color:var(--fg-2);font-size:16px;margin-top:6px">{{ pubListingsSubtitle }}</p>
           </div>
           <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
             <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="3">
@@ -79,6 +83,10 @@
           </div>
         </div>
 
+        <sc-if value="{{ pubListingsEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:64px 24px;text-align:center;color:var(--fg-3);font-size:15px">No listings match your search.</div>
+        </sc-if>
+        <sc-if value="{{ pubListingsHasResults }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
           <sc-for list="{{ listingCards }}" as="l" hint-placeholder-count="6">
             <article onClick="{{ l.onOpen }}" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-1);transition:box-shadow 200ms var(--ease-out-soft),transform 200ms var(--ease-out-soft)" style-hover="box-shadow:var(--shadow-2);transform:translateY(-3px)">
@@ -100,7 +108,7 @@
                   <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">{{ l.addr }}</h3>
                   <span class="tnum" style="font-size:17px;font-weight:600;white-space:nowrap">{{ l.priceMain }}<span style="font-size:13px;font-weight:400;color:var(--fg-2)">{{ l.priceUnit }}</span></span>
                 </div>
-                <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.area }} · {{ l.specs }}</div>
+                <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.city }} · {{ l.specs }}</div>
                 <sc-if value="{{ l.hasAvailLine }}" hint-placeholder-val="{{ false }}">
                 <div style="color:var(--fg-2);font-size:13px;margin-top:4px">{{ l.availLine }}</div>
                 </sc-if>
@@ -112,6 +120,7 @@
             </article>
           </sc-for>
         </div>
+        </sc-if>
       </section>
     </div>
     </sc-if>
@@ -133,7 +142,7 @@
             <span style="width:6px;height:6px;border-radius:9999px;background:{{ selProp.dot }}"></span>{{ selProp.typeLabel }}
           </span>
           <h1 style="font-size:38px;letter-spacing:-0.025em;margin-top:14px">{{ selProp.title }}</h1>
-          <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.area }}, {{ selProp.city }} · {{ selProp.specs }}</p>
+          <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.city }} · {{ selProp.specs }}</p>
           <sc-if value="{{ selProp.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
           <p style="color:var(--fg-2);font-size:15px;margin-top:10px;display:flex;align-items:center;gap:8px">
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--atlantic)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
@@ -463,9 +472,17 @@
           <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12h12M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
           <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Properties</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ propCount }}</span></sc-if>
         </button>
-        <button onClick="{{ goFunnel }}" style="{{ navLeasing }}" title="Leasing">
+        <button onClick="{{ goListings }}" style="{{ navListings }}" title="Listings">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Listings</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ liveListingCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ goLeases }}" style="{{ navLeases }}" title="Leases">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Leases</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ leaseCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ goFunnel }}" style="{{ navInquiries }}" title="Inquiries">
           <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="4"/><path d="m11 11 8-8 3 3-3 3-2-2-2 2-2-2"/></svg>
-          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Leasing</span><span class="tnum" style="font-size:11px;font-weight:600;color:var(--ink);background:var(--canary);border-radius:9999px;padding:1px 7px">{{ newCount }}</span></sc-if>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Inquiries</span><span class="tnum" style="font-size:11px;font-weight:600;color:var(--ink);background:var(--canary);border-radius:9999px;padding:1px 7px">{{ newCount }}</span></sc-if>
         </button>
         <button onClick="{{ goBookings }}" style="{{ navBookings }}" title="Bookings">
           <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -499,9 +516,9 @@
           <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">{{ mgrTitle }}</h1>
           <div style="font-size:13px;color:var(--fg-3);margin-top:1px">{{ mgrSub }}</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;color:var(--fg-3);background:var(--paper);width:280px">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <span style="font-size:14px">Search properties, tenants…</span>
+        <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;background:var(--paper);width:280px;flex-shrink:0">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--fg-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ mgrSearch }}" onChange="{{ setMgrSearch }}" placeholder="{{ mgrSearchPlaceholder }}" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:14px;color:var(--ink);outline:none"/>
         </div>
         <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
@@ -515,7 +532,7 @@
         </sc-if>
       </header>
 
-      <div style="flex:1;overflow:auto">
+      <div id="mgr-scroll" style="flex:1;overflow:auto">
 
         <!-- OVERVIEW -->
         <sc-if value="{{ mgrIsOverview }}" hint-placeholder-val="{{ false }}">
@@ -534,7 +551,7 @@
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <h3 style="font-size:18px">New inquiries</h3>
-                <button onClick="{{ goFunnel }}" style="background:none;border:none;cursor:pointer;color:var(--link);font-family:inherit;font-size:13.5px">Open pipeline →</button>
+                <button onClick="{{ goFunnel }}" style="background:none;border:none;cursor:pointer;color:var(--link);font-family:inherit;font-size:13.5px">All inquiries →</button>
               </div>
               <sc-for list="{{ recentInquiries }}" as="r" hint-placeholder-count="3">
                 <div onClick="{{ r.onOpen }}" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--border);cursor:pointer">
@@ -564,22 +581,96 @@
 
         <!-- PROPERTIES -->
         <sc-if value="{{ mgrIsProperties }}" hint-placeholder-val="{{ false }}">
-        <div style="padding:28px 32px;max-width:1200px">
-          <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px">
-            <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
-              <sc-for list="{{ propFilters }}" as="f" hint-placeholder-count="3">
-                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
-              </sc-for>
+        <div style="padding:28px 32px;max-width:1400px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;{{ propBulkBarStyle }}">
+              <a href="/api/properties/bulk/template.csv" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none">Download CSV template</a>
+              <button onClick="{{ openCreateStatusModal }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center">+ New status</button>
+              <label style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;opacity:{{ bulkUploadOpacity }}">
+                {{ bulkUploadLabel }}
+                <input type="file" accept=".csv,text/csv,text/plain" onChange="{{ onBulkCsvPick }}" style="display:none"/>
+              </label>
+              <button onClick="{{ clearAllProperties }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:13px;font-weight:600;cursor:{{ clearAllPropsCursor }};opacity:{{ clearAllPropsOpacity }}">{{ clearAllPropsLabel }}</button>
+              <sc-if value="{{ propBulkVisible }}" hint-placeholder-val="{{ false }}">
+              <span style="width:1px;height:24px;background:var(--border);margin:0 4px"></span>
+              <div onClick="{{ stop }}" data-bulk-status-root style="position:relative">
+                <button onClick="{{ toggleBulkStatusMenu }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:{{ propBulkStatusCursor }};opacity:{{ propBulkStatusOpacity }};display:inline-flex;align-items:center;gap:6px">{{ propBulkStatusLabel }} <span style="font-size:11px;color:var(--fg-3)">&#9662;</span></button>
+                <sc-if value="{{ propBulkStatusMenuOpen }}" hint-placeholder-val="{{ false }}">
+                <div data-bulk-status-root style="position:absolute;bottom:calc(100% + 6px);left:0;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-2);z-index:200;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="overflow:auto;max-height:280px;padding:6px">
+                    <sc-for list="{{ bulkStatusOptions }}" as="opt" hint-placeholder-count="8">
+                      <button onClick="{{ opt.onClick }}" style="display:block;width:100%;text-align:left;height:34px;padding:0 12px;border:none;border-radius:8px;background:transparent;color:{{ opt.color }};font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="background:var(--gray-50)">{{ opt.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="padding:6px;border-top:1px solid var(--border);background:var(--surface)">
+                    <button onClick="{{ openCreateStatusModal }}" style="display:block;width:100%;text-align:left;height:34px;padding:0 12px;border:none;border-radius:8px;background:transparent;color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--gray-50)">+ Create new status…</button>
+                  </div>
+                </div>
+                </sc-if>
+              </div>
+              <button onClick="{{ bulkDeleteProps }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:13px;font-weight:600;cursor:{{ propBulkDeleteCursor }};opacity:{{ propBulkDeleteOpacity }}">{{ propBulkDeleteLabel }}</button>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+                <button onClick="{{ setPropViewTable }}" style="{{ propViewTableStyle }}">Table</button>
+                <button onClick="{{ setPropViewKanban }}" style="{{ propViewKanbanStyle }}">Board</button>
+              </div>
+              <sc-if value="{{ propShowFilters }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap">
+                <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+                  <sc-for list="{{ propFiltersLeft }}" as="f" hint-placeholder-count="4">
+                    <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+                  <button onClick="{{ propFilterArchived.onClick }}" style="{{ propFilterArchived.style }}">{{ propFilterArchived.label }}</button>
+                </div>
+              </div>
+              </sc-if>
             </div>
           </div>
+
+          <!-- TABLE VIEW -->
+          <sc-if value="{{ propIsTable }}" hint-placeholder-val="{{ true }}">
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.4fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">
-              <span>Address</span><span>Type</span><span style="text-align:right">Rate</span><span>Beds</span><span>Status</span><span>Actions</span>
+            <div style="display:grid;grid-template-columns:36px 1fr 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2">
+              <span onClick="{{ togglePropSelectAllAction }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ propAllSelectedBorder }};border-radius:4px;background:{{ propAllSelectedBg }};transition:background 120ms,border-color 120ms">
+                <sc-if value="{{ propAllSelected }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </sc-if>
+              </span>
+              <span onClick="{{ sortByPropertyCode }}" style="cursor:pointer;user-select:none">{{ propSortPropertyCode }}</span>
+              <span onClick="{{ sortByTitle }}" style="cursor:pointer;user-select:none">{{ propSortTitle }}</span>
+              <span onClick="{{ sortByType }}" style="cursor:pointer;user-select:none">{{ propSortType }}</span>
+              <span onClick="{{ sortByStatus }}" style="cursor:pointer;user-select:none">{{ propSortStatus }}</span>
+              <span onClick="{{ sortByRate }}" style="cursor:pointer;user-select:none;text-align:right">{{ propSortRate }}</span>
+              <span onClick="{{ sortByLeaseEnd }}" style="cursor:pointer;user-select:none">{{ propSortLeaseEnd }}</span>
+              <span></span>
             </div>
+            <sc-if value="{{ propsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:48px 22px;text-align:center;color:var(--fg-3);font-size:14px">{{ propsEmptyLabel }}</div>
+            </sc-if>
             <sc-for list="{{ propsRows }}" as="p" hint-placeholder-count="6">
-              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.4fr;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
-                <span><span style="display:block;font-weight:600;font-size:15px">{{ p.title }}</span><span style="font-size:13px;color:var(--fg-3)">{{ p.area }}</span></span>
+              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:36px 1fr 1.6fr 1fr 1.3fr 1.2fr 1.2fr 48px;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
+                <span onClick="{{ p.onToggleSelect }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ p.checkBorder }};border-radius:4px;background:{{ p.checkBg }};transition:background 120ms,border-color 120ms">
+                  <sc-if value="{{ p.selected }}" hint-placeholder-val="{{ false }}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                  </sc-if>
+                </span>
+                <span class="tnum" style="font-size:12px;font-weight:600;color:var(--fg-2)">{{ p.propertyCode }}</span>
+                <span>
+                  <span style="display:block;font-weight:600;font-size:15px">{{ p.title }}</span>
+                  <span style="font-size:13px;color:var(--fg-3)">{{ p.city }}</span>
+                </span>
                 <span style="font-size:14px;color:var(--fg-2)">{{ p.typeLabel }}</span>
+                <span onClick="{{ stop }}">
+                  <select value="{{ p.statusValue }}" onChange="{{ p.onStatusChange }}" disabled="{{ p.statusBusy }}" style="height:32px;border:1px solid var(--border);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:12px;font-weight:600;color:{{ p.statusFg }};background:{{ p.statusBg }};cursor:pointer;max-width:100%">
+                    <sc-for list="{{ p.statusOptions }}" as="opt" hint-placeholder-count="6">
+                      <option value="{{ opt.value }}">{{ opt.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
                 <span class="tnum" style="text-align:right;font-size:14px">
                   <sc-if value="{{ p.showRateInput }}" hint-placeholder-val="{{ false }}">
                   <div onClick="{{ stop }}" style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
@@ -589,19 +680,188 @@
                   </div>
                   </sc-if>
                   <sc-if value="{{ p.showRateLabel }}" hint-placeholder-val="{{ true }}">
-                  <span onClick="{{ p.onStartQuickEdit }}" style="cursor:pointer" title="Quick edit rate">{{ p.rateLabel }}</span>
+                  <span onClick="{{ p.onStartQuickEdit }}" style="cursor:pointer" title="Quick edit rent">{{ p.rateLabel }}</span>
                   </sc-if>
                 </span>
-                <span style="font-size:14px;color:var(--fg-2)">{{ p.beds }}</span>
-                <span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:9999px;color:{{ p.stFg }};background:{{ p.stBg }}"><span style="width:6px;height:6px;border-radius:9999px;background:{{ p.stFg }}"></span>{{ p.statusLabel }}</span></span>
-                <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-                  <button onClick="{{ p.onStartQuickEdit }}" title="Quick edit rate" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Edit rate</button>
-                  <button onClick="{{ p.onEdit }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Edit</button>
-                  <sc-if value="{{ p.canArchive }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ p.onArchive }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Archive</button>
+                <span style="font-size:14px;color:var(--fg-2)">{{ p.leaseEndLabel }}</span>
+                <div onClick="{{ stop }}" style="position:relative;display:flex;justify-content:center">
+                  <button onClick="{{ p.onToggleMenu }}" title="Actions" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px">&#8942;</button>
+                  <sc-if value="{{ p.menuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:100%;right:0;margin-top:4px;min-width:168px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-2);padding:4px;z-index:10">
+                    <sc-for list="{{ p.menuItems }}" as="mi" hint-placeholder-count="3">
+                      <button onClick="{{ mi.onClick }}" style="display:block;width:100%;text-align:left;height:34px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:{{ mi.color }};font-family:inherit;font-size:13px;font-weight:{{ mi.weight }};cursor:pointer" style-hover="background:var(--gray-50)">{{ mi.label }}</button>
+                    </sc-for>
+                  </div>
                   </sc-if>
-                  <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ p.onDelete }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Delete</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <!-- KANBAN VIEW -->
+          <sc-if value="{{ propIsKanban }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-3);margin-bottom:14px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9 2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+            Drag cards to reorder within a column, or drop on another column to change status
+          </div>
+          <div id="prop-kanban-grid" style="display:grid;gap:12px;align-items:start;overflow-x:auto;{{ propKanbanGridStyle }}">
+            <sc-for list="{{ propKanbanCols }}" as="col" hint-placeholder-count="6">
+              <div onDragOver="{{ col.onDragOver }}" onDragLeave="{{ col.onDragLeave }}" onDrop="{{ col.onDrop }}" style="background:var(--gray-50);border:1px solid var(--border);border-radius:16px;padding:12px;min-height:280px;position:relative;min-width:180px">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px">
+                  <span style="font-weight:600;font-size:13px">{{ col.label }}</span>
+                  <span class="tnum" style="font-size:12px;font-weight:600;color:var(--fg-2);background:var(--surface);border:1px solid var(--border);min-width:22px;height:22px;border-radius:9999px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px">{{ col.count }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;min-height:180px">
+                  <sc-for list="{{ col.items }}" as="card" hint-placeholder-count="2">
+                    <div draggable="true" onDragStart="{{ card.onDragStart }}" onDragEnd="{{ card.onDragEnd }}" onDragOver="{{ card.onDragOver }}" onDrop="{{ card.onDrop }}">
+                      <sc-if value="{{ card.showInsertBefore }}" hint-placeholder-val="{{ false }}">
+                      <div style="height:3px;background:var(--canary);border-radius:9999px;margin:0 0 8px;box-shadow:0 0 0 1px var(--canary)"></div>
+                      </sc-if>
+                      <article onClick="{{ card.onOpen }}" style="background:var(--surface);border:1px solid {{ card.borderColor }};border-radius:14px;padding:14px;box-shadow:var(--shadow-1);cursor:grab;opacity:{{ card.dragOpacity }};user-select:none">
+                        <div style="font-weight:600;font-size:14px;line-height:1.35">{{ card.title }}</div>
+                        <div style="font-size:12.5px;color:var(--fg-3);margin-top:3px">{{ card.city }}</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap">
+                          <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:{{ card.statusFg }};background:{{ card.statusBg }};border:1px solid var(--border)">{{ card.statusLabel }}</span>
+                          <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:var(--fg-2);background:var(--gray-100);border:1px solid var(--border)">{{ card.typeLabel }}</span>
+                        </div>
+                        <div style="font-size:12.5px;color:var(--fg-2);margin-top:10px" class="tnum">{{ card.rateLabel }}</div>
+                        <sc-if value="{{ card.hasLeaseEnd }}" hint-placeholder-val="{{ true }}">
+                        <div style="font-size:12px;color:var(--fg-3);margin-top:4px">Ends {{ card.leaseEndLabel }}</div>
+                        </sc-if>
+                      </article>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ col.showAppendIndicator }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:3px;background:var(--canary);border-radius:9999px;margin:4px 0;box-shadow:0 0 0 1px var(--canary)"></div>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ col.isOver }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:4px;border:2px dashed var(--canary);border-radius:14px;pointer-events:none"></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <!-- LEASES -->
+        <sc-if value="{{ mgrIsLeases }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1400px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <a href="/api/leases/bulk/template.csv" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none">Download lease CSV template</a>
+              <label style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;opacity:{{ leaseBulkUploadOpacity }}">
+                {{ leaseBulkUploadLabel }}
+                <input type="file" accept=".csv,text/csv,text/plain" onChange="{{ onLeaseBulkCsvPick }}" style="display:none"/>
+              </label>
+            </div>
+            <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+              <sc-for list="{{ leaseFilters }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--fg-3);margin:-8px 0 14px">Use the same <strong>property_id</strong> from Properties to link historical and active leases.</p>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 1.2fr 1fr 1fr 1fr 0.8fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2">
+              <span onClick="{{ sortLeaseByPropertyCode }}" style="cursor:pointer;user-select:none">{{ leaseSortPropertyCode }}</span>
+              <span onClick="{{ sortLeaseByProperty }}" style="cursor:pointer;user-select:none">{{ leaseSortProperty }}</span>
+              <span onClick="{{ sortLeaseByTenant }}" style="cursor:pointer;user-select:none">{{ leaseSortTenant }}</span>
+              <span onClick="{{ sortLeaseByStart }}" style="cursor:pointer;user-select:none">{{ leaseSortStart }}</span>
+              <span onClick="{{ sortLeaseByEnd }}" style="cursor:pointer;user-select:none">{{ leaseSortEnd }}</span>
+              <span onClick="{{ sortLeaseByRate }}" style="cursor:pointer;user-select:none;text-align:right">{{ leaseSortRate }}</span>
+              <span onClick="{{ sortLeaseByStatus }}" style="cursor:pointer;user-select:none">{{ leaseSortStatus }}</span>
+            </div>
+            <sc-if value="{{ leasesEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:48px 22px;text-align:center;color:var(--fg-3);font-size:14px">{{ leasesEmptyLabel }}</div>
+            </sc-if>
+            <sc-for list="{{ leasesRows }}" as="l" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1.2fr 1fr 1fr 1fr 0.8fr;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center">
+                <span class="tnum" style="font-size:12px;font-weight:600;color:var(--fg-2)">{{ l.propertyCode }}</span>
+                <span>
+                  <span style="display:block;font-weight:600;font-size:14px">{{ l.propertyTitle }}</span>
+                  <span style="font-size:12px;color:var(--fg-3)">{{ l.propertyCity }}</span>
+                </span>
+                <span style="font-size:14px;color:var(--fg-1)">{{ l.tenantName }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ l.startLabel }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ l.endLabel }}</span>
+                <span class="tnum" style="text-align:right;font-size:14px;color:var(--fg-2)">{{ l.rateLabel }}</span>
+                <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:{{ l.statusFg }};background:{{ l.statusBg }};border:1px solid var(--border);justify-self:start">{{ l.statusLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- LISTINGS -->
+        <sc-if value="{{ mgrIsListings }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:28px 32px;max-width:1400px">
+          <sc-if value="{{ listShowPropertyFilter }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--fg-2)">
+            <span>Showing listings for <strong>{{ listFilterPropertyLabel }}</strong></span>
+            <button onClick="{{ clearListPropertyFilter }}" style="height:28px;padding:0 10px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;cursor:pointer">Clear filter</button>
+          </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-if value="{{ listBulkVisible }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ bulkArchiveListings }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Archive listing ({{ listSelectedCount }})</button>
+              <button onClick="{{ bulkDeleteListings }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Delete ({{ listSelectedCount }})</button>
+              </sc-if>
+            </div>
+            <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+              <sc-for list="{{ listFilters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:36px 1.4fr 1.6fr 1fr 1fr 1fr 1fr 48px;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;background:var(--gray-50);position:sticky;top:0;z-index:2">
+              <span onClick="{{ toggleListSelectAllAction }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ listAllSelectedBorder }};border-radius:4px;background:{{ listAllSelectedBg }};transition:background 120ms,border-color 120ms">
+                <sc-if value="{{ listAllSelected }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </sc-if>
+              </span>
+              <span onClick="{{ sortListByProperty }}" style="cursor:pointer;user-select:none">{{ listSortProperty }}</span>
+              <span onClick="{{ sortListByTitle }}" style="cursor:pointer;user-select:none">{{ listSortTitle }}</span>
+              <span onClick="{{ sortListByStatus }}" style="cursor:pointer;user-select:none">{{ listSortStatus }}</span>
+              <span onClick="{{ sortListByRate }}" style="cursor:pointer;user-select:none;text-align:right">{{ listSortRate }}</span>
+              <span onClick="{{ sortListByAvailable }}" style="cursor:pointer;user-select:none">{{ listSortAvailable }}</span>
+              <span onClick="{{ sortListByUpdated }}" style="cursor:pointer;user-select:none">{{ listSortUpdated }}</span>
+              <span></span>
+            </div>
+            <sc-if value="{{ listingsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:48px 22px;text-align:center;color:var(--fg-3);font-size:14px">{{ listingsEmptyLabel }}</div>
+            </sc-if>
+            <sc-for list="{{ listingsRows }}" as="l" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:36px 1.4fr 1.6fr 1fr 1fr 1fr 1fr 48px;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center">
+                <span onClick="{{ l.onToggleSelect }}" style="display:flex;align-items:center;justify-content:center;cursor:pointer;width:18px;height:18px;border:2px solid {{ l.checkBorder }};border-radius:4px;background:{{ l.checkBg }};transition:background 120ms,border-color 120ms">
+                  <sc-if value="{{ l.selected }}" hint-placeholder-val="{{ false }}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--fg-on-ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                  </sc-if>
+                </span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ l.propertyTitle }}</span>
+                <span style="font-weight:600;font-size:15px">{{ l.title }}</span>
+                <span onClick="{{ stop }}">
+                  <select value="{{ l.statusValue }}" onChange="{{ l.onStatusChange }}" disabled="{{ l.statusBusy }}" style="height:32px;border:1px solid var(--border);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:12px;font-weight:600;color:{{ l.statusFg }};background:{{ l.statusBg }};cursor:pointer;max-width:100%">
+                    <sc-for list="{{ l.statusOptions }}" as="opt" hint-placeholder-count="3">
+                      <option value="{{ opt.value }}">{{ opt.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
+                <span class="tnum" style="text-align:right;font-size:14px;color:var(--fg-2)">{{ l.rateLabel }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ l.availableLabel }}</span>
+                <span style="font-size:14px;color:var(--fg-2)">{{ l.updatedLabel }}</span>
+                <div onClick="{{ stop }}" style="position:relative;display:flex;justify-content:center">
+                  <button onClick="{{ l.onToggleMenu }}" title="Actions" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px">&#8942;</button>
+                  <sc-if value="{{ l.menuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:100%;right:0;margin-top:4px;min-width:168px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-2);padding:4px;z-index:10">
+                    <sc-for list="{{ l.menuItems }}" as="mi" hint-placeholder-count="3">
+                      <button onClick="{{ mi.onClick }}" style="display:block;width:100%;text-align:left;height:34px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:{{ mi.color }};font-family:inherit;font-size:13px;font-weight:{{ mi.weight }};cursor:pointer" style-hover="background:var(--gray-50)">{{ mi.label }}</button>
+                    </sc-for>
+                  </div>
                   </sc-if>
                 </div>
               </div>
@@ -744,9 +1004,11 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
             <p style="font-size:14px;color:var(--fg-2)">{{ funnelCount }} inquiries in the pipeline{{ funnelFilteredLabel }}</p>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <sc-for list="{{ inqPropertyOptions }}" as="opt" hint-placeholder-count="3">
-                <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
-              </sc-for>
+              <select value="{{ inqFilterProperty }}" onChange="{{ setInqFilterProperty }}" style="height:36px;min-width:200px;max-width:280px;border:1px solid var(--border-strong);border-radius:9999px;padding:0 12px;font-family:inherit;font-size:13px;background:var(--surface);cursor:pointer">
+                <sc-for list="{{ inqPropertyOptions }}" as="opt" hint-placeholder-count="3">
+                  <option value="{{ opt.value }}">{{ opt.label }}</option>
+                </sc-for>
+              </select>
               <sc-for list="{{ inqLeaseTypeOptions }}" as="opt" hint-placeholder-count="4">
                 <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
               </sc-for>
@@ -989,12 +1251,15 @@
         <div style="padding:22px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:12px;font-weight:600;color:var(--fg-2);background:var(--gray-50);border:1px solid var(--border);padding:3px 10px;border-radius:9999px">{{ propDrawer.typeLabel }}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--success);background:var(--success-tint);padding:3px 10px;border-radius:9999px">{{ propDrawer.statusLabel }}</span>
+            <span style="font-size:12px;font-weight:600;color:{{ propDrawer.stFg }};background:{{ propDrawer.stBg }};padding:3px 10px;border-radius:9999px">{{ propDrawer.statusLabel }}</span>
           </div>
           <h3 style="font-size:22px;margin-top:10px">{{ propDrawer.title }}</h3>
-          <div style="font-size:14px;color:var(--fg-2);margin-top:3px">{{ propDrawer.area }}, {{ propDrawer.city }} · {{ propDrawer.specs }}</div>
-          <sc-if value="{{ propDrawer.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
-          <div style="font-size:14px;color:var(--fg-2);margin-top:8px">Available for move-in: <span style="font-weight:600;color:var(--fg-1)">{{ propDrawer.availableMoveInLabel }}</span></div>
+          <div style="font-size:14px;color:var(--fg-2);margin-top:3px">{{ propDrawer.city }} · {{ propDrawer.specs }}</div>
+          <sc-if value="{{ propDrawer.hasActiveLease }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:14px;color:var(--fg-2);margin-top:8px">Lease rent: <span style="font-weight:600;color:var(--fg-1)">{{ propDrawer.leaseRentLabel }}</span> · ends {{ propDrawer.leaseEndLabel }}</div>
+          </sc-if>
+          <sc-if value="{{ propDrawer.hasSuggestedRate }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:14px;color:var(--fg-2);margin-top:8px">Suggested listing rate: <span style="font-weight:600;color:var(--fg-1)">{{ propDrawer.suggestedRateLabel }}</span></div>
           </sc-if>
           <sc-if value="{{ propDrawer.showQuickEditLabel }}" hint-placeholder-val="{{ false }}">
           <div class="tnum" style="font-size:18px;font-weight:600;margin-top:10px">{{ propDrawer.rateLabel }}</div>
@@ -1010,16 +1275,40 @@
           </div>
           </sc-if>
 
-          <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
-            <button onClick="{{ propDrawer.onStartQuickEdit }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Quick edit rate</button>
-            <button onClick="{{ propDrawer.onEdit }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Edit listing</button>
-            <sc-if value="{{ propDrawer.canArchive }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ propDrawer.onArchive }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Archive</button>
-            </sc-if>
-            <sc-if value="{{ propDrawer.canDelete }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ propDrawer.onDelete }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Delete</button>
-            </sc-if>
+          <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;align-items:center">
+            <div style="position:relative">
+              <button onClick="{{ propDrawer.onToggleMenu }}" title="Actions" style="width:36px;height:36px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px">&#8942;</button>
+              <sc-if value="{{ propDrawer.menuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:100%;left:0;margin-top:4px;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-2);padding:4px;z-index:10">
+                <sc-for list="{{ propDrawer.menuItems }}" as="mi" hint-placeholder-count="3">
+                  <button onClick="{{ mi.onClick }}" style="display:block;width:100%;text-align:left;height:36px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:{{ mi.color }};font-family:inherit;font-size:13px;font-weight:{{ mi.weight }};cursor:pointer" style-hover="background:var(--gray-50)">{{ mi.label }}</button>
+                </sc-for>
+              </div>
+              </sc-if>
+            </div>
+            <button onClick="{{ propDrawer.onEditLease }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">{{ propDrawer.leaseActionLabel }}</button>
+            <button onClick="{{ propDrawer.onViewListings }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">View listings ({{ propDrawer.listingCount }})</button>
           </div>
+
+          <sc-if value="{{ propDrawer.showLeaseForm }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:18px;border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;margin-bottom:12px">Active lease</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Tenant name</label><input value="{{ leaseDraft.tenantName }}" onChange="{{ onLeaseTenantName }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Monthly rent</label><input value="{{ leaseDraft.monthlyRate }}" onChange="{{ onLeaseMonthlyRate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Start date</label><input type="date" value="{{ leaseDraft.startDate }}" onChange="{{ onLeaseStartDate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">End date</label><input type="date" value="{{ leaseDraft.endDate }}" onChange="{{ onLeaseEndDate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
+              <div style="grid-column:span 2"><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Renewal status</label><select value="{{ leaseDraft.renewalStatus }}" onChange="{{ onLeaseRenewalStatus }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"><option value="UNKNOWN">Unknown</option><option value="RENEWING">Renewing</option><option value="NOT_RENEWING">Not renewing</option></select></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button onClick="{{ saveLease }}" style="height:36px;padding:0 14px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">{{ leaseSavingLabel }}</button>
+              <button onClick="{{ closeLeaseForm }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;cursor:pointer">Cancel</button>
+              <sc-if value="{{ leaseDraft.hasLeaseId }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ endLeaseAction }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;cursor:pointer">End lease</button>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
 
           <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;margin:22px 0 12px">Listing details</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1072,6 +1361,20 @@
   </div>
 
   <!-- TOAST -->
+  <sc-if value="{{ createStatusModalOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeCreateStatusModal }}" data-create-status-modal style="position:fixed;inset:0;background:rgba(14,15,12,0.40);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ stop }}" data-create-status-modal style="width:420px;max-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow-3)">
+      <div style="font-size:18px;font-weight:600;margin-bottom:6px">Create new status</div>
+      <div style="font-size:13px;color:var(--fg-2);margin-bottom:16px;line-height:1.5">Use this for statuses like Owner occupied. It will appear in filters, the board, and status dropdowns.</div>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Status name</label>
+      <input value="{{ createStatusDraft }}" onChange="{{ onCreateStatusDraft }}" onKeyDown="{{ onCreateStatusDraftKey }}" placeholder="e.g. Owner occupied" style="width:100%;height:42px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+        <button onClick="{{ closeCreateStatusModal }}" style="height:40px;padding:0 16px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Cancel</button>
+        <button onClick="{{ submitCreateCustomStatus }}" style="height:40px;padding:0 16px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Create status</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
   <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;bottom:78px;left:50%;transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--fg-on-ink);padding:12px 20px;border-radius:9999px;box-shadow:var(--shadow-3);font-size:14px;font-weight:500;display:flex;align-items:center;gap:9px;animation:cnUp 220ms var(--ease-out-soft)">
     <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--canary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -1090,7 +1393,7 @@ class Component extends DCLogic {
     this.state = {
       theme,
       surface: props.startSurface === 'manager' ? 'manager-signin' : 'public',
-      pubView: 'listings', propId: null, pubFilter: 'all',
+      pubView: 'listings', propId: null, pubFilter: 'all', pubSearch: '',
       rangeStart: '2026-06-20', rangeEnd: '2026-06-24',
       bookSubmitted: false, viewSubmitted: false,
       vFirst: '', vLast: '', vEmail: '', vPhone: '', vDate: '',
@@ -1098,8 +1401,8 @@ class Component extends DCLogic {
       vOtherDetails: '', vLeaseType: 'Long-term', vMaxPrice: '',
       viewSubmitting: false,
       inqFilterProperty: 'all', inqFilterLeaseType: 'all', inqFilterMinBeds: '',
-      mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false,
-      properties: [], inquiries: [], bookings: [], viewings: [],
+      mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false, mgrSearch: '',
+      properties: [], portfolio: [], managerListings: [], managerLeases: [], inquiries: [], bookings: [], viewings: [],
       noteDrafts: {}, draggingId: null, dragOverCol: null,
       copiedId: null, toast: null,
       up: this.blankUploader(), featDraft: '', imgDraft: '',
@@ -1107,13 +1410,47 @@ class Component extends DCLogic {
       oauthGoogle: false, oauthMicrosoft: false, authEmail: false,
       signInEmail: '', signInPassword: '', signInSubmitting: false,
       cardPhotoIdx: {}, cardPhotoHover: {}, photoUploading: false, photoUploadProgress: null, publishSubmitting: false,
-      propFilter: 'active', quickEditId: null, quickEditRate: '', editListingId: null, propActionBusy: false,
+      propFilter: 'all', quickEditId: null, quickEditRate: '', editListingId: null, editPropertyId: null, publishPropertyId: null, relistSourceId: null, relistSourceListingId: null, publishIntent: 'ACTIVE', propActionBusy: false, propBulkStatusMenuOpen: false, propBulkStatusChanging: false, propBulkStatusDone: 0, propBulkStatusTotal: 0, propBulkDeleting: false, customStatuses: [], bulkUploading: false, clearAllPropsBusy: false, createStatusModalOpen: false, createStatusDraft: '',
+      propViewMode: 'table', propSortKey: 'title', propSortDir: 'asc', propSelectedIds: [], propActionMenuId: null, propStatusBusyId: null,
+      propDragId: null, propDragOverCol: null, propDragInsertBeforeId: null, propKanbanOrder: {},
+      listFilter: 'all', listFilterProperty: 'all', listSortKey: 'title', listSortDir: 'desc', listSelectedIds: [], listActionMenuId: null, listStatusBusyId: null,
+      leaseFilter: 'all', leaseSortKey: 'start', leaseSortDir: 'desc', leaseBulkUploading: false,
+      leaseDraft: null, leaseSaving: false,
     };
-    this._toastT = null; this._copyT = null;
+    this._toastT = null; this._copyT = null; this._kanbanDragged = false;
+    this._kanbanDragId = null;
+    this._kanbanDropHandled = false;
+    this._onKanbanDragOver = (e) => {
+      const dragId = this._kanbanDragId || this.state.propDragId;
+      if (!dragId) return;
+      e.preventDefault();
+      const scrollEl = document.getElementById('mgr-scroll');
+      if (scrollEl) {
+        const rect = scrollEl.getBoundingClientRect();
+        const margin = 88;
+        const speed = 20;
+        if (e.clientY < rect.top + margin) scrollEl.scrollTop = Math.max(0, scrollEl.scrollTop - speed);
+        else if (e.clientY > rect.bottom - margin) scrollEl.scrollTop += speed;
+      }
+      const gridEl = document.getElementById('prop-kanban-grid');
+      if (gridEl) {
+        const gr = gridEl.getBoundingClientRect();
+        const margin = 72;
+        const speed = 20;
+        if (e.clientX < gr.left + margin) gridEl.scrollLeft = Math.max(0, gridEl.scrollLeft - speed);
+        else if (e.clientX > gr.right - margin) gridEl.scrollLeft += speed;
+      }
+    };
+    this._onDocClick = (e) => {
+      if (e?.target?.closest?.('[data-bulk-status-root]') || e?.target?.closest?.('[data-create-status-modal]')) return;
+      if (this.state.propActionMenuId || this.state.listActionMenuId || this.state.propBulkStatusMenuOpen) {
+        this.setState({ propActionMenuId: null, listActionMenuId: null, propBulkStatusMenuOpen: false });
+      }
+    };
   }
 
   blankUploader() {
-    return { title:'', type:'SINGLE', address:'', area:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', baths:'', sqft:'', availableDate:'', description:'', features:[], images:[],
+    return { title:'', type:'SINGLE', address:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', baths:'', sqft:'', availableDate:'', description:'', features:[], images:[],
       parking:'', petFriendly:false, dogs:false, cats:false, utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
       yearBuilt:'', storeys:'', heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false,
       powerMeter:'', oilCompany:'', internalNotes:'' };
@@ -1123,6 +1460,10 @@ class Component extends DCLogic {
     this.bootstrapAuth();
     this.loadListings();
     this.loadMapsConfig();
+    this.loadKanbanOrder();
+    this.loadCustomStatuses();
+    document.addEventListener('click', this._onDocClick);
+    document.addEventListener('dragover', this._onKanbanDragOver);
   }
   componentDidUpdate(_prevProps, prevState) {
     if (this.state.mgrView === 'uploader' && prevState.mgrView !== 'uploader') {
@@ -1136,7 +1477,12 @@ class Component extends DCLogic {
       setTimeout(() => this.initListingMap(this.getProp(this.state.propId)), 0);
     }
   }
-  componentWillUnmount() { clearTimeout(this._toastT); clearTimeout(this._copyT); }
+  componentWillUnmount() {
+    clearTimeout(this._toastT);
+    clearTimeout(this._copyT);
+    document.removeEventListener('click', this._onDocClick);
+    document.removeEventListener('dragover', this._onKanbanDragOver);
+  }
 
   loadMapsConfig = async () => {
     try {
@@ -1176,8 +1522,7 @@ class Component extends DCLogic {
     const city = get('locality') || get('postal_town') || get('sublocality') || '';
     const province = get('administrative_area_level_1', true) || 'NL';
     const postal = get('postal_code');
-    const area = get('neighborhood') || get('sublocality') || city;
-    return { address, city, province, postal, area };
+    return { address, city, province, postal };
   }
 
   initAddressAutocomplete = async () => {
@@ -1207,7 +1552,6 @@ class Component extends DCLogic {
           city: parsed.city || s.up.city,
           province: parsed.province || s.up.province,
           postal: parsed.postal || s.up.postal,
-          area: parsed.area || s.up.area,
           latitude: lat,
           longitude: lng,
         },
@@ -1275,7 +1619,9 @@ class Component extends DCLogic {
     });
     if (managerUser) {
       this.loadInquiries();
+      this.loadPortfolio();
       this.loadManagerListings();
+      this.loadManagerLeases();
     }
   };
 
@@ -1308,7 +1654,9 @@ class Component extends DCLogic {
         signInPassword: '',
       });
       this.loadInquiries();
+      this.loadPortfolio();
       this.loadManagerListings();
+      this.loadManagerLeases();
     } catch (e) {
       this.setState({ authError: 'Sign in failed. Please try again.', signInSubmitting: false });
     }
@@ -1326,16 +1674,44 @@ class Component extends DCLogic {
     } catch (e) {}
   };
 
+  loadPortfolio = async () => {
+    try {
+      const res = await fetch('/api/properties/mine', { credentials: 'include' });
+      if (!res.ok) return;
+      const rows = await res.json();
+      if (!rows.length) return;
+      this.setState(s => ({
+        portfolio: [...rows, ...s.portfolio.filter(p => !p.fromDb)],
+      }), () => this.syncCustomStatusesFromPortfolio(this.state.portfolio));
+    } catch (e) {}
+  };
+
   loadManagerListings = async () => {
     try {
       const res = await fetch('/api/listings/mine', { credentials: 'include' });
       if (!res.ok) return;
       const dbListings = await res.json();
+      this.setState({ managerListings: dbListings });
       if (!dbListings.length) return;
       this.setState(s => ({
-        properties: [...dbListings, ...s.properties.filter(p => !p.fromDb)],
+        properties: [...dbListings, ...s.properties.filter(p => !p.fromDb && !p.isProperty)],
       }));
     } catch (e) {}
+  };
+
+  loadManagerLeases = async () => {
+    try {
+      const res = await fetch('/api/leases/mine', { credentials: 'include' });
+      if (!res.ok) return;
+      const rows = await res.json();
+      this.setState({ managerLeases: rows || [] });
+    } catch (e) {}
+  };
+
+  mergePortfolio = (saved) => {
+    this.setState(s => ({
+      portfolio: [saved, ...s.portfolio.filter(p => p.id !== saved.id)],
+    }));
   };
 
   mergeListing = (saved) => {
@@ -1368,21 +1744,21 @@ class Component extends DCLogic {
     title: p.title || '',
     type: p.type || 'SINGLE',
     address: p.address || '',
-    area: p.area || '',
+    area: p.city || '',
     city: p.city || 'St. John\u2019s',
     province: p.province || 'NL',
     postal: p.postal || '',
     latitude: p.latitude ?? null,
     longitude: p.longitude ?? null,
-    rate: String(p.rate || ''),
-    cleaning: String(p.cleaning || ''),
+    rate: String(p.suggestedRate ?? p.rate ?? ''),
+    cleaning: String(p.suggestedCleaning ?? p.cleaning ?? ''),
     beds: String(p.beds || ''),
     baths: String(p.baths || ''),
     sqft: String(p.sqft || ''),
     availableDate: p.availableDate || '',
     description: p.description || '',
     features: (p.features || []).slice(),
-    images: (p.images || []).map(url => ({ url })),
+    images: (p.images || []).map(url => typeof url === 'string' ? { url } : url),
     parking: String(p.parking || ''),
     petFriendly: !!p.petFriendly,
     dogs: !!p.dogs,
@@ -1399,6 +1775,43 @@ class Component extends DCLogic {
     oilCompany: p.oilCompany || '',
     internalNotes: p.internalNotes || '',
   });
+
+  patchProperty = async (id, patch) => {
+    const res = await fetch('/api/properties/' + id, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    const saved = await res.json().catch(() => null);
+    if (!res.ok || !saved) throw new Error(saved?.error || 'Update failed');
+    this.mergePortfolio(saved);
+    return saved;
+  };
+
+  postPropertyManagement = async (id, action) => {
+    const res = await fetch('/api/properties/' + id + '/' + action, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const saved = await res.json().catch(() => null);
+    if (!res.ok || !saved || saved.error) throw new Error(saved?.error || 'Update failed');
+    this.mergePortfolio(saved);
+    return saved;
+  };
+
+  postPropertyOccupancy = async (id, status) => {
+    const res = await fetch('/api/properties/' + id + '/set-occupancy-status', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const saved = await res.json().catch(() => null);
+    if (!res.ok || !saved || saved.error) throw new Error(saved?.error || 'Update failed');
+    this.mergePortfolio(saved);
+    return saved;
+  };
 
   cardPhotoIndex(id) { return this.state.cardPhotoIdx[id] || 0; }
   prevCardPhoto = (id, e) => {
@@ -1512,6 +1925,8 @@ class Component extends DCLogic {
     return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
   }
   getProp(id) { return this.state.properties.find(p => p.id === id); }
+  getPortfolio(id) { return this.state.portfolio.find(p => p.id === id); }
+  getListing(id) { return this.state.managerListings.find(p => p.id === id) || this.getProp(id); }
   refCode(seed) { let h=0; for (let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return 'APP-' + h.toString(36).toUpperCase().slice(0,4).padEnd(4,'0'); }
   showToast(msg) { clearTimeout(this._toastT); this.setState({ toast: msg }); this._toastT = setTimeout(() => this.setState({ toast: null }), 2600); }
 
@@ -1523,12 +1938,33 @@ class Component extends DCLogic {
     else this.setState({ surface:'manager-signin', authError: null });
   };
   goUploader = () => {
-    if (this.state.managerUser) this.setState({ surface:'manager', mgrView:'uploader', editListingId: null, up: this.blankUploader(), featDraft: '', imgDraft: '' });
+    if (this.state.managerUser) this.setState({ surface:'manager', mgrView:'uploader', editListingId: null, relistSourceId: null, publishIntent: 'ACTIVE', up: this.blankUploader(), featDraft: '', imgDraft: '' });
     else this.setState({ surface:'manager-signin', authError: null });
   };
   goOverview = () => this.setState({ mgrView:'overview' });
   goProperties = () => {
     this.setState({ mgrView:'properties' });
+    if (this.state.managerUser) {
+      this.loadPortfolio();
+      this.loadManagerListings();
+    }
+  };
+  goListings = () => {
+    this.setState({ mgrView:'listings' });
+    if (this.state.managerUser) {
+      this.loadPortfolio();
+      this.loadManagerListings();
+    }
+  };
+  goLeases = () => {
+    this.setState({ mgrView:'leases' });
+    if (this.state.managerUser) {
+      this.loadPortfolio();
+      this.loadManagerLeases();
+    }
+  };
+  viewListingsForProperty = (propertyId) => {
+    this.setState({ mgrView: 'listings', listFilter: 'all', listFilterProperty: propertyId, openProp: null });
     if (this.state.managerUser) this.loadManagerListings();
   };
   goFunnel = () => this.setState({ mgrView:'funnel' });
@@ -1578,6 +2014,7 @@ class Component extends DCLogic {
   setVLeaseType = (e) => this.setState({ vLeaseType: e.target.value });
   setVMaxPrice = (e) => this.setState({ vMaxPrice: e.target.value });
   setInqFilterMinBeds = (e) => this.setState({ inqFilterMinBeds: e.target.value });
+  setInqFilterProperty = (e) => this.setState({ inqFilterProperty: e.target.value });
   submitViewing = async () => {
     const p = this.getProp(this.state.propId); if (!p) return;
     const s = this.state;
@@ -1752,22 +2189,96 @@ class Component extends DCLogic {
   publish = async () => {
     const u = this.state.up;
     const editingId = this.state.editListingId;
+    const publishPropertyId = this.state.publishPropertyId;
+    const relistSourceListingId = this.state.relistSourceListingId;
+    const editPropertyId = this.state.editPropertyId;
     if (!u.title.trim()) { this.showToast('Give the listing a title'); return; }
+
+    if (editPropertyId && !publishPropertyId && !editingId) {
+      this.setState({ publishSubmitting: true });
+      try {
+        const payload = {
+          title: u.title, type: u.type,
+          address: u.address || '', area: u.city || 'St. John\u2019s',
+          city: u.city || 'St. John\u2019s', province: u.province || 'NL', postal: u.postal || '',
+          latitude: u.latitude ?? null, longitude: u.longitude ?? null,
+          suggestedRate: u.rate ? Number(u.rate) : null,
+          suggestedCleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
+          beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
+          features: u.features.slice(), description: u.description || '',
+          parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
+          utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
+          yearBuilt: Number(u.yearBuilt) || 0, storeys: Number(u.storeys) || 0, heatingType: u.heatingType, waterHeater: u.waterHeater, firewall: !!u.firewall,
+          powerMeter: u.powerMeter, oilCompany: u.oilCompany, internalNotes: u.internalNotes,
+          images: u.images.map(im => ({ url: im.url, path: im.path || null })),
+        };
+        await this.patchProperty(editPropertyId, payload);
+        this.setState({
+          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+          editPropertyId: null,
+        });
+        this.showToast('Property updated');
+      } catch (e) {
+        this.setState({ publishSubmitting: false });
+        this.showToast('Could not update property');
+      }
+      return;
+    }
+
     if (!u.rate) { this.showToast('Add a rate'); return; }
     this.setState({ publishSubmitting: true });
+
+    if (publishPropertyId) {
+      try {
+        const res = await fetch('/api/listings/publish', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            propertyId: publishPropertyId,
+            rate: Number(u.rate) || 0,
+            cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
+            availableDate: u.availableDate || null,
+            title: u.title,
+            sourceListingId: relistSourceListingId || null,
+          }),
+        });
+        const saved = await res.json().catch(() => null);
+        if (res.ok && saved) {
+          if (relistSourceListingId) {
+            try { await this.patchListing(relistSourceListingId, { status: 'ARCHIVED' }); } catch (e) {}
+          }
+          this.setState(s => ({
+            properties: [saved, ...s.properties.filter(p => p.id !== saved.id)],
+            managerListings: [saved, ...s.managerListings.filter(p => p.id !== saved.id)],
+            portfolio: s.portfolio.map(p => p.id === publishPropertyId ? { ...p, liveListingId: saved.id, liveListingStatus: 'ACTIVE' } : p),
+            up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+            publishPropertyId: null, relistSourceListingId: null, relistSourceId: null,
+          }));
+          this.showToast(relistSourceListingId ? 'Listing published \u2014 previous live listing archived' : 'Listing published \u2014 now live on the storefront');
+          return;
+        }
+        this.showToast(saved?.error || 'Publish failed');
+      } catch (e) {
+        this.showToast('Publish failed');
+      }
+      this.setState({ publishSubmitting: false });
+      return;
+    }
+
     const slug = editingId
-      ? (this.getProp(editingId)?.slug || '')
+      ? (this.getListing(editingId)?.slug || '')
       : ((u.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'listing') + '-' + Date.now().toString(36));
     const imgs = u.images;
     const payload = {
       slug, title: u.title, type: u.type,
-      address: u.address || '', area: u.area || u.city || 'St. John\u2019s',
+      address: u.address || '', area: u.city || 'St. John\u2019s',
       city: u.city || 'St. John\u2019s', province: u.province || 'NL', postal: u.postal || '',
       latitude: u.latitude ?? null, longitude: u.longitude ?? null,
       rate: Number(u.rate) || 0, cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
       beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
       availableDate: u.availableDate || null,
-      status: editingId ? (this.getProp(editingId)?.status || 'ACTIVE') : 'ACTIVE',
+      status: editingId ? (this.getListing(editingId)?.status || 'ACTIVE') : 'ACTIVE',
       features: u.features.slice(), description: u.description || '',
       parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
       utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
@@ -1787,33 +2298,30 @@ class Component extends DCLogic {
       if (res.ok && saved) {
         this.setState(s => ({
           properties: [saved, ...s.properties.filter(p => p.id !== saved.id)],
-          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false, editListingId: null,
+          managerListings: [saved, ...s.managerListings.filter(p => p.id !== saved.id)],
+          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+          editListingId: null,
         }));
-        this.showToast(editingId ? 'Listing updated' : 'Listing published \u2014 now live on the storefront');
+        this.showToast(editingId ? 'Listing updated' : 'Listing published');
         return;
       }
     } catch (e) {}
-    const id = 'p' + Date.now();
-    const np = {
-      id, slug, title: payload.title, type: payload.type,
-      address: payload.address, area: payload.area, city: payload.city, province: payload.province, postal: payload.postal,
-      latitude: payload.latitude, longitude: payload.longitude,
-      rate: payload.rate, cleaning: payload.cleaning, beds: payload.beds, baths: payload.baths, sqft: payload.sqft,
-      availableDate: payload.availableDate,
-      status: 'ACTIVE', features: payload.features, images: imgs.map(im => im.url),
-      parking: payload.parking, petFriendly: payload.petFriendly, dogs: payload.dogs, cats: payload.cats,
-      utilitiesIncluded: payload.utilitiesIncluded, utilityTypes: payload.utilityTypes, utilityCap: payload.utilityCap,
-      yearBuilt: payload.yearBuilt, storeys: payload.storeys, heatingType: payload.heatingType, waterHeater: payload.waterHeater, firewall: payload.firewall,
-      powerMeter: payload.powerMeter, oilCompany: payload.oilCompany, internalNotes: payload.internalNotes,
-      description: payload.description,
-    };
-    this.setState(s => ({
-      properties: [np, ...s.properties], up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
-    }));
-    this.showToast('Listing saved locally (database unavailable)');
+    this.setState({ publishSubmitting: false });
+    this.showToast('Could not save listing');
   };
 
   typeLabelOf(t) { return t==='SHORT_TERM' ? 'Short stay' : (t==='MULTI' ? 'Multi-unit' : 'Single unit'); }
+  statusMeta(status) {
+    if (status === 'ACTIVE') return { label: 'Live', fg: 'var(--success)', bg: 'var(--success-tint)' };
+    if (status === 'DRAFT') return { label: 'Draft', fg: 'var(--warning)', bg: 'var(--warning-tint)' };
+    if (status === 'ARCHIVED') return { label: 'Archived', fg: 'var(--fg-3)', bg: 'var(--gray-100)' };
+    return { label: status || 'Unknown', fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
+  }
+  renewalMeta(status) {
+    if (status === 'RENEWING') return { label: 'Renewing', fg: 'var(--success)', bg: 'var(--success-tint)' };
+    if (status === 'NOT_RENEWING') return { label: 'Not renewing', fg: 'var(--warning)', bg: 'var(--warning-tint)' };
+    return { label: 'Unknown', fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
+  }
 
   inqVM(q) {
     const p = this.getProp(q.propId);
@@ -1847,11 +2355,707 @@ class Component extends DCLogic {
   openPropDrawer = (id) => this.setState({ openProp:id, quickEditId:null });
   closePropDrawer = () => this.setState({ openProp:null, quickEditId:null });
   setPropFilter = (key) => this.setState({ propFilter: key });
+  setListFilter = (key) => this.setState({ listFilter: key });
+  setPropViewMode = (mode) => this.setState({ propViewMode: mode, propActionMenuId: null });
+  OCCUPANCY_STATUSES = ['vacant', 'leased', 'renewing', 'not_renewing', 'short_term'];
+  LEASE_MANAGED_STATUSES = ['vacant', 'leased', 'renewing', 'not_renewing'];
+  BUILTIN_KANBAN_COLUMNS = [
+    ['leased', 'Leased'],
+    ['vacant', 'Vacant'],
+    ['renewing', 'Renewing'],
+    ['not_renewing', 'Not renewing'],
+    ['short_term', 'Short term'],
+  ];
+  LISTING_STATUSES = ['ACTIVE', 'DRAFT', 'ARCHIVED'];
+
+  slugifyStatusLabel(label) {
+    return String(label || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 48) || 'custom_status';
+  }
+  humanizeStatusSlug(slug) {
+    return String(slug || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  isCustomStatusKey(key) {
+    if (!key || key === 'standard' || key === 'short_term' || key === 'mgmt_archived') return false;
+    return !this.LEASE_MANAGED_STATUSES.includes(key);
+  }
+  getCustomStatusDef(key) {
+    return (this.state.customStatuses || []).find(s => s.key === key) || null;
+  }
+  getKanbanColumnDefs() {
+    const custom = (this.state.customStatuses || []).map(s => [s.key, s.label]);
+    return [...this.BUILTIN_KANBAN_COLUMNS, ...custom, ['mgmt_archived', 'Archived']];
+  }
+  getPropertyStatusOptions() {
+    const builtIn = this.OCCUPANCY_STATUSES.map(key => ({
+      value: key,
+      label: this.portfolioStatusMeta(key).label,
+    }));
+    const custom = (this.state.customStatuses || []).map(s => ({
+      value: s.key,
+      label: s.label,
+    }));
+    return [...builtIn, ...custom, { value: 'mgmt_archived', label: 'Archived' }];
+  }
+  loadCustomStatuses = () => {
+    try {
+      const raw = localStorage.getItem('canary-custom-statuses');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) this.setState({ customStatuses: parsed });
+    } catch (e) {}
+  };
+  saveCustomStatuses = (customStatuses) => {
+    try { localStorage.setItem('canary-custom-statuses', JSON.stringify(customStatuses)); } catch (e) {}
+  };
+  syncCustomStatusesFromPortfolio = (portfolio) => {
+    const toAdd = [];
+    for (const pr of portfolio || []) {
+      const occ = pr.occupancyStatus;
+      if (occ && this.isCustomStatusKey(occ) && !this.getCustomStatusDef(occ) && !toAdd.some(t => t.key === occ)) {
+        toAdd.push({ key: occ, label: this.humanizeStatusSlug(occ), fg: 'var(--fg-2)', bg: 'var(--gray-100)' });
+      }
+    }
+    if (!toAdd.length) return;
+    this.setState(s => {
+      const customStatuses = [...s.customStatuses, ...toAdd.filter(t => !s.customStatuses.some(c => c.key === t.key))];
+      this.saveCustomStatuses(customStatuses);
+      return { customStatuses };
+    });
+  };
+  toggleBulkStatusMenu = (e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => ({ propBulkStatusMenuOpen: !s.propBulkStatusMenuOpen, propActionMenuId: null, listActionMenuId: null }));
+  };
+  openCreateStatusModal = (e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState({ createStatusModalOpen: true, createStatusDraft: '', propBulkStatusMenuOpen: false, propActionMenuId: null, listActionMenuId: null });
+  };
+  closeCreateStatusModal = (e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState({ createStatusModalOpen: false, createStatusDraft: '' });
+  };
+  onCreateStatusDraft = (e) => this.setState({ createStatusDraft: e.target.value });
+  onCreateStatusDraftKey = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); this.submitCreateCustomStatus(); }
+    if (e.key === 'Escape') { e.preventDefault(); this.closeCreateStatusModal(); }
+  };
+  submitCreateCustomStatus = () => {
+    const label = (this.state.createStatusDraft || '').trim();
+    if (!label) {
+      this.showToast('Enter a status name');
+      return;
+    }
+    const key = this.slugifyStatusLabel(label);
+    const reserved = [...this.LEASE_MANAGED_STATUSES, 'short_term', 'mgmt_archived', 'standard'];
+    if (reserved.includes(key)) {
+      this.showToast('That name conflicts with a built-in status');
+      return;
+    }
+    const entry = { key, label, fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
+    this.setState(s => {
+      const exists = s.customStatuses.some(c => c.key === key);
+      const customStatuses = exists ? s.customStatuses : [...s.customStatuses, entry];
+      if (!exists) this.saveCustomStatuses(customStatuses);
+      return { customStatuses, createStatusModalOpen: false, createStatusDraft: '', propBulkStatusMenuOpen: false };
+    });
+    this.showToast(`Status “${label}” created`);
+  };
+  promptCreateCustomStatus = (e) => this.openCreateStatusModal(e);
+  bulkSetPropStatus = async (newStatus) => {
+    const ids = [...this.state.propSelectedIds];
+    if (!ids.length || this.state.propBulkStatusChanging) return;
+    const label = this.portfolioStatusMeta(newStatus).label;
+    this.setState({
+      propBulkStatusMenuOpen: false,
+      propBulkStatusChanging: true,
+      propBulkStatusDone: 0,
+      propBulkStatusTotal: ids.length,
+    });
+    let updated = 0;
+    for (const id of ids) {
+      try {
+        await this.setPortfolioStatus(id, newStatus);
+        updated++;
+        this.setState({ propBulkStatusDone: updated });
+      } catch (e) {
+        if (!updated) this.showToast(e.message || 'Could not update status');
+      }
+    }
+    await this.loadPortfolio();
+    this.setState({
+      propBulkStatusChanging: false,
+      propBulkStatusDone: 0,
+      propBulkStatusTotal: 0,
+      propSelectedIds: [],
+    });
+    this.showToast(`Set ${updated} propert${updated === 1 ? 'y' : 'ies'} to ${label}`);
+  };
+  endActiveLease = async (lease) => {
+    if (!lease?.id) return;
+    const res = await fetch('/api/leases/' + lease.id, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'ENDED' }),
+    });
+    if (!res.ok) throw new Error('Could not end lease');
+  };
+
+  isPropertyArchived(pr) {
+    return (pr.managementStatus || 'ACTIVE') === 'ARCHIVED';
+  }
+  getOccupancyStatus(pr) {
+    const occ = pr.occupancyStatus;
+    if (occ === 'short_term') return 'short_term';
+    if (occ && occ !== 'standard' && this.isCustomStatusKey(occ)) return occ;
+    const lease = pr.activeLease;
+    if (occ !== 'standard' && pr.type === 'SHORT_TERM' && !lease) {
+      return 'short_term';
+    }
+    if (lease) {
+      if (lease.renewalStatus === 'RENEWING') return 'renewing';
+      if (lease.renewalStatus === 'NOT_RENEWING') return 'not_renewing';
+      return 'leased';
+    }
+    return 'vacant';
+  }
+  getPortfolioStatus(pr) {
+    return this.getOccupancyStatus(pr);
+  }
+  getKanbanColumn(pr) {
+    if (this.isPropertyArchived(pr)) return 'mgmt_archived';
+    return this.getOccupancyStatus(pr);
+  }
+  portfolioStatusMeta(key) {
+    const custom = this.getCustomStatusDef(key);
+    if (custom) return { label: custom.label, fg: custom.fg || 'var(--fg-2)', bg: custom.bg || 'var(--gray-100)' };
+    if (this.isCustomStatusKey(key)) {
+      return { label: this.humanizeStatusSlug(key), fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
+    }
+    const map = {
+      vacant: { label: 'Vacant', fg: 'var(--fg-2)', bg: 'var(--gray-100)' },
+      leased: { label: 'Leased', fg: 'var(--atlantic)', bg: 'var(--atlantic-tint)' },
+      renewing: { label: 'Renewing', fg: 'var(--success)', bg: 'var(--success-tint)' },
+      not_renewing: { label: 'Not renewing', fg: 'var(--warning)', bg: 'var(--warning-tint)' },
+      short_term: { label: 'Short term', fg: '#7a5a12', bg: 'var(--warning-tint)' },
+      mgmt_archived: { label: 'Archived', fg: 'var(--fg-3)', bg: 'var(--gray-100)' },
+    };
+    return map[key] || map.vacant;
+  }
+  listingStatusMeta(status) {
+    return this.statusMeta(status);
+  }
+  sortProps(list, key, dir) {
+    const mul = dir === 'desc' ? -1 : 1;
+    return [...list].sort((a, b) => {
+      let av; let bv;
+      switch (key) {
+        case 'title': av = (a.title || '').toLowerCase(); bv = (b.title || '').toLowerCase(); break;
+        case 'propertyCode': av = (a.propertyCode || '').toLowerCase(); bv = (b.propertyCode || '').toLowerCase(); break;
+        case 'type': av = a.type || ''; bv = b.type || ''; break;
+        case 'status': av = this.getOccupancyStatus(a); bv = this.getOccupancyStatus(b); break;
+        case 'rate': av = a.activeLease?.monthlyRate ?? a.suggestedRate ?? 0; bv = b.activeLease?.monthlyRate ?? b.suggestedRate ?? 0; break;
+        case 'leaseEnd': av = a.activeLease?.endDate || '9999'; bv = b.activeLease?.endDate || '9999'; break;
+        default: return 0;
+      }
+      if (av < bv) return -1 * mul;
+      if (av > bv) return 1 * mul;
+      return 0;
+    });
+  }
+  sortListings(list, key, dir) {
+    const mul = dir === 'desc' ? -1 : 1;
+    return [...list].sort((a, b) => {
+      let av; let bv;
+      switch (key) {
+        case 'property': av = (this.getPortfolio(a.propertyId)?.title || a.title || '').toLowerCase(); bv = (this.getPortfolio(b.propertyId)?.title || b.title || '').toLowerCase(); break;
+        case 'title': av = (a.title || '').toLowerCase(); bv = (b.title || '').toLowerCase(); break;
+        case 'status': av = a.status || ''; bv = b.status || ''; break;
+        case 'rate': av = a.rate ?? 0; bv = b.rate ?? 0; break;
+        case 'available': av = a.availableDate || '9999'; bv = b.availableDate || '9999'; break;
+        case 'updated': av = a.updatedAt || a.createdAt || ''; bv = b.updatedAt || b.createdAt || ''; break;
+        default: return 0;
+      }
+      if (av < bv) return -1 * mul;
+      if (av > bv) return 1 * mul;
+      return 0;
+    });
+  }
+  sortLeases(list, key, dir) {
+    const mul = dir === 'desc' ? -1 : 1;
+    return [...list].sort((a, b) => {
+      let av; let bv;
+      switch (key) {
+        case 'propertyCode': av = (a.propertyCode || '').toLowerCase(); bv = (b.propertyCode || '').toLowerCase(); break;
+        case 'property': av = (a.propertyTitle || '').toLowerCase(); bv = (b.propertyTitle || '').toLowerCase(); break;
+        case 'tenant': av = (a.tenantName || '').toLowerCase(); bv = (b.tenantName || '').toLowerCase(); break;
+        case 'start': av = a.startDate || '0000'; bv = b.startDate || '0000'; break;
+        case 'end': av = a.endDate || '0000'; bv = b.endDate || '0000'; break;
+        case 'rate': av = a.monthlyRate ?? 0; bv = b.monthlyRate ?? 0; break;
+        case 'status': av = a.status || ''; bv = b.status || ''; break;
+        default: return 0;
+      }
+      if (av < bv) return -1 * mul;
+      if (av > bv) return 1 * mul;
+      return 0;
+    });
+  }
+  leaseStatusMeta(status) {
+    if (status === 'ACTIVE') return { label: 'Active', fg: 'var(--atlantic)', bg: 'var(--atlantic-tint)' };
+    return { label: 'Ended', fg: 'var(--fg-3)', bg: 'var(--gray-100)' };
+  }
+  togglePropSort = (key) => {
+    this.setState(s => {
+      if (s.propSortKey !== key) return { propSortKey: key, propSortDir: 'asc' };
+      if (s.propSortDir === 'asc') return { propSortDir: 'desc' };
+      return { propSortKey: 'title', propSortDir: 'asc' };
+    });
+  };
+  toggleListSort = (key) => {
+    this.setState(s => {
+      if (s.listSortKey !== key) return { listSortKey: key, listSortDir: 'asc' };
+      if (s.listSortDir === 'asc') return { listSortDir: 'desc' };
+      return { listSortKey: 'title', listSortDir: 'desc' };
+    });
+  };
+  toggleLeaseSort = (key) => {
+    this.setState(s => {
+      if (s.leaseSortKey !== key) return { leaseSortKey: key, leaseSortDir: 'asc' };
+      if (s.leaseSortDir === 'asc') return { leaseSortDir: 'desc' };
+      return { leaseSortKey: 'start', leaseSortDir: 'desc' };
+    });
+  };
+  sortHeaderLabel(key, label, sortKey, sortDir) {
+    if (sortKey !== key) return label;
+    return label + (sortDir === 'asc' ? ' \u25b2' : ' \u25bc');
+  }
+  togglePropSelect = (id, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => {
+      const has = s.propSelectedIds.includes(id);
+      return { propSelectedIds: has ? s.propSelectedIds.filter(x => x !== id) : [...s.propSelectedIds, id] };
+    });
+  };
+  togglePropSelectAll = (ids, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => {
+      const allSelected = ids.length > 0 && ids.every(id => s.propSelectedIds.includes(id));
+      return { propSelectedIds: allSelected ? s.propSelectedIds.filter(id => !ids.includes(id)) : [...new Set([...s.propSelectedIds, ...ids])] };
+    });
+  };
+  toggleListSelect = (id, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => {
+      const has = s.listSelectedIds.includes(id);
+      return { listSelectedIds: has ? s.listSelectedIds.filter(x => x !== id) : [...s.listSelectedIds, id] };
+    });
+  };
+  toggleListSelectAll = (ids, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => {
+      const allSelected = ids.length > 0 && ids.every(id => s.listSelectedIds.includes(id));
+      return { listSelectedIds: allSelected ? s.listSelectedIds.filter(id => !ids.includes(id)) : [...new Set([...s.listSelectedIds, ...ids])] };
+    });
+  };
+  togglePropActionMenu = (id, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => ({ propActionMenuId: s.propActionMenuId === id ? null : id, listActionMenuId: null }));
+  };
+  toggleListActionMenu = (id, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.setState(s => ({ listActionMenuId: s.listActionMenuId === id ? null : id, propActionMenuId: null }));
+  };
+  buildPropMenuItems(pr) {
+    const items = [];
+    items.push({ key: 'edit', label: 'Edit property', onClick: () => { this.setState({ propActionMenuId: null }); this.startEditProperty(pr.id); } });
+    items.push({ key: 'lease', label: pr.activeLease ? 'Edit lease' : 'Add lease', onClick: () => { this.setState({ propActionMenuId: null }); this.openLeaseForm(pr.id); } });
+    if (this.isPropertyArchived(pr)) {
+      items.push({ key: 'restore', label: 'Restore property', onClick: () => { this.setState({ propActionMenuId: null }); this.restoreProperty(pr.id); } });
+    } else {
+      items.push({ key: 'archive', label: 'Archive property', onClick: () => { this.setState({ propActionMenuId: null }); this.archiveProperty(pr.id); } });
+    }
+    items.push({ key: 'delete', label: 'Delete property', destructive: true, onClick: () => { this.setState({ propActionMenuId: null }); this.deleteProp(pr.id); } });
+    return items;
+  }
+  buildListingMenuItems(listing) {
+    const items = [];
+    const propertyId = listing.propertyId;
+    if (listing.status === 'ACTIVE') {
+      items.push({ key: 'relist', label: 'Relist', onClick: () => { this.setState({ listActionMenuId: null }); this.startRelist(listing.id); } });
+    } else if (propertyId) {
+      items.push({ key: 'publish', label: 'Publish', primary: true, onClick: () => { this.setState({ listActionMenuId: null }); this.startPublishListing(propertyId); } });
+    }
+    items.push({ key: 'edit', label: 'Edit listing', onClick: () => { this.setState({ listActionMenuId: null }); this.startEditListing(listing.id); } });
+    if (listing.status === 'ACTIVE') {
+      items.push({ key: 'archive', label: 'Archive listing', onClick: () => { this.setState({ listActionMenuId: null }); this.archiveListing(listing.id); } });
+    }
+    if (listing.status === 'ARCHIVED') {
+      items.push({ key: 'delete', label: 'Delete listing', destructive: true, onClick: () => { this.setState({ listActionMenuId: null }); this.deleteListing(listing.id); } });
+    }
+    return items;
+  }
+  archiveProperty = async (id) => {
+    this.setState({ propActionBusy: true });
+    try {
+      await this.postPropertyManagement(id, 'archive');
+      await this.loadPortfolio();
+      this.setState({ propActionBusy: false, openProp: null });
+      this.showToast('Property archived \u2014 hidden from active portfolio');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast(err.message || 'Could not archive property');
+    }
+  };
+  restoreProperty = async (id) => {
+    this.setState({ propActionBusy: true });
+    try {
+      await this.postPropertyManagement(id, 'restore');
+      await this.loadPortfolio();
+      this.setState({ propActionBusy: false });
+      this.showToast('Property restored');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast(err.message || 'Could not restore property');
+    }
+  };
+  archiveListing = async (listingId) => {
+    this.setState({ propActionBusy: true });
+    try {
+      await this.patchListing(listingId, { status: 'ARCHIVED' });
+      await this.loadPortfolio();
+      await this.loadManagerListings();
+      this.setState({ propActionBusy: false });
+      this.showToast('Listing archived \u2014 hidden from public storefront');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast('Could not archive listing');
+    }
+  };
+  deleteListing = async (listingId) => {
+    const listing = this.getListing(listingId);
+    if (!listing) return;
+    if (listing.status !== 'ARCHIVED') {
+      this.showToast('Archive the listing before deleting');
+      return;
+    }
+    if (!window.confirm('Permanently delete this archived listing?')) return;
+    this.setState({ propActionBusy: true });
+    try {
+      const res = await fetch('/api/listings/' + listingId, { method: 'DELETE', credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+      this.setState(s => ({
+        managerListings: s.managerListings.filter(l => l.id !== listingId),
+        properties: s.properties.filter(p => p.id !== listingId),
+        propActionBusy: false,
+      }));
+      await this.loadPortfolio();
+      this.showToast('Listing deleted');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast(err.message || 'Could not delete listing');
+    }
+  };
+  setPortfolioStatus = async (propertyId, newStatus) => {
+    let pr = this.getPortfolio(propertyId);
+    if (!pr) return;
+    if (newStatus === 'mgmt_archived') {
+      if (this.isPropertyArchived(pr)) return;
+      await this.archiveProperty(propertyId);
+      return;
+    }
+    const wasArchived = this.isPropertyArchived(pr);
+    if (wasArchived) {
+      await this.postPropertyManagement(propertyId, 'restore');
+      await this.loadPortfolio();
+      pr = this.getPortfolio(propertyId);
+      if (!pr) return;
+    }
+    if (newStatus === 'short_term') {
+      const current = this.getOccupancyStatus(pr);
+      if (current === 'short_term') return;
+      this.setState({ propStatusBusyId: propertyId });
+      try {
+        await this.postPropertyOccupancy(propertyId, 'short_term');
+        try { await this.endActiveLease(pr.activeLease); } catch (_) {}
+        await this.loadPortfolio();
+        this.setState({ propStatusBusyId: null });
+        this.showToast('Marked as short-term (Airbnb / nightly)');
+      } catch (err) {
+        this.setState({ propStatusBusyId: null });
+        this.showToast(err.message || 'Could not update status');
+        throw err;
+      }
+      return;
+    }
+    if (this.isCustomStatusKey(newStatus)) {
+      const current = this.getOccupancyStatus(pr);
+      if (current === newStatus) return;
+      this.setState({ propStatusBusyId: propertyId });
+      try {
+        await this.postPropertyOccupancy(propertyId, newStatus);
+        try { await this.endActiveLease(pr.activeLease); } catch (_) {}
+        await this.loadPortfolio();
+        this.setState({ propStatusBusyId: null });
+        this.showToast(`Status set to ${this.portfolioStatusMeta(newStatus).label}`);
+      } catch (err) {
+        this.setState({ propStatusBusyId: null });
+        this.showToast(err.message || 'Could not update status');
+        throw err;
+      }
+      return;
+    }
+    let current = this.getOccupancyStatus(pr);
+    if ((this.isCustomStatusKey(current) || current === 'short_term') && newStatus !== 'short_term' && !this.isCustomStatusKey(newStatus)) {
+      await this.postPropertyOccupancy(propertyId, 'standard');
+      await this.loadPortfolio();
+      pr = this.getPortfolio(propertyId);
+      if (!pr) return;
+      current = this.getOccupancyStatus(pr);
+    }
+    if (current === newStatus) {
+      if (wasArchived) {
+        this.setState({ propFilter: 'all' });
+        this.showToast('Property restored');
+      }
+      return;
+    }
+    this.setState({ propStatusBusyId: propertyId });
+    try {
+      const lease = pr.activeLease;
+      if (newStatus === 'vacant') {
+        if (lease?.id) await this.endActiveLease(lease);
+      } else if (newStatus === 'leased') {
+        if (!lease) {
+          const res = await fetch('/api/properties/' + propertyId + '/leases/quick', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ occupancy: 'leased' }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not create lease');
+        } else if (lease.renewalStatus !== 'UNKNOWN') {
+          const res = await fetch('/api/leases/' + lease.id, {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ renewalStatus: 'UNKNOWN' }),
+          });
+          if (!res.ok) throw new Error('Could not update lease');
+        }
+      } else if (newStatus === 'renewing') {
+        if (!lease) {
+          const res = await fetch('/api/properties/' + propertyId + '/leases/quick', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ occupancy: 'leased', renewalStatus: 'RENEWING' }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not create lease');
+        } else {
+          const res = await fetch('/api/leases/' + lease.id, {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ renewalStatus: 'RENEWING' }),
+          });
+          if (!res.ok) throw new Error('Could not update lease');
+        }
+      } else if (newStatus === 'not_renewing') {
+        if (!lease) {
+          const res = await fetch('/api/properties/' + propertyId + '/leases/quick', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ occupancy: 'leased', renewalStatus: 'NOT_RENEWING' }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not create lease');
+        } else {
+          const res = await fetch('/api/leases/' + lease.id, {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ renewalStatus: 'NOT_RENEWING' }),
+          });
+          if (!res.ok) throw new Error('Could not update lease');
+        }
+      }
+      await this.loadPortfolio();
+      this.setState({ propStatusBusyId: null });
+      this.showToast('Status updated');
+    } catch (err) {
+      this.setState({ propStatusBusyId: null });
+      this.showToast(err.message || 'Could not update status');
+    }
+  };
+  setListingStatus = async (listingId, newStatus) => {
+    const listing = this.getListing(listingId);
+    if (!listing || listing.status === newStatus) return;
+    this.setState({ listStatusBusyId: listingId });
+    try {
+      if (newStatus === 'ARCHIVED') {
+        await this.archiveListing(listingId);
+      } else {
+        await this.patchListing(listingId, { status: newStatus });
+        await this.loadPortfolio();
+        await this.loadManagerListings();
+        this.showToast('Listing status updated');
+      }
+      this.setState({ listStatusBusyId: null });
+    } catch (err) {
+      this.setState({ listStatusBusyId: null });
+      this.showToast(err.message || 'Could not update listing');
+    }
+  };
+  onPropStatusChange = (propertyId, e) => {
+    e.stopPropagation();
+    this.setPortfolioStatus(propertyId, e.target.value);
+  };
+  onListingStatusChange = (listingId, e) => {
+    e.stopPropagation();
+    this.setListingStatus(listingId, e.target.value);
+  };
+  loadKanbanOrder = () => {
+    try {
+      const raw = localStorage.getItem('canary-prop-kanban-order');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') this.setState({ propKanbanOrder: parsed });
+    } catch (e) {}
+  };
+  saveKanbanOrder = (order) => {
+    try { localStorage.setItem('canary-prop-kanban-order', JSON.stringify(order)); } catch (e) {}
+  };
+  getKanbanOrderedProperties = (colKey, source, orderState) => {
+    const inCol = source.filter(pr => this.getKanbanColumn(pr) === colKey);
+    const savedOrder = (orderState || this.state.propKanbanOrder)[colKey] || [];
+    const byId = new Map(inCol.map(pr => [pr.id, pr]));
+    const ordered = [];
+    for (const id of savedOrder) {
+      if (byId.has(id)) {
+        ordered.push(byId.get(id));
+        byId.delete(id);
+      }
+    }
+    for (const pr of byId.values()) ordered.push(pr);
+    return ordered;
+  };
+  buildKanbanOrderForColumn = (colKey, source, orderState, excludeId) => {
+    return this.getKanbanOrderedProperties(colKey, source, orderState)
+      .map(pr => pr.id)
+      .filter(id => id !== excludeId);
+  };
+  handleKanbanDrop = (targetCol, insertBeforeId) => {
+    const dragId = this._kanbanDragId || this.state.propDragId;
+    if (!dragId) return;
+    this._kanbanDropHandled = true;
+    const pr = this.getPortfolio(dragId);
+    if (!pr) return;
+    const fromCol = this.getKanbanColumn(pr);
+    const statusChanging = fromCol !== targetCol;
+    const source = this.state.portfolio.filter(p => {
+      if (this.state.propFilter === 'archived') return this.isPropertyArchived(p);
+      if (this.isPropertyArchived(p)) return false;
+      return true;
+    }).filter(p => this.propertyMatchesSearch(p, this.state.mgrSearch));
+    const prevOrder = JSON.parse(JSON.stringify(this.state.propKanbanOrder || {}));
+    const order = { ...this.state.propKanbanOrder };
+    if (order[fromCol]) order[fromCol] = order[fromCol].filter(id => id !== dragId);
+    let targetIds = statusChanging
+      ? this.buildKanbanOrderForColumn(targetCol, source, order, dragId)
+      : (order[targetCol] || this.buildKanbanOrderForColumn(targetCol, source, order, dragId)).filter(id => id !== dragId);
+    if (insertBeforeId && targetIds.includes(insertBeforeId)) {
+      const idx = targetIds.indexOf(insertBeforeId);
+      targetIds = [...targetIds.slice(0, idx), dragId, ...targetIds.slice(idx)];
+    } else {
+      targetIds = [...targetIds, dragId];
+    }
+    order[targetCol] = targetIds;
+    this.saveKanbanOrder(order);
+    this._kanbanDragId = null;
+    this.setState({
+      propKanbanOrder: order,
+      propDragId: null,
+      propDragOverCol: null,
+      propDragInsertBeforeId: null,
+    });
+    if (statusChanging) {
+      this.setPortfolioStatus(dragId, targetCol).catch(() => {
+        this.saveKanbanOrder(prevOrder);
+        this.setState({ propKanbanOrder: prevOrder });
+      });
+    }
+  };
+  bulkArchiveListings = async () => {
+    const ids = this.state.listSelectedIds;
+    if (!ids.length) return;
+    this.setState({ propActionBusy: true });
+    let archived = 0; let skipped = 0;
+    for (const id of ids) {
+      const listing = this.getListing(id);
+      if (listing?.status === 'ACTIVE') {
+        try {
+          await this.patchListing(id, { status: 'ARCHIVED' });
+          archived++;
+        } catch (e) { skipped++; }
+      } else {
+        skipped++;
+      }
+    }
+    await this.loadPortfolio();
+    await this.loadManagerListings();
+    this.setState({ propActionBusy: false, listSelectedIds: [] });
+    const skipNote = skipped ? ` (${skipped} skipped)` : '';
+    this.showToast(`Archived ${archived} listing${archived === 1 ? '' : 's'}${skipNote}`);
+  };
+  bulkDeleteListings = async () => {
+    const ids = this.state.listSelectedIds.filter(id => this.getListing(id)?.status === 'ARCHIVED');
+    if (!ids.length) {
+      this.showToast('Select archived listings to delete');
+      return;
+    }
+    if (!window.confirm(`Permanently delete ${ids.length} archived listing${ids.length === 1 ? '' : 's'}?`)) return;
+    this.setState({ propActionBusy: true });
+    let deleted = 0;
+    for (const id of ids) {
+      try {
+        const res = await fetch('/api/listings/' + id, { method: 'DELETE', credentials: 'include' });
+        if (res.ok) deleted++;
+      } catch (e) {}
+    }
+    await this.loadManagerListings();
+    await this.loadPortfolio();
+    this.setState({ propActionBusy: false, listSelectedIds: [] });
+    this.showToast(`Deleted ${deleted} listing${deleted === 1 ? '' : 's'}`);
+  };
+  bulkDeleteProps = async () => {
+    const ids = this.state.propSelectedIds;
+    if (!ids.length || this.state.propBulkDeleting) return;
+    if (!window.confirm(`Permanently delete ${ids.length} propert${ids.length === 1 ? 'y' : 'ies'} and their leases? This cannot be undone.`)) return;
+    this.setState({ propActionBusy: true, propBulkDeleting: true });
+    let deleted = 0;
+    for (const id of ids) {
+      const pr = this.getPortfolio(id);
+      if (!pr) continue;
+      try {
+        if (pr.fromDb) {
+          const res = await fetch('/api/properties/' + id, { method: 'DELETE', credentials: 'include' });
+          if (!res.ok) continue;
+        }
+        deleted++;
+      } catch (e) {}
+    }
+    this.setState(s => ({
+      portfolio: s.portfolio.filter(p => !ids.includes(p.id)),
+      propActionBusy: false,
+      propBulkDeleting: false,
+      propSelectedIds: [],
+      openProp: ids.includes(s.openProp) ? null : s.openProp,
+    }));
+    this.showToast(`Deleted ${deleted} propert${deleted === 1 ? 'y' : 'ies'}`);
+  };
   startQuickEdit = (id, e) => {
     if (e) { e.stopPropagation(); e.preventDefault(); }
-    const pr = this.getProp(id);
+    const pr = this.getPortfolio(id);
     if (!pr) return;
-    this.setState({ quickEditId: id, quickEditRate: String(pr.rate || '') });
+    const rate = pr.activeLease?.monthlyRate ?? pr.suggestedRate ?? '';
+    this.setState({ quickEditId: id, quickEditRate: String(rate || '') });
   };
   onQuickEditRate = (e) => this.setState({ quickEditRate: e.target.value });
   cancelQuickEdit = (e) => {
@@ -1862,9 +3066,22 @@ class Component extends DCLogic {
     if (e) e.stopPropagation();
     const rate = Number(this.state.quickEditRate);
     if (!rate || rate <= 0) { this.showToast('Enter a valid rate'); return; }
+    const pr = this.getPortfolio(id);
+    if (!pr) return;
     this.setState({ propActionBusy: true });
     try {
-      await this.patchListing(id, { rate });
+      if (pr.activeLease?.id) {
+        const res = await fetch('/api/leases/' + pr.activeLease.id, {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ monthlyRate: rate }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Update failed');
+        await this.loadPortfolio();
+      } else {
+        await this.patchProperty(id, { suggestedRate: rate });
+      }
       this.setState({ quickEditId: null, quickEditRate: '', propActionBusy: false });
       this.showToast('Rate updated');
     } catch (err) {
@@ -1872,11 +3089,15 @@ class Component extends DCLogic {
       this.showToast('Could not update rate');
     }
   };
-  startEditListing = (id) => {
-    const pr = this.getProp(id);
+  startEditProperty = (id) => {
+    const pr = this.getPortfolio(id);
     if (!pr) return;
     this.setState({
-      editListingId: id,
+      editPropertyId: id,
+      editListingId: null,
+      publishPropertyId: null,
+      relistSourceId: null,
+      relistSourceListingId: null,
       up: this.propertyToUploader(pr),
       featDraft: '',
       imgDraft: '',
@@ -1885,45 +3106,372 @@ class Component extends DCLogic {
       quickEditId: null,
     });
   };
-  archiveProp = async (id) => {
-    const pr = this.getProp(id);
-    if (!pr || pr.status === 'ARCHIVED') return;
-    this.setState({ propActionBusy: true });
+  startEditListing = (id) => {
+    const pr = this.getListing(id);
+    if (!pr) return;
+    this.setState({
+      editListingId: id,
+      editPropertyId: null,
+      publishPropertyId: null,
+      relistSourceId: null,
+      relistSourceListingId: null,
+      publishIntent: pr.status || 'ACTIVE',
+      up: this.propertyToUploader(pr),
+      featDraft: '',
+      imgDraft: '',
+      mgrView: 'uploader',
+      openProp: null,
+      quickEditId: null,
+    });
+  };
+  startRelist = (id) => {
+    const pr = this.getPortfolio(id) || this.getListing(id);
+    if (!pr) return;
+    const propertyId = pr.isProperty ? pr.id : pr.propertyId;
+    const listingId = pr.isListing ? pr.id : pr.liveListingId;
+    if (!propertyId) return;
+    this.startPublishFromProperty(propertyId, listingId);
+  };
+  startPublishListing = (id) => {
+    this.startPublishFromProperty(id, null);
+  };
+  startPublishFromProperty = async (propertyId, relistSourceListingId) => {
     try {
-      await this.patchListing(id, { status: 'ARCHIVED' });
-      this.setState({ propActionBusy: false, openProp: null });
-      this.showToast('Listing archived \u2014 hidden from public listings');
+      const res = await fetch('/api/properties/' + propertyId + '/publish-prefill', { credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        this.showToast(data.error || 'Cannot publish this property');
+        return;
+      }
+      const up = this.propertyToUploader(data.property);
+      if (data.prefill?.rate) up.rate = String(data.prefill.rate);
+      if (data.prefill?.cleaning) up.cleaning = String(data.prefill.cleaning);
+      if (data.prefill?.availableDate) up.availableDate = data.prefill.availableDate;
+      this.setState({
+        editListingId: null,
+        editPropertyId: null,
+        publishPropertyId: propertyId,
+        relistSourceId: propertyId,
+        relistSourceListingId: relistSourceListingId || null,
+        publishIntent: 'ACTIVE',
+        up,
+        featDraft: '',
+        imgDraft: '',
+        mgrView: 'uploader',
+        openProp: null,
+        quickEditId: null,
+      });
+    } catch (e) {
+      this.showToast('Could not load publish details');
+    }
+  };
+  openLeaseForm = (propertyId) => {
+    const pr = this.getPortfolio(propertyId);
+    const lease = pr?.activeLease;
+    this.setState({
+      leaseDraft: lease ? {
+        propertyId,
+        leaseId: lease.id,
+        tenantName: lease.tenantName || '',
+        tenantEmail: lease.tenantEmail || '',
+        tenantPhone: lease.tenantPhone || '',
+        monthlyRate: String(lease.monthlyRate || ''),
+        startDate: lease.startDate || '',
+        endDate: lease.endDate || '',
+        renewalStatus: lease.renewalStatus || 'UNKNOWN',
+      } : {
+        propertyId,
+        leaseId: null,
+        tenantName: '',
+        tenantEmail: '',
+        tenantPhone: '',
+        monthlyRate: String(pr?.suggestedRate || ''),
+        startDate: '',
+        endDate: '',
+        renewalStatus: 'UNKNOWN',
+      },
+    });
+  };
+  closeLeaseForm = () => this.setState({ leaseDraft: null });
+  setLeaseDraft = (k, v) => this.setState(s => ({ leaseDraft: { ...s.leaseDraft, [k]: v } }));
+  onLeaseTenantName = e => this.setLeaseDraft('tenantName', e.target.value);
+  onLeaseTenantEmail = e => this.setLeaseDraft('tenantEmail', e.target.value);
+  onLeaseTenantPhone = e => this.setLeaseDraft('tenantPhone', e.target.value);
+  onLeaseMonthlyRate = e => this.setLeaseDraft('monthlyRate', e.target.value);
+  onLeaseStartDate = e => this.setLeaseDraft('startDate', e.target.value);
+  onLeaseEndDate = e => this.setLeaseDraft('endDate', e.target.value);
+  onLeaseRenewalStatus = e => this.setLeaseDraft('renewalStatus', e.target.value);
+  saveLease = async () => {
+    const d = this.state.leaseDraft;
+    if (!d) return;
+    this.setState({ leaseSaving: true });
+    const payload = {
+      tenantName: d.tenantName,
+      tenantEmail: d.tenantEmail,
+      tenantPhone: d.tenantPhone,
+      monthlyRate: Number(d.monthlyRate),
+      startDate: d.startDate,
+      endDate: d.endDate,
+      renewalStatus: d.renewalStatus,
+    };
+    try {
+      const url = d.leaseId
+        ? '/api/leases/' + d.leaseId
+        : '/api/properties/' + d.propertyId + '/leases';
+      const method = d.leaseId ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method, credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      await this.loadPortfolio();
+      await this.loadManagerLeases();
+      this.setState({ leaseDraft: null, leaseSaving: false });
+      this.showToast('Lease saved');
     } catch (err) {
-      this.setState({ propActionBusy: false });
-      this.showToast('Could not archive listing');
+      this.setState({ leaseSaving: false });
+      this.showToast(err.message || 'Could not save lease');
+    }
+  };
+  endLease = async (leaseId, propertyId) => {
+    if (!window.confirm('Mark this lease as ended?')) return;
+    this.setState({ leaseSaving: true });
+    try {
+      const res = await fetch('/api/leases/' + leaseId, {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ENDED' }),
+      });
+      if (!res.ok) throw new Error('End lease failed');
+      await this.loadPortfolio();
+      await this.loadManagerLeases();
+      this.setState({ leaseSaving: false, leaseDraft: null });
+      this.showToast('Lease ended');
+    } catch (e) {
+      this.setState({ leaseSaving: false });
+      this.showToast('Could not end lease');
+    }
+  };
+  onBulkCsvPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (/\.xlsx?$/i.test(file.name)) {
+      this.showToast('Save as CSV UTF-8 in Excel (File \u2192 Save As), not .xlsx');
+      return;
+    }
+    this.setState({ bulkUploading: true });
+    try {
+      const csv = await file.text();
+      const res = await fetch('/api/properties/bulk', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csv }),
+      });
+      const data = await res.json().catch(() => ({}));
+      await this.loadPortfolio();
+      this.syncCustomStatusesFromPortfolio(this.state.portfolio);
+      if (data.imported?.length) {
+        this.setState({ propFilter: 'all', propSelectedIds: [] });
+      }
+      const failed = data.errors?.length || 0;
+      const ok = data.imported?.length || 0;
+      if (data.error && !ok) {
+        this.showToast(data.error);
+      } else if (ok && failed) {
+        const sample = data.errors.slice(0, 2).map(er => `row ${er.row}: ${er.message}`).join('; ');
+        this.showToast(`${ok} imported, ${failed} failed (${sample})`);
+      } else if (ok) {
+        this.showToast(`${ok} propert${ok === 1 ? 'y' : 'ies'} imported with status`);
+      } else if (failed) {
+        const sample = data.errors.slice(0, 2).map(er => `row ${er.row}: ${er.message}`).join('; ');
+        this.showToast(`${failed} rows failed — ${sample}`);
+      } else {
+        this.showToast('Bulk upload failed');
+      }
+    } catch (err) {
+      this.showToast('Bulk upload failed');
+    }
+    this.setState({ bulkUploading: false });
+  };
+  onLeaseBulkCsvPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (/\.xlsx?$/i.test(file.name)) {
+      this.showToast('Save as CSV UTF-8 in Excel (File \u2192 Save As), not .xlsx');
+      return;
+    }
+    this.setState({ leaseBulkUploading: true });
+    try {
+      const csv = await file.text();
+      const res = await fetch('/api/leases/bulk', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csv }),
+      });
+      const data = await res.json().catch(() => ({}));
+      await this.loadManagerLeases();
+      await this.loadPortfolio();
+      const failed = data.errors?.length || 0;
+      const ok = data.imported?.length || 0;
+      if (data.error && !ok) {
+        this.showToast(data.error);
+      } else if (ok && failed) {
+        const sample = data.errors.slice(0, 2).map(er => `row ${er.row}: ${er.message}`).join('; ');
+        this.showToast(`${ok} imported, ${failed} failed (${sample})`);
+      } else if (ok) {
+        this.showToast(`${ok} lease${ok === 1 ? '' : 's'} imported`);
+      } else if (failed) {
+        const sample = data.errors.slice(0, 2).map(er => `row ${er.row}: ${er.message}`).join('; ');
+        this.showToast(`${failed} rows failed — ${sample}`);
+      } else {
+        this.showToast('Bulk upload failed');
+      }
+    } catch (err) {
+      this.showToast('Bulk upload failed');
+    }
+    this.setState({ leaseBulkUploading: false });
+  };
+  clearAllProperties = async () => {
+    if (this.state.clearAllPropsBusy) return;
+    const count = this.state.portfolio.filter(p => p.fromDb).length;
+    if (!count) {
+      this.showToast('No saved properties to delete');
+      return;
+    }
+    if (!window.confirm(`Delete all ${count} properties, their leases, and photos? Listings will be unlinked. This cannot be undone.`)) return;
+    if (!window.confirm('Last chance — permanently delete your entire property portfolio?')) return;
+    this.setState({ clearAllPropsBusy: true });
+    try {
+      const res = await fetch('/api/properties/mine/all', { method: 'DELETE', credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+      this.setState({
+        portfolio: this.state.portfolio.filter(p => !p.fromDb),
+        propSelectedIds: [],
+        openProp: null,
+        propKanbanOrder: {},
+        managerLeases: [],
+        clearAllPropsBusy: false,
+      });
+      try { localStorage.removeItem('canary-prop-kanban-order'); } catch (_) {}
+      await this.loadPortfolio();
+      this.showToast(`Deleted ${data.deleted || count} propert${(data.deleted || count) === 1 ? 'y' : 'ies'}`);
+    } catch (err) {
+      this.setState({ clearAllPropsBusy: false });
+      this.showToast(err.message || 'Could not delete properties');
     }
   };
   deleteProp = async (id) => {
-    const pr = this.getProp(id);
-    if (!pr || pr.status !== 'ARCHIVED') return;
-    if (!window.confirm('Permanently delete this archived listing? This cannot be undone.')) return;
+    const pr = this.getPortfolio(id);
+    if (!pr) return;
+    if (!window.confirm('Permanently delete this property and its leases? This cannot be undone.')) return;
     this.setState({ propActionBusy: true });
     try {
       if (pr.fromDb) {
-        const res = await fetch('/api/listings/' + id, { method: 'DELETE', credentials: 'include' });
+        const res = await fetch('/api/properties/' + id, { method: 'DELETE', credentials: 'include' });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Delete failed');
       }
       this.setState(s => ({
-        properties: s.properties.filter(p => p.id !== id),
+        portfolio: s.portfolio.filter(p => p.id !== id),
         propActionBusy: false,
         openProp: null,
       }));
-      this.showToast('Listing deleted');
+      this.showToast('Property deleted');
     } catch (err) {
       this.setState({ propActionBusy: false });
-      this.showToast('Could not delete listing');
+      this.showToast('Could not delete property');
     }
   };
   parkingLabel(n) { return n>0 ? (n + ' space' + (n>1?'s':'')) : 'Street parking only'; }
   petLabel(p) { if (!p.petFriendly) return 'No pets'; if (p.dogs && p.cats) return 'Dogs & cats welcome'; if (p.dogs) return 'Dogs welcome'; if (p.cats) return 'Cats welcome'; return 'Pets negotiable'; }
   capText(n) { return n>0 ? ('up to $' + n + '/mo') : 'no cap'; }
   chipStyle(active) { return { display:'inline-flex', alignItems:'center', gap:'7px', height:'34px', padding:'0 14px', borderRadius:'9999px', border:'1px solid '+(active?'var(--ink)':'var(--border-strong)'), cursor:'pointer', fontFamily:'inherit', fontSize:'13.5px', fontWeight:500, background: active?'var(--ink)':'var(--surface)', color: active?'var(--fg-on-ink)':'var(--fg-2)' }; }
+  setMgrSearch = (e) => this.setState({ mgrSearch: e.target.value });
+  setPubSearch = (e) => this.setState({ pubSearch: e.target.value });
+  matchesSearch(query, ...fields) {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return true;
+    const blob = fields.flat().filter(v => v != null && v !== '').map(v => String(v)).join(' ').toLowerCase();
+    if (!blob) return false;
+    if (blob.includes(q)) return true;
+    let qi = 0;
+    for (let i = 0; i < blob.length && qi < q.length; i++) {
+      if (blob[i] === q[qi]) qi++;
+    }
+    return qi === q.length;
+  }
+  propertyMatchesSearch(pr, query) {
+    return this.matchesSearch(
+      query,
+      pr.propertyCode,
+      pr.title,
+      pr.city,
+      pr.address,
+      pr.postal,
+      this.typeLabelOf(pr.type),
+      pr.activeLease?.tenantName,
+      pr.description,
+      ...(pr.features || []),
+    );
+  }
+  leaseMatchesSearch(lease, query) {
+    const pr = this.getPortfolio(lease.propertyId);
+    return this.matchesSearch(
+      query,
+      lease.propertyCode,
+      pr?.propertyCode,
+      lease.propertyTitle,
+      pr?.title,
+      pr?.city,
+      lease.tenantName,
+      lease.tenantEmail,
+      lease.status,
+    );
+  }
+  listingMatchesSearch(listing, query) {
+    const pr = this.getPortfolio(listing.propertyId);
+    return this.matchesSearch(
+      query,
+      listing.title,
+      pr?.title,
+      pr?.city,
+      listing.city,
+      listing.status,
+    );
+  }
+  publicListingMatchesSearch(p, query) {
+    return this.matchesSearch(
+      query,
+      p.title,
+      p.city,
+      p.address,
+      p.description,
+      ...(p.features || []),
+    );
+  }
+  inquiryMatchesSearch(q, query) {
+    const p = this.getProp(q.propId);
+    return this.matchesSearch(
+      query,
+      q.first,
+      q.last,
+      q.email,
+      q.phone,
+      p?.title,
+      q.propertyTitle,
+      q.desired,
+      q.leaseType,
+      q.type,
+      q.pets,
+    );
+  }
 
   renderVals() {
     const s = this.state;
@@ -1938,7 +3486,8 @@ class Component extends DCLogic {
     // ---- public listings ----
     const active = s.properties.filter(p => p.status === 'ACTIVE');
     const filtered = active.filter(p => s.pubFilter==='all' ? true : (s.pubFilter==='short' ? p.type==='SHORT_TERM' : p.type!=='SHORT_TERM'));
-    const listingCards = filtered.map(p => {
+    const pubSearchFiltered = filtered.filter(p => this.publicListingMatchesSearch(p, s.pubSearch));
+    const listingCards = pubSearchFiltered.map(p => {
       const isShort = p.type==='SHORT_TERM';
       const imgIdx = s.cardPhotoIdx[p.id] || 0;
       const imgUrl = p.images[imgIdx] || p.images[0] || '';
@@ -1955,7 +3504,7 @@ class Component extends DCLogic {
       const arrowBox = 18;
       const arrowOffset = Math.round(arrowBox / 2);
       return {
-        id:p.id, addr:p.title, area:p.area,
+        id:p.id, addr:p.title, city:p.city,
         tag:isShort?'Short stay':'Long-term', dot:isShort?'var(--canary)':'var(--atlantic)',
         priceMain:this.moneyShort(p.rate), priceUnit:isShort?'/night':'/mo',
         specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
@@ -2021,17 +3570,21 @@ class Component extends DCLogic {
       if (s.inqFilterLeaseType !== 'all' && (q.leaseType || '') !== s.inqFilterLeaseType) return false;
       if (s.inqFilterMinBeds && Number(q.minBedrooms || 0) < Number(s.inqFilterMinBeds)) return false;
       return true;
-    });
+    }).filter(q => this.inquiryMatchesSearch(q, s.mgrSearch));
     const propertyMap = new Map();
     for (const q of s.inquiries) {
       const ref = q.propId || q.listingId;
       const title = this.getProp(q.propId)?.title || q.propertyTitle;
       if (ref && title && !propertyMap.has(ref)) propertyMap.set(ref, title);
     }
-    for (const pr of s.properties) {
+    for (const pr of s.portfolio) {
       if (!propertyMap.has(pr.id)) propertyMap.set(pr.id, pr.title);
     }
-    const inqPropertyOptions = [{ value: 'all', label: 'All properties', onClick: () => this.setState({ inqFilterProperty: 'all' }), style: this.segStyle(s.inqFilterProperty === 'all') }, ...Array.from(propertyMap.entries()).map(([value, label]) => ({ value, label, onClick: () => this.setState({ inqFilterProperty: value }), style: this.segStyle(s.inqFilterProperty === value) }))];
+    const propertyEntries = Array.from(propertyMap.entries()).sort((a, b) => a[1].localeCompare(b[1], undefined, { sensitivity: 'base' }));
+    const inqPropertyOptions = [
+      { value: 'all', label: 'All properties' },
+      ...propertyEntries.map(([value, label]) => ({ value, label })),
+    ];
     const inqLeaseTypeOptions = [
       { value: 'all', label: 'All types', onClick: () => this.setState({ inqFilterLeaseType: 'all' }), style: this.segStyle(s.inqFilterLeaseType === 'all') },
       { value: 'Long-term', label: 'Long-term', onClick: () => this.setState({ inqFilterLeaseType: 'Long-term' }), style: this.segStyle(s.inqFilterLeaseType === 'Long-term') },
@@ -2051,23 +3604,170 @@ class Component extends DCLogic {
     }));
     const funnelCount = filteredInquiries.length;
 
-    const propsFiltered = s.properties.filter(pr => {
-      if (s.propFilter === 'active') return pr.status === 'ACTIVE' || pr.status === 'DRAFT';
-      if (s.propFilter === 'archived') return pr.status === 'ARCHIVED';
+    const propsFiltered = s.portfolio.filter(pr => {
+      const mgmtArchived = this.isPropertyArchived(pr);
+      if (s.propFilter === 'archived') return mgmtArchived;
+      if (mgmtArchived) return false;
+      const occ = this.getOccupancyStatus(pr);
+      if (s.propFilter === 'leased') return occ === 'leased';
+      if (s.propFilter === 'vacant') return occ === 'vacant';
+      if (s.propFilter === 'short_term') return occ === 'short_term';
+      if (this.isCustomStatusKey(s.propFilter)) return occ === s.propFilter;
+      if (s.propFilter === 'renewing') return occ === 'renewing';
+      if (s.propFilter === 'not_renewing') return occ === 'not_renewing';
       return true;
-    });
+    }).filter(pr => this.propertyMatchesSearch(pr, s.mgrSearch));
     const propFilterOpt = (key, label) => ({ key, label, onClick: () => this.setPropFilter(key), style: this.segStyle(s.propFilter === key) });
-    const propFilters = [propFilterOpt('active', 'Active'), propFilterOpt('archived', 'Archived'), propFilterOpt('all', 'All')];
+    const propFiltersLeft = [
+      propFilterOpt('all', 'All'),
+      propFilterOpt('leased', 'Leased'),
+      propFilterOpt('vacant', 'Vacant'),
+      propFilterOpt('short_term', 'Short term'),
+      ...(s.customStatuses || []).map(cs => propFilterOpt(cs.key, cs.label)),
+      propFilterOpt('renewing', 'Renewing'),
+      propFilterOpt('not_renewing', 'Not renewing'),
+    ];
+    const propFilterArchived = propFilterOpt('archived', 'Archived');
 
-    const propsRows = propsFiltered.map(pr => {
-      const isQuickEdit = s.quickEditId === pr.id;
+    const propsSorted = this.sortProps(propsFiltered, s.propSortKey, s.propSortDir);
+    const propsFilteredIds = propsSorted.map(pr => pr.id);
+    const propAllSelected = propsFilteredIds.length > 0 && propsFilteredIds.every(id => s.propSelectedIds.includes(id));
+    const propAllCheck = this.checkStyle(propAllSelected);
+    const statusOptionsStatic = this.getPropertyStatusOptions();
+    const kanbanColumnDefs = this.getKanbanColumnDefs();
+    const propKanbanGridStyle = `grid-template-columns:repeat(${kanbanColumnDefs.length},minmax(180px,1fr))`;
+    const bulkStatusOptions = statusOptionsStatic.map(opt => ({
+      label: opt.label,
+      color: opt.value === 'mgmt_archived' ? 'var(--fg-3)' : 'var(--fg-1)',
+      onClick: (e) => { if (e) e.stopPropagation(); this.bulkSetPropStatus(opt.value); },
+    }));
+    const mapMenuItems = (items) => items.map(mi => ({
+      label: mi.label,
+      onClick: (e) => { if (e) e.stopPropagation(); mi.onClick(); },
+      color: mi.destructive ? '#c0392b' : (mi.primary ? 'var(--ink)' : 'var(--fg-1)'),
+      weight: mi.destructive || mi.primary ? 600 : 500,
+    }));
+    const propKanbanCardVM = (pr, colKey) => {
+      const lease = pr.activeLease;
       const rateUnit = pr.type === 'SHORT_TERM' ? '/night' : '/mo';
+      const displayRate = lease?.monthlyRate ?? pr.suggestedRate;
+      const occ = this.getOccupancyStatus(pr);
+      const occMeta = this.portfolioStatusMeta(occ);
+      const activeDragId = this._kanbanDragId || s.propDragId;
+      const isDragging = activeDragId === pr.id;
       return {
         id: pr.id,
         title: pr.title,
-        area: `${pr.area}, ${pr.city}`,
+        city: pr.city,
         typeLabel: this.typeLabelOf(pr.type),
-        rateLabel: this.moneyShort(pr.rate) + rateUnit,
+        statusLabel: occMeta.label,
+        statusFg: occMeta.fg,
+        statusBg: occMeta.bg,
+        rateLabel: displayRate ? this.moneyShort(displayRate) + rateUnit : 'Not set',
+        leaseEndLabel: lease?.endDate ? this.formatDateLabel(lease.endDate) : '',
+        hasLeaseEnd: !!lease?.endDate,
+        showInsertBefore: this.state.propDragInsertBeforeId === pr.id && activeDragId && activeDragId !== pr.id,
+        dragOpacity: isDragging ? 0.45 : 1,
+        borderColor: isDragging ? 'var(--canary)' : 'var(--border)',
+        onOpen: () => {
+          if (this._kanbanDragged) return;
+          this.openPropDrawer(pr.id);
+        },
+        onDragStart: (e) => {
+          this._kanbanDragged = true;
+          this._kanbanDragId = pr.id;
+          this._kanbanDropHandled = false;
+          this.setState({ propDragId: pr.id, propDragFromCol: colKey });
+          if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', pr.id); } catch (_) {}
+          }
+        },
+        onDragEnd: () => {
+          setTimeout(() => {
+            if (!this._kanbanDropHandled) {
+              this.setState({ propDragId: null, propDragOverCol: null, propDragInsertBeforeId: null });
+            }
+            this._kanbanDragId = null;
+            setTimeout(() => { this._kanbanDragged = false; }, 0);
+          }, 0);
+        },
+        onDragOver: (e) => {
+          e.preventDefault();
+          if (e.stopPropagation) e.stopPropagation();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+          const dragId = this._kanbanDragId || this.state.propDragId;
+          if (dragId === pr.id) return;
+          const st = this.state;
+          if (st.propDragOverCol !== colKey || st.propDragInsertBeforeId !== pr.id) {
+            this.setState({ propDragOverCol: colKey, propDragInsertBeforeId: pr.id });
+          }
+        },
+        onDrop: (e) => {
+          e.preventDefault();
+          if (e.stopPropagation) e.stopPropagation();
+          this.handleKanbanDrop(colKey, pr.id);
+        },
+      };
+    };
+    const propKanbanSource = s.portfolio.filter(pr => {
+      if (s.propFilter === 'archived') return this.isPropertyArchived(pr);
+      if (this.isPropertyArchived(pr)) return false;
+      return true;
+    }).filter(pr => this.propertyMatchesSearch(pr, s.mgrSearch));
+    const propKanbanCols = kanbanColumnDefs.map(([key, label]) => ({
+      key, label,
+      count: propKanbanSource.filter(pr => this.getKanbanColumn(pr) === key).length,
+      items: this.getKanbanOrderedProperties(key, propKanbanSource, s.propKanbanOrder).map(pr => propKanbanCardVM(pr, key)),
+      isOver: s.propDragOverCol === key && !s.propDragInsertBeforeId,
+      showAppendIndicator: (this._kanbanDragId || s.propDragId) && s.propDragOverCol === key && !s.propDragInsertBeforeId,
+      onDragOver: (e) => {
+        e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        if (this.state.propDragOverCol !== key) {
+          this.setState({ propDragOverCol: key, propDragInsertBeforeId: null });
+        }
+      },
+      onDragLeave: (e) => {
+        if (e.currentTarget && e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
+        if (this.state.propDragOverCol === key) this.setState({ propDragOverCol: null, propDragInsertBeforeId: null });
+      },
+      onDrop: (e) => {
+        e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        this.handleKanbanDrop(key, null);
+      },
+    }));
+
+    const propsRows = propsSorted.map(pr => {
+      const isQuickEdit = s.quickEditId === pr.id;
+      const rateUnit = pr.type === 'SHORT_TERM' ? '/night' : '/mo';
+      const lease = pr.activeLease;
+      const displayRate = lease?.monthlyRate ?? pr.suggestedRate;
+      const statusValue = this.isPropertyArchived(pr) ? 'mgmt_archived' : this.getPortfolioStatus(pr);
+      const statusMeta = this.portfolioStatusMeta(statusValue);
+      const menuItems = mapMenuItems(this.buildPropMenuItems(pr));
+      return {
+        id: pr.id,
+        propertyCode: pr.propertyCode || '\u2014',
+        title: pr.title,
+        city: pr.city,
+        typeLabel: this.typeLabelOf(pr.type),
+        rateLabel: displayRate ? this.moneyShort(displayRate) + rateUnit : 'Not set',
+        leaseEndLabel: lease?.endDate ? this.formatDateLabel(lease.endDate) : '\u2014',
+        statusValue,
+        statusFg: statusMeta.fg,
+        statusBg: statusMeta.bg,
+        statusBusy: s.propStatusBusyId === pr.id,
+        statusOptions: statusOptionsStatic,
+        onStatusChange: (e) => this.onPropStatusChange(pr.id, e),
+        selected: s.propSelectedIds.includes(pr.id),
+        ...this.checkStyle(s.propSelectedIds.includes(pr.id)),
+        onToggleSelect: (e) => this.togglePropSelect(pr.id, e),
+        menuOpen: s.propActionMenuId === pr.id,
+        onToggleMenu: (e) => this.togglePropActionMenu(pr.id, e),
+        menuItems,
         isQuickEdit,
         showRateInput: isQuickEdit,
         showRateLabel: !isQuickEdit,
@@ -2076,31 +3776,106 @@ class Component extends DCLogic {
         onSaveQuickEdit: (e) => this.saveQuickEdit(pr.id, e),
         onCancelQuickEdit: this.cancelQuickEdit,
         onStartQuickEdit: (e) => this.startQuickEdit(pr.id, e),
-        beds: pr.beds ? `${pr.beds} bd \u00b7 ${pr.baths} ba` : '\u2014',
-        statusLabel: pr.status === 'ACTIVE' ? 'Active' : (pr.status === 'DRAFT' ? 'Draft' : 'Archived'),
         onOpen: () => this.openPropDrawer(pr.id),
-        stFg: pr.status === 'ACTIVE' ? 'var(--success)' : (pr.status === 'DRAFT' ? 'var(--warning)' : 'var(--fg-3)'),
-        stBg: pr.status === 'ACTIVE' ? 'var(--success-tint)' : (pr.status === 'DRAFT' ? 'var(--warning-tint)' : 'var(--gray-100)'),
-        canArchive: pr.status !== 'ARCHIVED',
-        canDelete: pr.status === 'ARCHIVED',
-        onArchive: (e) => { e.stopPropagation(); this.archiveProp(pr.id); },
-        onDelete: (e) => { e.stopPropagation(); this.deleteProp(pr.id); },
-        onEdit: (e) => { e.stopPropagation(); this.startEditListing(pr.id); },
         onQuickEditKey: (e) => {
           if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); this.saveQuickEdit(pr.id, e); }
           if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.cancelQuickEdit(e); }
         },
-        propActionBusy: s.propActionBusy,
       };
     });
+
+    const listingsFiltered = s.managerListings.filter(l => {
+      if (s.listFilterProperty !== 'all' && l.propertyId !== s.listFilterProperty) return false;
+      if (s.listFilter === 'live') return l.status === 'ACTIVE';
+      if (s.listFilter === 'archived') return l.status === 'ARCHIVED';
+      if (s.listFilter === 'draft') return l.status === 'DRAFT';
+      return true;
+    }).filter(l => this.listingMatchesSearch(l, s.mgrSearch));
+    const listFilterOpt = (key, label) => ({ key, label, onClick: () => this.setState({ listFilter: key }), style: this.segStyle(s.listFilter === key) });
+    const listFilters = [
+      listFilterOpt('all', 'All'),
+      listFilterOpt('live', 'Live'),
+      listFilterOpt('archived', 'Archived'),
+      listFilterOpt('draft', 'Draft'),
+    ];
+    const listingStatusOptions = [
+      { value: 'ACTIVE', label: 'Live' },
+      { value: 'DRAFT', label: 'Draft' },
+      { value: 'ARCHIVED', label: 'Archived' },
+    ];
+    const listingsSorted = this.sortListings(listingsFiltered, s.listSortKey, s.listSortDir);
+    const listingsFilteredIds = listingsSorted.map(l => l.id);
+    const listAllSelected = listingsFilteredIds.length > 0 && listingsFilteredIds.every(id => s.listSelectedIds.includes(id));
+    const listAllCheck = this.checkStyle(listAllSelected);
+    const listingsRows = listingsSorted.map(listing => {
+      const pr = this.getPortfolio(listing.propertyId);
+      const rateUnit = listing.type === 'SHORT_TERM' ? '/night' : '/mo';
+      const st = this.listingStatusMeta(listing.status);
+      return {
+        id: listing.id,
+        propertyTitle: pr?.title || '\u2014',
+        title: listing.title,
+        rateLabel: listing.rate ? this.moneyShort(listing.rate) + rateUnit : 'Not set',
+        availableLabel: listing.availableDate ? this.formatDateLabel(listing.availableDate) : '\u2014',
+        updatedLabel: listing.updatedAt ? this.formatDateLabel(String(listing.updatedAt).slice(0, 10)) : '\u2014',
+        statusValue: listing.status,
+        statusFg: st.fg,
+        statusBg: st.bg,
+        statusBusy: s.listStatusBusyId === listing.id,
+        statusOptions: listingStatusOptions,
+        onStatusChange: (e) => this.onListingStatusChange(listing.id, e),
+        selected: s.listSelectedIds.includes(listing.id),
+        ...this.checkStyle(s.listSelectedIds.includes(listing.id)),
+        onToggleSelect: (e) => this.toggleListSelect(listing.id, e),
+        menuOpen: s.listActionMenuId === listing.id,
+        onToggleMenu: (e) => this.toggleListActionMenu(listing.id, e),
+        menuItems: mapMenuItems(this.buildListingMenuItems(listing)),
+      };
+    });
+
+    const leasesFiltered = s.managerLeases.filter(l => {
+      if (s.leaseFilter === 'active') return l.status === 'ACTIVE';
+      if (s.leaseFilter === 'ended') return l.status === 'ENDED';
+      return true;
+    }).filter(l => this.leaseMatchesSearch(l, s.mgrSearch));
+    const leaseFilterOpt = (key, label) => ({ key, label, onClick: () => this.setState({ leaseFilter: key }), style: this.segStyle(s.leaseFilter === key) });
+    const leaseFilters = [
+      leaseFilterOpt('all', 'All'),
+      leaseFilterOpt('active', 'Active'),
+      leaseFilterOpt('ended', 'Historical'),
+    ];
+    const leasesSorted = this.sortLeases(leasesFiltered, s.leaseSortKey, s.leaseSortDir);
+    const leasesRows = leasesSorted.map(lease => {
+      const pr = this.getPortfolio(lease.propertyId);
+      const st = this.leaseStatusMeta(lease.status);
+      return {
+        id: lease.id,
+        propertyCode: lease.propertyCode || pr?.propertyCode || '\u2014',
+        propertyTitle: lease.propertyTitle || pr?.title || '\u2014',
+        propertyCity: pr?.city || '',
+        tenantName: lease.tenantName || '\u2014',
+        startLabel: lease.startDate ? this.formatDateLabel(lease.startDate) : '\u2014',
+        endLabel: lease.endDate ? this.formatDateLabel(lease.endDate) : '\u2014',
+        rateLabel: lease.monthlyRate ? this.moneyShort(lease.monthlyRate) + '/mo' : '\u2014',
+        statusLabel: st.label,
+        statusFg: st.fg,
+        statusBg: st.bg,
+      };
+    });
+    const leaseCount = s.managerLeases.length;
+
+    const liveListingCount = s.managerListings.filter(l => l.status === 'ACTIVE').length;
+    const activePropCount = s.portfolio.filter(pr => !this.isPropertyArchived(pr)).length;
 
     // uploader view-models
     const typeOpt = (key,label) => ({ key, label, onClick:()=>this.setUp('type',key), style:this.segStyle(s.up.type===key) });
     const typeOpts = [typeOpt('SINGLE','Single unit'), typeOpt('MULTI','Multi-unit'), typeOpt('SHORT_TERM','Short-term')];
     const isShortType = s.up.type==='SHORT_TERM';
-    const rateLabel = isShortType ? 'Nightly rate' : 'Monthly rent';
-    const showLongTermAvailableDate = !isShortType;
-    const availableDateLabel = isShortType ? 'Available from' : 'Available for move-in';
+    const rateLabel = s.editPropertyId && !s.publishPropertyId
+      ? (isShortType ? 'Suggested nightly rate' : 'Suggested monthly rent')
+      : (isShortType ? 'Nightly rate (listing)' : 'Monthly rent (listing)');
+    const showLongTermAvailableDate = !isShortType && (s.publishPropertyId || s.editListingId || s.relistSourceListingId);
+    const availableDateLabel = isShortType ? 'Available from' : 'Available for move-in (listing)';
     const upFeatures = s.up.features.map((f,i)=>({ label:f, onRemove:()=>this.removeFeat(i) }));
     const upImages = s.up.images.map((im, i) => ({ css: `url('${im.url || im}')`, onRemove: () => this.removeImg(i) }));
     const photoUploadLabel = s.photoUploading && s.photoUploadProgress
@@ -2121,10 +3896,17 @@ class Component extends DCLogic {
       { title:'31 Quidi Vidi Rd', segs:[{ s:20,e:24,label:'Liam Foley',cls:'pending' },{ s:27,e:30,label:'R. Squires',cls:'confirmed' }] },
       { title:'9 Battery Rd', segs:[{ s:14,e:17,label:'A. Tobin',cls:'confirmed' },{ s:21,e:25,label:'Connor Walsh',cls:'confirmed' }] },
     ];
-    const lanes = lanesRaw.map(l => ({ title:l.title, segs:l.segs.map(seg=>({ label:seg.label, style:segStyleFor(seg) })) }));
+    const lanesFiltered = lanesRaw.filter(l =>
+      this.matchesSearch(s.mgrSearch, l.title, ...l.segs.map(seg => seg.label))
+    );
+    const lanes = lanesFiltered.map(l => ({ title:l.title, segs:l.segs.map(seg=>({ label:seg.label, style:segStyleFor(seg) })) }));
     const statusColors = (st) => st==='CONFIRMED'?{fg:'var(--success)',bg:'var(--success-tint)',label:'Confirmed'} : st==='PENDING'?{fg:'var(--warning)',bg:'var(--warning-tint)',label:'Pending'} : st==='VIEWING'?{fg:'var(--atlantic)',bg:'var(--atlantic-tint)',label:'Viewing'} : {fg:'var(--fg-2)',bg:'var(--gray-100)',label:st};
-    const bookingRows = s.bookings.map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', dates:b.dates, nights:b.nights||'\u2014', amount:b.amount?this.moneyShort(b.amount):'\u2014', statusLabel:c.label, fg:c.fg, bg:c.bg }; });
-    const upcomingBookings = s.bookings.slice(0,4).map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', day:b.day, mon:b.mon, statusLabel:c.label, fg:c.fg, bg:c.bg }; });
+    const bookingsSearchFiltered = s.bookings.filter(b => {
+      const pr = this.getProp(b.propId);
+      return this.matchesSearch(s.mgrSearch, b.guest, pr?.title, b.dates, b.nights, b.amount);
+    });
+    const bookingRows = bookingsSearchFiltered.map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', dates:b.dates, nights:b.nights||'\u2014', amount:b.amount?this.moneyShort(b.amount):'\u2014', statusLabel:c.label, fg:c.fg, bg:c.bg }; });
+    const upcomingBookings = bookingsSearchFiltered.slice(0,4).map(b => { const pr=this.getProp(b.propId); const c=statusColors(b.status); return { guest:b.guest, prop:pr?pr.title:'\u2014', day:b.day, mon:b.mon, statusLabel:c.label, fg:c.fg, bg:c.bg }; });
 
     // overview
     const kpis = [
@@ -2137,8 +3919,12 @@ class Component extends DCLogic {
 
     // scheduled viewings
     const vStatus = (st) => st==='CONFIRMED' ? {fg:'var(--success)',bg:'var(--success-tint)',label:'Confirmed'} : st==='SCHEDULED' ? {fg:'var(--atlantic)',bg:'var(--atlantic-tint)',label:'Scheduled'} : {fg:'var(--warning)',bg:'var(--warning-tint)',label:'Requested'};
-    const viewingRows = s.viewings.map(v => { const pr=this.getProp(v.propId); const c=vStatus(v.status); return { name:v.name, prop:pr?pr.title:'\u2014', phone:v.phone, date:v.date, time:v.time, statusLabel:c.label, fg:c.fg, bg:c.bg, canConfirm:v.status!=='CONFIRMED', onConfirm:()=>this.confirmViewing(v.id), onReschedule:()=>this.rescheduleViewing(v.id) }; });
-    const viewingsCount = s.viewings.length;
+    const viewingsSearchFiltered = s.viewings.filter(v => {
+      const pr = this.getProp(v.propId);
+      return this.matchesSearch(s.mgrSearch, v.name, pr?.title, v.phone, v.date, v.time, v.status);
+    });
+    const viewingRows = viewingsSearchFiltered.map(v => { const pr=this.getProp(v.propId); const c=vStatus(v.status); return { name:v.name, prop:pr?pr.title:'\u2014', phone:v.phone, date:v.date, time:v.time, statusLabel:c.label, fg:c.fg, bg:c.bg, canConfirm:v.status!=='CONFIRMED', onConfirm:()=>this.confirmViewing(v.id), onReschedule:()=>this.rescheduleViewing(v.id) }; });
+    const viewingsCount = viewingsSearchFiltered.length;
 
     // sidebar collapse
     const col = s.sideCollapsed;
@@ -2162,7 +3948,22 @@ class Component extends DCLogic {
     }
 
     // chrome
-    const titles = { overview:['Overview','Tuesday, June 15'], properties:['Properties','Your portfolio'], uploader: s.editListingId ? ['Edit listing','Update details and pricing'] : ['New listing','Spin one up in under a minute'], funnel:['Leasing pipeline','Move prospects through to signed'], bookings:['Bookings','Short stays this month'], viewings:['Scheduled viewings','Upcoming property viewings'] };
+    const titles = {
+      overview:['Overview','Tuesday, June 15'],
+      properties:['Properties','Your portfolio'],
+      uploader: s.publishPropertyId
+        ? (s.relistSourceListingId
+          ? ['Relist property','Update listing rent and move-in, then publish']
+          : ['Publish listing','Set storefront rent and move-in from lease'])
+        : (s.editPropertyId
+          ? ['Edit property','Update base unit details']
+          : (s.editListingId ? ['Edit listing','Update details and pricing'] : ['New listing','Spin one up in under a minute'])),
+      funnel:['Inquiries','Move prospects through to signed'],
+      bookings:['Bookings','Short stays this month'],
+      viewings:['Scheduled viewings','Upcoming property viewings'],
+      listings:['Listings','Public storefront offerings — live and historical'],
+      leases:['Leases','Active and historical lease records'],
+    };
     const t = titles[s.mgrView] || titles.overview;
 
     // extended listing fields — uploader controls
@@ -2177,25 +3978,31 @@ class Component extends DCLogic {
     // manager property drawer
   let propDrawer=null, propDrawerOpen=false;
     if (s.openProp) {
-      const pr = this.getProp(s.openProp);
+      const pr = this.getPortfolio(s.openProp);
       if (pr) {
         propDrawerOpen = true;
         const rateUnit = pr.type === 'SHORT_TERM' ? ' / night' : ' / mo';
-        const isQuickEdit = s.quickEditId === pr.id;
+        const lease = pr.activeLease;
+        const occ = this.getOccupancyStatus(pr);
+        const occMeta = this.portfolioStatusMeta(this.isPropertyArchived(pr) ? 'mgmt_archived' : occ);
+        const displayRate = lease?.monthlyRate ?? pr.suggestedRate;
         propDrawer = {
           ...pr,
           id: pr.id,
           typeLabel: this.typeLabelOf(pr.type),
-          statusLabel: pr.status === 'ACTIVE' ? 'Active' : (pr.status === 'DRAFT' ? 'Draft' : 'Archived'),
-          rateLabel: this.moneyShort(pr.rate) + rateUnit,
-          isQuickEdit,
-          showQuickEditForm: isQuickEdit,
-          showQuickEditLabel: !isQuickEdit,
-          quickEditRate: isQuickEdit ? s.quickEditRate : String(pr.rate || ''),
-          onQuickEditRate: this.onQuickEditRate,
-          onSaveQuickEdit: () => this.saveQuickEdit(pr.id),
-          onStartQuickEdit: () => this.startQuickEdit(pr.id),
-          onCancelQuickEdit: this.cancelQuickEdit,
+          statusLabel: occMeta.label,
+          stFg: occMeta.fg,
+          stBg: occMeta.bg,
+          listingCount: s.managerListings.filter(l => l.propertyId === pr.id).length,
+          onViewListings: () => this.viewListingsForProperty(pr.id),
+          rateLabel: displayRate ? this.moneyShort(displayRate) + rateUnit : 'Not set',
+          hasActiveLease: !!lease,
+          leaseRentLabel: lease ? this.moneyShort(lease.monthlyRate) + rateUnit : '',
+          leaseEndLabel: lease?.endDate ? this.formatDateLabel(lease.endDate) : '\u2014',
+          hasSuggestedRate: !lease && pr.suggestedRate,
+          suggestedRateLabel: pr.suggestedRate ? this.moneyShort(pr.suggestedRate) + rateUnit : '',
+          showQuickEditForm: false,
+          showQuickEditLabel: false,
           specs: `${pr.beds} bed \u00b7 ${pr.baths} bath \u00b7 ${pr.sqft} sq ft`,
           parkingLabel: this.parkingLabel(pr.parking),
           petLabel: this.petLabel(pr),
@@ -2204,16 +4011,22 @@ class Component extends DCLogic {
           hasUtilTypes: pr.utilityTypes.length > 0,
           utilCapLabel: this.capText(pr.utilityCap),
           firewallLabel: pr.firewall ? 'Yes' : 'No',
-          img0: `url('${pr.images[0]}')`,
+          img0: pr.images[0] ? `url('${pr.images[0]}')` : '',
           oilCompanyLabel: pr.oilCompany || '\u2014',
           internalNotesLabel: pr.internalNotes || 'No internal notes yet.',
-          hasAvailableDate: pr.type !== 'SHORT_TERM',
-          availableMoveInLabel: pr.availableDate ? this.formatDateLabel(pr.availableDate) : 'Not set',
-          canArchive: pr.status !== 'ARCHIVED',
-          canDelete: pr.status === 'ARCHIVED',
-          onArchive: () => this.archiveProp(pr.id),
-          onDelete: () => this.deleteProp(pr.id),
-          onEdit: () => this.startEditListing(pr.id),
+          canArchive: this.isPropertyArchived(pr),
+          canDelete: true,
+          canPublish: false,
+          canRelist: false,
+          leaseActionLabel: lease ? 'Edit lease' : 'Add lease',
+          showLeaseForm: s.leaseDraft?.propertyId === pr.id,
+          onEditLease: () => this.openLeaseForm(pr.id),
+          menuOpen: s.propActionMenuId === 'drawer-' + pr.id,
+          onToggleMenu: (e) => {
+            e.stopPropagation();
+            this.setState(st => ({ propActionMenuId: st.propActionMenuId === 'drawer-' + pr.id ? null : 'drawer-' + pr.id }));
+          },
+          menuItems: mapMenuItems(this.buildPropMenuItems(pr)),
           propActionBusy: s.propActionBusy,
         };
       }
@@ -2237,6 +4050,26 @@ class Component extends DCLogic {
     const signInBtnLabel = signInSubmitting ? 'Signing in…' : 'Sign in';
     const signInBtnOpacity = signInSubmitting ? 0.7 : 1;
 
+    const mgrSearchPlaceholders = {
+      overview: 'Search inquiries, bookings…',
+      properties: 'Search properties, cities, tenants…',
+      listings: 'Search listings, addresses…',
+      leases: 'Search leases, property IDs, tenants…',
+      funnel: 'Search inquiries, properties…',
+      bookings: 'Search guests, properties…',
+      viewings: 'Search names, properties…',
+      uploader: 'Search properties, listings…',
+    };
+    const mgrSearchPlaceholder = mgrSearchPlaceholders[s.mgrView] || 'Search…';
+    const hasMgrSearch = !!String(s.mgrSearch || '').trim();
+    const hasPubSearch = !!String(s.pubSearch || '').trim();
+    const pubListingsSubtitle = hasPubSearch
+      ? `${listingCards.length} home${listingCards.length === 1 ? '' : 's'} match your search`
+      : `${active.length} homes ready for viewings and bookings.`;
+    const propsEmptyLabel = hasMgrSearch ? 'No properties match your search.' : 'No properties match this filter.';
+    const listingsEmptyLabel = hasMgrSearch ? 'No listings match your search.' : 'No listings match this filter.';
+    const leasesEmptyLabel = hasMgrSearch ? 'No leases match your search.' : 'No leases match this filter.';
+
     return {
       isPublic, isManager, isManagerSignIn,
       publicIsListings: isPublic && s.pubView==='listings',
@@ -2248,8 +4081,10 @@ class Component extends DCLogic {
       signInEmail:s.signInEmail, signInPassword:s.signInPassword, signInSubmitting, signInBtnLabel, signInBtnOpacity,
       authLoading, authReady, authError, oauthGoogle, oauthMicrosoft, oauthNone, authEmail, showOAuthDivider,
       mgrName, mgrEmail, mgrAvatarUrl, mgrAvatarInitials: !mgrAvatarUrl, mgrInitials,
-      goOverview:this.goOverview, goProperties:this.goProperties, goFunnel:this.goFunnel, goBookings:this.goBookings,
+      goOverview:this.goOverview, goProperties:this.goProperties, goListings:this.goListings, goLeases:this.goLeases, goFunnel:this.goFunnel, goBookings:this.goBookings,
       goApply:this.goApply, goBackDetail:this.goBackDetail,
+      pubSearch: s.pubSearch, setPubSearch: this.setPubSearch,
+      pubListingsSubtitle, pubListingsEmpty: listingCards.length === 0, pubListingsHasResults: listingCards.length > 0,
       activeCount: active.length, listingCards, pubFilters, cardTagStyle,
       selProp, shortTerm, longTerm,
       bookOpen: shortTerm && !s.bookSubmitted, bookSubmitted: s.bookSubmitted,
@@ -2268,21 +4103,128 @@ class Component extends DCLogic {
       submitViewing:this.submitViewing, applyRef, applySteps,
       // manager nav
       navOverview:this.navStyle(s.mgrView==='overview',col), navProperties:this.navStyle(s.mgrView==='properties',col),
-      navLeasing:this.navStyle(s.mgrView==='funnel',col), navBookings:this.navStyle(s.mgrView==='bookings',col),
+      navListings:this.navStyle(s.mgrView==='listings',col),
+      navLeases:this.navStyle(s.mgrView==='leases',col),
+      navInquiries:this.navStyle(s.mgrView==='funnel',col), navBookings:this.navStyle(s.mgrView==='bookings',col),
       navViewings:this.navStyle(s.mgrView==='viewings',col), navPublicBtn:this.navStyle(false,col),
       sideStyle, sideExpanded:!col, sideCollapsed:col, toggleSide:this.toggleSide,
       goViewings:this.goViewings, viewingsCount, mgrIsViewings:s.mgrView==='viewings', viewingRows,
-      propCount:s.properties.length, newCount,
-      mgrTitle:t[0], mgrSub:t[1], showNewBtn: s.mgrView!=='uploader',
-      mgrIsOverview:s.mgrView==='overview', mgrIsProperties:s.mgrView==='properties',
+      propCount:activePropCount, liveListingCount, leaseCount, newCount,
+      mgrTitle:t[0], mgrSub:t[1], showNewBtn: s.mgrView!=='uploader' && s.mgrView!=='leases',
+      mgrSearch: s.mgrSearch, setMgrSearch: this.setMgrSearch, mgrSearchPlaceholder,
+      mgrIsOverview:s.mgrView==='overview', mgrIsProperties:s.mgrView==='properties', mgrIsListings:s.mgrView==='listings', mgrIsLeases:s.mgrView==='leases',
       mgrIsUploader:s.mgrView==='uploader', mgrIsFunnel:s.mgrView==='funnel', mgrIsBookings:s.mgrView==='bookings',
       kpis, recentInquiries, upcomingBookings, bookingRows, lanes,
       columns, funnelCount, funnelFilteredLabel, inqPropertyOptions, inqLeaseTypeOptions,
       inqFilterProperty:s.inqFilterProperty, inqFilterLeaseType:s.inqFilterLeaseType, inqFilterMinBeds:s.inqFilterMinBeds,
-      setInqFilterMinBeds:this.setInqFilterMinBeds,
-      propsRows, propFilters,
+      setInqFilterProperty:this.setInqFilterProperty, setInqFilterMinBeds:this.setInqFilterMinBeds,
+      propsRows, propFiltersLeft, propFilterArchived, propKanbanCols, propKanbanGridStyle, bulkStatusOptions, bulkUploading: s.bulkUploading,
+      propIsTable: s.propViewMode === 'table',
+      propIsKanban: s.propViewMode === 'kanban',
+      propShowFilters: s.propViewMode === 'table',
+      propViewTableStyle: this.segStyle(s.propViewMode === 'table'),
+      propViewKanbanStyle: this.segStyle(s.propViewMode === 'kanban'),
+      setPropViewTable: () => this.setPropViewMode('table'),
+      setPropViewKanban: () => this.setPropViewMode('kanban'),
+      propSortPropertyCode: this.sortHeaderLabel('propertyCode', 'Property ID', s.propSortKey, s.propSortDir),
+      propSortTitle: this.sortHeaderLabel('title', 'Address', s.propSortKey, s.propSortDir),
+      propSortType: this.sortHeaderLabel('type', 'Type', s.propSortKey, s.propSortDir),
+      propSortStatus: this.sortHeaderLabel('status', 'Status', s.propSortKey, s.propSortDir),
+      propSortRate: this.sortHeaderLabel('rate', 'Lease rent', s.propSortKey, s.propSortDir),
+      propSortLeaseEnd: this.sortHeaderLabel('leaseEnd', 'Lease end', s.propSortKey, s.propSortDir),
+      sortByPropertyCode: () => this.togglePropSort('propertyCode'),
+      sortByTitle: () => this.togglePropSort('title'),
+      sortByType: () => this.togglePropSort('type'),
+      sortByStatus: () => this.togglePropSort('status'),
+      sortByRate: () => this.togglePropSort('rate'),
+      sortByLeaseEnd: () => this.togglePropSort('leaseEnd'),
+      propAllSelected,
+      propAllSelectedBorder: propAllCheck.checkBorder,
+      propAllSelectedBg: propAllCheck.checkBg,
+      togglePropSelectAllAction: (e) => this.togglePropSelectAll(propsFilteredIds, e),
+      propBulkVisible: s.propSelectedIds.length > 0,
+      propBulkBarStyle: s.propBulkStatusMenuOpen ? 'position:relative;z-index:200' : '',
+      propSelectedCount: s.propSelectedIds.length,
+      propBulkStatusLabel: s.propBulkStatusChanging
+        ? (s.propBulkStatusTotal > 0 ? `Updating ${s.propBulkStatusDone} of ${s.propBulkStatusTotal}\u2026` : 'Updating\u2026')
+        : `Set status (${s.propSelectedIds.length})`,
+      propBulkStatusOpacity: s.propBulkStatusChanging ? 0.65 : 1,
+      propBulkStatusCursor: s.propBulkStatusChanging ? 'wait' : 'pointer',
+      toggleBulkStatusMenu: this.toggleBulkStatusMenu,
+      propBulkStatusMenuOpen: s.propBulkStatusMenuOpen,
+      openCreateStatusModal: this.openCreateStatusModal,
+      closeCreateStatusModal: this.closeCreateStatusModal,
+      onCreateStatusDraft: this.onCreateStatusDraft,
+      onCreateStatusDraftKey: this.onCreateStatusDraftKey,
+      submitCreateCustomStatus: this.submitCreateCustomStatus,
+      createStatusModalOpen: s.createStatusModalOpen,
+      createStatusDraft: s.createStatusDraft,
+      propBulkDeleteLabel: s.propBulkDeleting ? 'Deleting\u2026' : `Delete (${s.propSelectedIds.length})`,
+      propBulkDeleteOpacity: s.propBulkDeleting ? 0.65 : 1,
+      propBulkDeleteCursor: s.propBulkDeleting ? 'wait' : 'pointer',
+      bulkDeleteProps: this.bulkDeleteProps,
+      propsEmpty: propsRows.length === 0,
+      propsEmptyLabel,
+      listingsRows, listFilters, listingsEmpty: listingsRows.length === 0,
+      listingsEmptyLabel,
+      leasesRows, leaseFilters, leasesEmpty: leasesRows.length === 0,
+      leasesEmptyLabel,
+      leaseSortPropertyCode: this.sortHeaderLabel('propertyCode', 'Property ID', s.leaseSortKey, s.leaseSortDir),
+      leaseSortProperty: this.sortHeaderLabel('property', 'Property', s.leaseSortKey, s.leaseSortDir),
+      leaseSortTenant: this.sortHeaderLabel('tenant', 'Tenant', s.leaseSortKey, s.leaseSortDir),
+      leaseSortStart: this.sortHeaderLabel('start', 'Start', s.leaseSortKey, s.leaseSortDir),
+      leaseSortEnd: this.sortHeaderLabel('end', 'End', s.leaseSortKey, s.leaseSortDir),
+      leaseSortRate: this.sortHeaderLabel('rate', 'Rent', s.leaseSortKey, s.leaseSortDir),
+      leaseSortStatus: this.sortHeaderLabel('status', 'Status', s.leaseSortKey, s.leaseSortDir),
+      sortLeaseByPropertyCode: () => this.toggleLeaseSort('propertyCode'),
+      sortLeaseByProperty: () => this.toggleLeaseSort('property'),
+      sortLeaseByTenant: () => this.toggleLeaseSort('tenant'),
+      sortLeaseByStart: () => this.toggleLeaseSort('start'),
+      sortLeaseByEnd: () => this.toggleLeaseSort('end'),
+      sortLeaseByRate: () => this.toggleLeaseSort('rate'),
+      sortLeaseByStatus: () => this.toggleLeaseSort('status'),
+      leaseBulkUploadLabel: s.leaseBulkUploading ? 'Uploading…' : 'Bulk upload leases',
+      leaseBulkUploadOpacity: s.leaseBulkUploading ? 0.65 : 1,
+      onLeaseBulkCsvPick: this.onLeaseBulkCsvPick,
+      listSortProperty: this.sortHeaderLabel('property', 'Property', s.listSortKey, s.listSortDir),
+      listSortTitle: this.sortHeaderLabel('title', 'Listing', s.listSortKey, s.listSortDir),
+      listSortStatus: this.sortHeaderLabel('status', 'Status', s.listSortKey, s.listSortDir),
+      listSortRate: this.sortHeaderLabel('rate', 'Rate', s.listSortKey, s.listSortDir),
+      listSortAvailable: this.sortHeaderLabel('available', 'Available', s.listSortKey, s.listSortDir),
+      listSortUpdated: this.sortHeaderLabel('updated', 'Updated', s.listSortKey, s.listSortDir),
+      sortListByProperty: () => this.toggleListSort('property'),
+      sortListByTitle: () => this.toggleListSort('title'),
+      sortListByStatus: () => this.toggleListSort('status'),
+      sortListByRate: () => this.toggleListSort('rate'),
+      sortListByAvailable: () => this.toggleListSort('available'),
+      sortListByUpdated: () => this.toggleListSort('updated'),
+      listAllSelected,
+      listAllSelectedBorder: listAllCheck.checkBorder,
+      listAllSelectedBg: listAllCheck.checkBg,
+      toggleListSelectAllAction: (e) => this.toggleListSelectAll(listingsFilteredIds, e),
+      listBulkVisible: s.listSelectedIds.length > 0,
+      listSelectedCount: s.listSelectedIds.length,
+      bulkArchiveListings: this.bulkArchiveListings,
+      bulkDeleteListings: this.bulkDeleteListings,
+      listFilterPropertyLabel: s.listFilterProperty !== 'all' ? (this.getPortfolio(s.listFilterProperty)?.title || 'Filtered') : '',
+      listShowPropertyFilter: s.listFilterProperty !== 'all',
+      clearListPropertyFilter: () => this.setState({ listFilterProperty: 'all' }),
+      bulkUploadLabel: s.bulkUploading ? 'Uploading…' : 'Bulk upload CSV',
+      bulkUploadOpacity: s.bulkUploading ? 0.65 : 1,
+      onBulkCsvPick: this.onBulkCsvPick,
+      clearAllPropsLabel: s.clearAllPropsBusy ? 'Deleting…' : 'Clear all properties',
+      clearAllPropsOpacity: s.clearAllPropsBusy ? 0.65 : 1,
+      clearAllPropsCursor: s.clearAllPropsBusy ? 'wait' : 'pointer',
+      clearAllProperties: this.clearAllProperties,
       isEditingListing: !!s.editListingId,
-      publishLabel: s.editListingId ? (s.publishSubmitting ? 'Saving…' : 'Save changes') : (s.publishSubmitting ? 'Publishing…' : 'Publish listing'),
+      isEditingProperty: !!s.editPropertyId && !s.publishPropertyId,
+      isPublishing: !!s.publishPropertyId,
+      isRelisting: !!s.relistSourceListingId,
+      publishLabel: s.editPropertyId && !s.publishPropertyId
+        ? (s.publishSubmitting ? 'Saving…' : 'Save property')
+        : (s.editListingId
+          ? (s.publishSubmitting ? 'Saving…' : 'Save listing')
+          : (s.publishSubmitting ? 'Publishing…' : 'Publish listing')),
       typeOpts, isShortType, rateLabel, showLongTermAvailableDate, availableDateLabel, up:s.up,
       onUpTitle:this.onUpTitle, onUpAddress:this.onUpAddress, onUpCity:this.onUpCity, onUpProvince:this.onUpProvince, onUpPostal:this.onUpPostal,
       onUpRate:this.onUpRate, onUpAvailableDate:this.onUpAvailableDate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
@@ -2293,6 +4235,19 @@ class Component extends DCLogic {
       ynPetFriendly, ynDogs, ynCats, ynUtilities, ynFirewall, utilTypeOpts, capOpts, showUtilDetail,
       onUpParking, onUpYearBuilt, onUpStoreys, onUpHeating, onUpWater, onUpPowerMeter, onUpOilCompany, onUpInternalNotes,
       propDrawer, propDrawerOpen, closePropDrawer:this.closePropDrawer,
+      leaseDraft: s.leaseDraft ? {
+        ...s.leaseDraft,
+        hasLeaseId: !!s.leaseDraft.leaseId,
+      } : null,
+      leaseSavingLabel: s.leaseSaving ? 'Saving…' : 'Save lease',
+      saveLease: this.saveLease,
+      closeLeaseForm: this.closeLeaseForm,
+      endLeaseAction: () => s.leaseDraft?.leaseId && this.endLease(s.leaseDraft.leaseId, s.leaseDraft.propertyId),
+      onLeaseTenantName: this.onLeaseTenantName,
+      onLeaseMonthlyRate: this.onLeaseMonthlyRate,
+      onLeaseStartDate: this.onLeaseStartDate,
+      onLeaseEndDate: this.onLeaseEndDate,
+      onLeaseRenewalStatus: this.onLeaseRenewalStatus,
       drawer, drawerOpen, closeDrawer:this.closeDrawer, stop:this.stop,
       tabPublic:this.tabStyle(isPublic), tabManager:this.tabStyle(isManager || isManagerSignIn),
       isDark, rootStyle, knobStyle, toggleTheme:this.toggleTheme, themeTitle: isDark?'Switch to light mode':'Switch to dark mode',
@@ -2306,6 +4261,12 @@ class Component extends DCLogic {
   }
   segStyle(active) {
     return { height:'34px', padding:'0 16px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'14px', fontWeight:500, background: active?'var(--surface)':'transparent', color: active?'var(--ink)':'var(--fg-2)', boxShadow: active?'var(--shadow-1)':'none', whiteSpace:'nowrap' };
+  }
+  checkStyle(selected) {
+    return {
+      checkBorder: selected ? 'var(--ink)' : 'var(--border)',
+      checkBg: selected ? 'var(--ink)' : 'transparent',
+    };
   }
   tabStyle(active) {
     return { height:'34px', padding:'0 18px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13.5px', fontWeight:600, background: active?'var(--ink)':'transparent', color: active?'var(--fg-on-ink)':'var(--fg-2)', transition:'background 200ms, color 200ms' };

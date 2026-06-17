@@ -8,6 +8,8 @@ export function mapListingRow(row, photos = []) {
   return {
     id: row.id,
     slug: row.slug,
+    propertyId: row.property_id || null,
+    sourceListingId: row.source_listing_id || null,
     title: row.title,
     type: row.type,
     area: row.area || row.city || "",
@@ -42,8 +44,22 @@ export function mapListingRow(row, photos = []) {
     powerMeter: row.power_meter || "",
     oilCompany: row.oil_company || "",
     internalNotes: row.internal_notes || "",
+    updatedAt: row.updated_at || null,
+    createdAt: row.created_at || null,
     fromDb: true,
+    isListing: true,
   };
+}
+
+export function slugFromTitle(title) {
+  const base =
+    (title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") ||
+      "listing") +
+    "-" +
+    Date.now().toString(36) +
+    "-" +
+    crypto.randomUUID().slice(0, 4);
+  return base;
 }
 
 export function listingInsertPayload(body, userId) {
@@ -82,6 +98,8 @@ export function listingInsertPayload(body, userId) {
     power_meter: body.powerMeter,
     oil_company: body.oilCompany,
     internal_notes: body.internalNotes,
+    property_id: body.propertyId || null,
+    source_listing_id: body.sourceListingId || null,
     created_by: userId,
   };
 }
@@ -132,6 +150,7 @@ export async function fetchManagerListings(supabase, userId) {
     .from("listings")
     .select("*")
     .eq("created_by", userId)
+    .in("status", ["ACTIVE", "ARCHIVED", "DRAFT"])
     .order("created_at", { ascending: false });
 
   if (error) throw error;
