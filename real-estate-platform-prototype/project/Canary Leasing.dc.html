@@ -35,7 +35,8 @@
           <span style="font-weight:700;font-size:19px;letter-spacing:-0.01em;color:var(--ink)">Canary</span>
         </a>
         <nav style="display:flex;gap:26px;align-items:center">
-          <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
+          <a onClick="{{ goHome }}" style="cursor:pointer;color:{{ navListingsColor }};font-size:15px;font-weight:{{ navListingsWeight }}">Listings</a>
+          <a onClick="{{ goServices }}" style="cursor:pointer;color:{{ navServicesColor }};font-size:15px;font-weight:{{ navServicesWeight }}">Services</a>
         </nav>
         <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;background:var(--paper);width:min(320px,100%);flex-shrink:1">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--fg-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -236,6 +237,136 @@
         </div>
         </sc-if>
         </sc-if>
+      </section>
+    </div>
+    </sc-if>
+
+    <!-- ---- SERVICES ---- -->
+    <sc-if value="{{ publicIsServices }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <section style="max-width:1200px;margin:24px auto 0;padding:0 24px">
+        <div style="position:relative;height:360px;border-radius:28px;overflow:hidden;background:#2a3d52">
+          <div style="position:absolute;inset:0;background-size:cover;background-position:72% center;background-image:url('https://images.unsplash.com/photo-1441846978521-21764329e27a?w=1600&q=80&auto=format&fit=crop')"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(14,15,12,0.9) 0%, rgba(14,15,12,0.78) 40%, rgba(14,15,12,0.32) 62%, rgba(14,15,12,0.08) 100%)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(14,15,12,0.45) 0%, transparent 55%)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:40px 48px;color:#fff">
+            <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:9999px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);backdrop-filter:blur(6px);font-size:13px;font-weight:500">St. John's, NL · Proudly Canadian</span>
+            <h1 style="font-family:var(--font-sans);font-weight:600;font-size:46px;line-height:1.08;letter-spacing:-0.02em;margin-top:16px;max-width:720px;color:#fff">Modern solutions for stress-free property management.</h1>
+            <p style="font-size:17px;line-height:1.55;color:rgba(255,255,255,0.9);max-width:620px;margin-top:12px">An overview of our services and fee structure for landlords, investors, and property owners across Newfoundland.</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:56px 24px 24px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;box-shadow:var(--shadow-1)">
+            <h2 style="font-size:26px;letter-spacing:-0.02em;margin-bottom:18px">Management fees</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ managementFees }}" as="fee" hint-placeholder-count="3">
+              <div style="padding-bottom:14px;border-bottom:1px solid var(--border)">
+                <div style="font-size:15px;font-weight:600;color:var(--fg-1)">{{ fee.label }}</div>
+                <div class="tnum" style="font-size:15px;font-weight:600;color:var(--canary);margin-top:4px">{{ fee.value }}</div>
+                <sc-if value="{{ fee.detail }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:var(--fg-2);margin-top:3px">{{ fee.detail }}</div>
+                </sc-if>
+              </div>
+              </sc-for>
+            </div>
+            <p style="font-size:13px;color:var(--fg-2);margin-top:16px;font-style:italic">{{ hstNote }}</p>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;box-shadow:var(--shadow-1)">
+            <h2 style="font-size:26px;letter-spacing:-0.02em;margin-bottom:18px">Leasing services</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ leasingFees }}" as="fee" hint-placeholder-count="2">
+              <div style="padding-bottom:14px;border-bottom:1px solid var(--border)">
+                <div style="font-size:15px;font-weight:600;color:var(--fg-1)">{{ fee.label }}</div>
+                <div class="tnum" style="font-size:15px;font-weight:600;color:var(--canary);margin-top:4px">{{ fee.value }}</div>
+                <sc-if value="{{ fee.detail }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:var(--fg-2);margin-top:3px">{{ fee.detail }}</div>
+                </sc-if>
+              </div>
+              </sc-for>
+            </div>
+            <ul style="margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ leasingNotes }}" as="note" hint-placeholder-count="2">
+              <li style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--fg-2);line-height:1.5">
+                <span style="color:var(--canary);font-weight:700;line-height:1.4">·</span>{{ note }}
+              </li>
+              </sc-for>
+            </ul>
+            <p style="font-size:13px;color:var(--fg-2);margin-top:16px;font-style:italic">{{ hstNote }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:24px 24px 32px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 36px;box-shadow:var(--shadow-1)">
+          <h2 style="font-size:26px;letter-spacing:-0.02em;margin-bottom:20px">Services included</h2>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 32px">
+            <sc-for list="{{ servicesIncluded }}" as="item" hint-placeholder-count="6">
+            <div style="display:flex;align-items:flex-start;gap:10px;font-size:15px;color:var(--fg-1)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M20 6 9 17l-5-5"/></svg>
+              {{ item }}
+            </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:0 24px 32px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;box-shadow:var(--shadow-1)">
+            <h2 style="font-size:26px;letter-spacing:-0.02em;margin-bottom:12px">Maintenance services</h2>
+            <p style="color:var(--fg-2);font-size:15px;line-height:1.65;margin:0">{{ maintenanceSummary }}</p>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 32px;box-shadow:var(--shadow-1)">
+            <h2 style="font-size:26px;letter-spacing:-0.02em;margin-bottom:12px">Agreement terms</h2>
+            <p style="color:var(--fg-2);font-size:15px;line-height:1.65;margin:0">{{ agreementSummary }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:0 24px 56px">
+        <div style="background:var(--gray-50);border:1px solid var(--border);border-radius:20px;padding:36px 40px">
+          <h2 style="font-size:26px;letter-spacing:-0.02em">Tell us about your property</h2>
+          <p style="color:var(--fg-2);font-size:15px;line-height:1.6;margin-top:10px;max-width:720px">To help us better understand your property, please provide the following when you reach out. Once we receive this information, we would be happy to schedule a call or in-person meeting to discuss your goals and answer any questions.</p>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 32px;margin-top:22px">
+            <sc-for list="{{ propertyInfoItems }}" as="item" hint-placeholder-count="4">
+            <div style="display:flex;align-items:flex-start;gap:10px;font-size:15px;color:var(--fg-1)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--atlantic)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              {{ item }}
+            </div>
+            </sc-for>
+          </div>
+          <a href="{{ servicesContactUrl }}" style="display:inline-block;margin-top:28px;height:44px;line-height:44px;padding:0 24px;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);font-size:15px;font-weight:600;text-decoration:none">Email us your property details</a>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:0 24px 56px">
+        <div style="text-align:center;margin-bottom:32px">
+          <h2 style="font-size:32px;letter-spacing:-0.02em">Reviews</h2>
+          <p style="color:var(--fg-2);font-size:16px;margin-top:8px">What landlords, investors, and tenants say about working with Canary.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+          <sc-for list="{{ serviceReviews }}" as="r" hint-placeholder-count="6">
+          <blockquote style="margin:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow-1)">
+            <p style="font-size:15px;line-height:1.6;color:var(--fg-1);margin:0">&ldquo;{{ r.quote }}&rdquo;</p>
+            <footer style="margin-top:14px;font-size:13px;font-weight:600;color:var(--fg-2)">— {{ r.author }}</footer>
+          </blockquote>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="max-width:1200px;margin:0 auto;padding:0 24px 96px">
+        <div style="background:#0E0F0C;border-radius:24px;padding:44px 48px;text-align:center">
+          <h2 style="font-size:30px;letter-spacing:-0.02em;color:#FAF7F1">We look forward to speaking with you</h2>
+          <p style="font-size:16px;line-height:1.55;color:#E8E5DD;max-width:560px;margin:12px auto 0">Share your property details and we'll schedule a call or in-person meeting to discuss your goals.</p>
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:24px;flex-wrap:wrap">
+            <a href="tel:+17092009626" style="height:44px;line-height:44px;padding:0 22px;border-radius:9999px;background:#F5C518;color:#0E0F0C;font-size:15px;font-weight:600;text-decoration:none">(709) 200-9626</a>
+            <a href="{{ servicesContactUrl }}" style="height:44px;line-height:44px;padding:0 22px;border-radius:9999px;border:1px solid rgba(250,247,241,0.45);background:rgba(250,247,241,0.08);color:#FAF7F1;font-size:15px;font-weight:500;text-decoration:none">info@canarypm.ca</a>
+          </div>
+          <p style="font-size:13px;color:#B8B3A8;margin-top:16px">24/7 online tenant support · St. John's, NL</p>
+        </div>
       </section>
     </div>
     </sc-if>
@@ -2478,6 +2609,7 @@ class Component extends DCLogic {
 
   // navigation
   goHome = () => this.setState({ surface:'public', pubView:'listings', pubFilter:'all', photoLightboxOpen:false });
+  goServices = () => this.setState({ surface:'public', pubView:'services', photoLightboxOpen:false });
   goShortStays = () => this.setState({ surface:'public', pubView:'listings', pubFilter:'short', pubSearch:'', photoLightboxOpen:false });
   goPublic = () => this.setState({ surface:'public' });
   goManager = () => {
@@ -5316,12 +5448,89 @@ class Component extends DCLogic {
     const auditLogEmpty = auditLogRows.length === 0;
     const auditLogRefreshLabel = s.auditLogLoading ? 'Refreshing…' : 'Refresh';
 
+    const onServices = isPublic && s.pubView === 'services';
+    const navListingsColor = onServices ? 'var(--fg-2)' : 'var(--fg-1)';
+    const navListingsWeight = onServices ? '400' : '600';
+    const navServicesColor = onServices ? 'var(--fg-1)' : 'var(--fg-2)';
+    const navServicesWeight = onServices ? '600' : '400';
+
+    const managementFees = [
+      { label: 'Long-Term Rental Management', value: '12% of monthly rent', detail: 'For single properties' },
+      { label: 'Multi-Unit Discount', value: '10% of monthly rent', detail: 'When managing multiple units or properties' },
+      { label: 'Short-Term Rental Management', value: '25% of rental revenue', detail: '' },
+    ];
+    const hstNote = 'All fees are subject to HST';
+
+    const leasingFees = [
+      { label: 'Standard Leasing Fee', value: "100% of one month's rent", detail: '' },
+      { label: 'Discounted Leasing Fee', value: "50% of one month's rent", detail: 'For clients enrolled in monthly management' },
+    ];
+    const leasingNotes = [
+      'Includes advertising, showings, tenant screening, lease preparation, and move-in coordination',
+      'Leasing fees are based on a 12-month lease and prorated for shorter lease terms',
+    ];
+
+    const servicesIncluded = [
+      'Professional property photography',
+      'Online marketing across multiple platforms',
+      'Comprehensive tenant & guest screening',
+      'Lease and/or booking preparation',
+      'Rent collection and payment processing',
+      'Monthly owner statements and reporting',
+      'Regular property inspections',
+      '24/7 tenant and guest support',
+      'Deposit collection and administration',
+      'Eviction coordination if required',
+      'Compliance with residential tenancy & tourist accommodation regulations',
+    ];
+
+    const maintenanceSummary = 'We coordinate all maintenance requests and repairs using our in-house team and trusted network of contractors. Maintenance work is billed at $50.00 per hour plus HST, with owner approval required before proceeding with most work exceeding $500.';
+
+    const agreementSummary = "Our management agreements are month-to-month, providing flexibility as your needs change. We simply require one month's written notice should you decide to discontinue services.";
+
+    const propertyInfoItems = [
+      'Property address',
+      'Number of bedrooms and bathrooms',
+      'Current occupancy status',
+      'Current condition of the property',
+      'Any photos available',
+      'Your preferred timeline for management services',
+      'Availability for a property walkthrough or introductory meeting',
+    ];
+
+    const servicesContactBody = [
+      'Property address:',
+      'Bedrooms / bathrooms:',
+      'Current occupancy:',
+      'Current condition:',
+      'Photos available:',
+      'Preferred timeline:',
+      'Availability for walkthrough:',
+      '',
+      'Additional notes:',
+    ].join('\n');
+    const servicesContactUrl = 'mailto:info@canarypm.ca?subject=' + encodeURIComponent('Property Management Inquiry') + '&body=' + encodeURIComponent(servicesContactBody);
+
+    const serviceReviews = [
+      { author: 'Danielle S', quote: 'Living out of province they\'ve been a tenant manager, handyman, service procurer, advertising agent, financial guru, and most of all, a comfort. They are in a whole other class.' },
+      { author: 'Jason P', quote: 'It has taken me until the last year or two to find a property management company that I could be irrevocably and supremely confident in — not just for my own business, but for all my clients.' },
+      { author: 'Philippe S', quote: 'Canary separated itself during our search due to timely responses, on-time appointments, and professional insight when we needed reliable Airbnb care while traveling.' },
+      { author: 'Catherine B', quote: 'Very professional, extensive background checks of prospective tenants, and very easy to reach when I have questions. I would recommend them to anyone who doesn\'t need the hassle of renting your home.' },
+      { author: 'Josh & Jess', quote: 'Aaron has been absolutely amazing from our initial chat right up to finding the tenant for our main floor apartment. Communication has been on point, relieving a lot of out-of-province stress.' },
+      { author: 'Leighanne L', quote: 'As a homeowner living outside the province, I\'m so happy to have entrusted Canary to manage both units in my house: a long-term rental and Airbnb when I\'m away.' },
+    ];
+
     return {
       isPublic, isManager, isManagerSignIn,
       publicIsListings: isPublic && s.pubView==='listings',
+      publicIsServices: isPublic && s.pubView==='services',
       publicIsDetail: isPublic && s.pubView==='detail',
       publicIsApply: isPublic && s.pubView==='apply',
-      goHome:this.goHome, goShortStays:this.goShortStays, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
+      goHome:this.goHome, goServices:this.goServices, goShortStays:this.goShortStays, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
+      navListingsColor, navListingsWeight, navServicesColor, navServicesWeight,
+      managementFees, hstNote, leasingFees, leasingNotes, servicesIncluded,
+      maintenanceSummary, agreementSummary, propertyInfoItems, servicesContactUrl,
+      serviceReviews,
       signInGoogle:this.signInGoogle, signInMicrosoft:this.signInMicrosoft, signOut:this.signOut,
       setSignInEmail:this.setSignInEmail, setSignInPassword:this.setSignInPassword, submitSignIn:this.submitSignIn,
       signInEmail:s.signInEmail, signInPassword:s.signInPassword, signInSubmitting, signInBtnLabel, signInBtnOpacity,
