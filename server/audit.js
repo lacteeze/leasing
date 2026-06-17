@@ -54,6 +54,14 @@ export function formatImportError(err) {
   ) {
     return "Half-bath values like 1.5 require a DB update — run supabase/properties-beds-baths-numeric.sql in Supabase.";
   }
+  if (
+    msg.includes("invalid input syntax for type boolean") ||
+    /properties_pet_friendly_check|listings_pet_friendly_check|properties_dogs_check|listings_dogs_check|properties_cats_check|listings_cats_check/i.test(
+      msg
+    )
+  ) {
+    return "Pet policy fields need a database update — run supabase/pet-policy-tristate.sql in Supabase.";
+  }
   if (msg.includes("leases") && msg.includes("does not exist")) {
     return "Leases table missing — run supabase/leases.sql in Supabase.";
   }
