@@ -544,17 +544,45 @@
         <!-- PROPERTIES -->
         <sc-if value="{{ mgrIsProperties }}" hint-placeholder-val="{{ false }}">
         <div style="padding:28px 32px;max-width:1200px">
+          <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px">
+            <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
+              <sc-for list="{{ propFilters }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:2.4fr 1fr 1fr 1fr 1.1fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">
-              <span>Address</span><span>Type</span><span style="text-align:right">Rate</span><span>Beds</span><span>Status</span>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.4fr;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">
+              <span>Address</span><span>Type</span><span style="text-align:right">Rate</span><span>Beds</span><span>Status</span><span>Actions</span>
             </div>
             <sc-for list="{{ propsRows }}" as="p" hint-placeholder-count="6">
-              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:2.4fr 1fr 1fr 1fr 1.1fr;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
+              <div onClick="{{ p.onOpen }}" style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.4fr;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 120ms var(--ease-out-soft)" style-hover="background:var(--gray-50)">
                 <span><span style="display:block;font-weight:600;font-size:15px">{{ p.title }}</span><span style="font-size:13px;color:var(--fg-3)">{{ p.area }}</span></span>
                 <span style="font-size:14px;color:var(--fg-2)">{{ p.typeLabel }}</span>
-                <span class="tnum" style="text-align:right;font-size:14px">{{ p.rateLabel }}</span>
+                <span class="tnum" style="text-align:right;font-size:14px">
+                  <sc-if value="{{ p.showRateInput }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ stop }}" style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+                    <div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--fg-3);font-size:13px">$</span><input value="{{ p.quickEditRate }}" onChange="{{ p.onQuickEditRate }}" onKeyDown="{{ p.onQuickEditKey }}" style="width:100px;height:34px;border:1px solid var(--border-strong);border-radius:8px;padding:0 10px 0 22px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
+                    <button onClick="{{ p.onSaveQuickEdit }}" style="height:34px;padding:0 10px;border-radius:8px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Save</button>
+                    <button onClick="{{ p.onCancelQuickEdit }}" style="height:34px;padding:0 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;cursor:pointer">×</button>
+                  </div>
+                  </sc-if>
+                  <sc-if value="{{ p.showRateLabel }}" hint-placeholder-val="{{ true }}">
+                  <span onClick="{{ p.onStartQuickEdit }}" style="cursor:pointer" title="Quick edit rate">{{ p.rateLabel }}</span>
+                  </sc-if>
+                </span>
                 <span style="font-size:14px;color:var(--fg-2)">{{ p.beds }}</span>
                 <span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:9999px;color:{{ p.stFg }};background:{{ p.stBg }}"><span style="width:6px;height:6px;border-radius:9999px;background:{{ p.stFg }}"></span>{{ p.statusLabel }}</span></span>
+                <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <button onClick="{{ p.onStartQuickEdit }}" title="Quick edit rate" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Edit rate</button>
+                  <button onClick="{{ p.onEdit }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Edit</button>
+                  <sc-if value="{{ p.canArchive }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ p.onArchive }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Archive</button>
+                  </sc-if>
+                  <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ p.onDelete }}" style="height:32px;padding:0 10px;border-radius:8px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Delete</button>
+                  </sc-if>
+                </div>
               </div>
             </sc-for>
           </div>
@@ -679,7 +707,7 @@
               <span style="font-size:13px;color:var(--fg-3)">Saved as draft automatically</span>
               <div style="display:flex;gap:10px">
                 <button onClick="{{ goProperties }}" style="height:44px;padding:0 20px;border-radius:9999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
-                <button onClick="{{ publish }}" style="height:44px;padding:0 24px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Publish listing</button>
+                <button onClick="{{ publish }}" style="height:44px;padding:0 24px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">{{ publishLabel }}</button>
               </div>
             </div>
           </div>
@@ -941,7 +969,30 @@
           </div>
           <h3 style="font-size:22px;margin-top:10px">{{ propDrawer.title }}</h3>
           <div style="font-size:14px;color:var(--fg-2);margin-top:3px">{{ propDrawer.area }}, {{ propDrawer.city }} · {{ propDrawer.specs }}</div>
+          <sc-if value="{{ propDrawer.showQuickEditLabel }}" hint-placeholder-val="{{ false }}">
           <div class="tnum" style="font-size:18px;font-weight:600;margin-top:10px">{{ propDrawer.rateLabel }}</div>
+          </sc-if>
+          <sc-if value="{{ propDrawer.showQuickEditForm }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:14px">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Rate</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="position:relative;flex:1"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-3)">$</span><input value="{{ propDrawer.quickEditRate }}" onChange="{{ propDrawer.onQuickEditRate }}" style="width:100%;height:42px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px 0 26px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <button onClick="{{ propDrawer.onSaveQuickEdit }}" style="height:42px;padding:0 14px;border-radius:10px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Save</button>
+              <button onClick="{{ propDrawer.onCancelQuickEdit }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;cursor:pointer">Cancel</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+            <button onClick="{{ propDrawer.onStartQuickEdit }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Quick edit rate</button>
+            <button onClick="{{ propDrawer.onEdit }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Edit listing</button>
+            <sc-if value="{{ propDrawer.canArchive }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ propDrawer.onArchive }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-2);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Archive</button>
+            </sc-if>
+            <sc-if value="{{ propDrawer.canDelete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ propDrawer.onDelete }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid #f5c6cb;background:#fdecea;color:#c0392b;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Delete</button>
+            </sc-if>
+          </div>
 
           <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em;margin:22px 0 12px">Listing details</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1029,6 +1080,7 @@ class Component extends DCLogic {
       oauthGoogle: false, oauthMicrosoft: false, authEmail: false,
       signInEmail: '', signInPassword: '', signInSubmitting: false,
       cardPhotoIdx: {}, cardPhotoHover: {}, photoUploading: false, photoUploadProgress: null, publishSubmitting: false,
+      propFilter: 'active', quickEditId: null, quickEditRate: '', editListingId: null, propActionBusy: false,
     };
     this._toastT = null; this._copyT = null;
   }
@@ -1194,7 +1246,10 @@ class Component extends DCLogic {
       authLoading: false, authChecked: true, authError,
       surface: managerUser && wantsManager ? 'manager' : (wantsManager && !managerUser ? 'manager-signin' : this.state.surface),
     });
-    if (managerUser) this.loadInquiries();
+    if (managerUser) {
+      this.loadInquiries();
+      this.loadManagerListings();
+    }
   };
 
   setSignInEmail = e => this.setState({ signInEmail: e.target.value, authError: null });
@@ -1225,6 +1280,8 @@ class Component extends DCLogic {
         authError: null,
         signInPassword: '',
       });
+      this.loadInquiries();
+      this.loadManagerListings();
     } catch (e) {
       this.setState({ authError: 'Sign in failed. Please try again.', signInSubmitting: false });
     }
@@ -1241,6 +1298,79 @@ class Component extends DCLogic {
       }));
     } catch (e) {}
   };
+
+  loadManagerListings = async () => {
+    try {
+      const res = await fetch('/api/listings/mine', { credentials: 'include' });
+      if (!res.ok) return;
+      const dbListings = await res.json();
+      if (!dbListings.length) return;
+      this.setState(s => ({
+        properties: [...dbListings, ...s.properties.filter(p => !p.fromDb)],
+      }));
+    } catch (e) {}
+  };
+
+  mergeListing = (saved) => {
+    this.setState(s => ({
+      properties: [saved, ...s.properties.filter(p => p.id !== saved.id)],
+    }));
+  };
+
+  patchListing = async (id, patch) => {
+    const prop = this.getProp(id);
+    if (!prop?.fromDb) {
+      this.setState(s => ({
+        properties: s.properties.map(p => p.id === id ? { ...p, ...patch } : p),
+      }));
+      return prop;
+    }
+    const res = await fetch('/api/listings/' + id, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    const saved = await res.json().catch(() => null);
+    if (!res.ok || !saved) throw new Error(saved?.error || 'Update failed');
+    this.mergeListing(saved);
+    return saved;
+  };
+
+  propertyToUploader = (p) => ({
+    title: p.title || '',
+    type: p.type || 'SINGLE',
+    address: p.address || '',
+    area: p.area || '',
+    city: p.city || 'St. John\u2019s',
+    province: p.province || 'NL',
+    postal: p.postal || '',
+    latitude: p.latitude ?? null,
+    longitude: p.longitude ?? null,
+    rate: String(p.rate || ''),
+    cleaning: String(p.cleaning || ''),
+    beds: String(p.beds || ''),
+    baths: String(p.baths || ''),
+    sqft: String(p.sqft || ''),
+    description: p.description || '',
+    features: (p.features || []).slice(),
+    images: (p.images || []).map(url => ({ url })),
+    parking: String(p.parking || ''),
+    petFriendly: !!p.petFriendly,
+    dogs: !!p.dogs,
+    cats: !!p.cats,
+    utilitiesIncluded: !!p.utilitiesIncluded,
+    utilityTypes: (p.utilityTypes || []).slice(),
+    utilityCap: p.utilityCap || 0,
+    yearBuilt: String(p.yearBuilt || ''),
+    storeys: String(p.storeys || ''),
+    heatingType: p.heatingType || 'Electric baseboard',
+    waterHeater: p.waterHeater || 'Electric tank',
+    firewall: !!p.firewall,
+    powerMeter: p.powerMeter || '',
+    oilCompany: p.oilCompany || '',
+    internalNotes: p.internalNotes || '',
+  });
 
   cardPhotoIndex(id) { return this.state.cardPhotoIdx[id] || 0; }
   prevCardPhoto = (id, e) => {
@@ -1359,11 +1489,14 @@ class Component extends DCLogic {
     else this.setState({ surface:'manager-signin', authError: null });
   };
   goUploader = () => {
-    if (this.state.managerUser) this.setState({ surface:'manager', mgrView:'uploader' });
+    if (this.state.managerUser) this.setState({ surface:'manager', mgrView:'uploader', editListingId: null, up: this.blankUploader(), featDraft: '', imgDraft: '' });
     else this.setState({ surface:'manager-signin', authError: null });
   };
   goOverview = () => this.setState({ mgrView:'overview' });
-  goProperties = () => this.setState({ mgrView:'properties' });
+  goProperties = () => {
+    this.setState({ mgrView:'properties' });
+    if (this.state.managerUser) this.loadManagerListings();
+  };
   goFunnel = () => this.setState({ mgrView:'funnel' });
   goBookings = () => this.setState({ mgrView:'bookings' });
   goViewings = () => this.setState({ mgrView:'viewings' });
@@ -1573,10 +1706,13 @@ class Component extends DCLogic {
   };
   publish = async () => {
     const u = this.state.up;
+    const editingId = this.state.editListingId;
     if (!u.title.trim()) { this.showToast('Give the listing a title'); return; }
     if (!u.rate) { this.showToast('Add a rate'); return; }
     this.setState({ publishSubmitting: true });
-    const slug = (u.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'listing') + '-' + Date.now().toString(36);
+    const slug = editingId
+      ? (this.getProp(editingId)?.slug || '')
+      : ((u.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'listing') + '-' + Date.now().toString(36));
     const imgs = u.images;
     const payload = {
       slug, title: u.title, type: u.type,
@@ -1585,7 +1721,8 @@ class Component extends DCLogic {
       latitude: u.latitude ?? null, longitude: u.longitude ?? null,
       rate: Number(u.rate) || 0, cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
       beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
-      status: 'ACTIVE', features: u.features.slice(), description: u.description || '',
+      status: editingId ? (this.getProp(editingId)?.status || 'ACTIVE') : 'ACTIVE',
+      features: u.features.slice(), description: u.description || '',
       parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
       utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
       yearBuilt: Number(u.yearBuilt) || 0, storeys: Number(u.storeys) || 0, heatingType: u.heatingType, waterHeater: u.waterHeater, firewall: !!u.firewall,
@@ -1593,8 +1730,10 @@ class Component extends DCLogic {
       images: imgs.map(im => ({ url: im.url, path: im.path || null })),
     };
     try {
-      const res = await fetch('/api/listings', {
-        method: 'POST', credentials: 'include',
+      const url = editingId ? '/api/listings/' + editingId : '/api/listings';
+      const method = editingId ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method, credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -1602,9 +1741,9 @@ class Component extends DCLogic {
       if (res.ok && saved) {
         this.setState(s => ({
           properties: [saved, ...s.properties.filter(p => p.id !== saved.id)],
-          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false,
+          up: this.blankUploader(), featDraft: '', imgDraft: '', mgrView: 'properties', publishSubmitting: false, editListingId: null,
         }));
-        this.showToast('Listing published \u2014 now live on the storefront');
+        this.showToast(editingId ? 'Listing updated' : 'Listing published \u2014 now live on the storefront');
         return;
       }
     } catch (e) {}
@@ -1658,8 +1797,82 @@ class Component extends DCLogic {
   }
 
   toggleUtil = (u) => this.setState(s => { const has = s.up.utilityTypes.includes(u); return { up:{...s.up, utilityTypes: has ? s.up.utilityTypes.filter(x=>x!==u) : [...s.up.utilityTypes, u]} }; });
-  openPropDrawer = (id) => this.setState({ openProp:id });
-  closePropDrawer = () => this.setState({ openProp:null });
+  openPropDrawer = (id) => this.setState({ openProp:id, quickEditId:null });
+  closePropDrawer = () => this.setState({ openProp:null, quickEditId:null });
+  setPropFilter = (key) => this.setState({ propFilter: key });
+  startQuickEdit = (id, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    const pr = this.getProp(id);
+    if (!pr) return;
+    this.setState({ quickEditId: id, quickEditRate: String(pr.rate || '') });
+  };
+  onQuickEditRate = (e) => this.setState({ quickEditRate: e.target.value });
+  cancelQuickEdit = (e) => {
+    if (e) e.stopPropagation();
+    this.setState({ quickEditId: null, quickEditRate: '' });
+  };
+  saveQuickEdit = async (id, e) => {
+    if (e) e.stopPropagation();
+    const rate = Number(this.state.quickEditRate);
+    if (!rate || rate <= 0) { this.showToast('Enter a valid rate'); return; }
+    this.setState({ propActionBusy: true });
+    try {
+      await this.patchListing(id, { rate });
+      this.setState({ quickEditId: null, quickEditRate: '', propActionBusy: false });
+      this.showToast('Rate updated');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast('Could not update rate');
+    }
+  };
+  startEditListing = (id) => {
+    const pr = this.getProp(id);
+    if (!pr) return;
+    this.setState({
+      editListingId: id,
+      up: this.propertyToUploader(pr),
+      featDraft: '',
+      imgDraft: '',
+      mgrView: 'uploader',
+      openProp: null,
+      quickEditId: null,
+    });
+  };
+  archiveProp = async (id) => {
+    const pr = this.getProp(id);
+    if (!pr || pr.status === 'ARCHIVED') return;
+    this.setState({ propActionBusy: true });
+    try {
+      await this.patchListing(id, { status: 'ARCHIVED' });
+      this.setState({ propActionBusy: false, openProp: null });
+      this.showToast('Listing archived \u2014 hidden from public listings');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast('Could not archive listing');
+    }
+  };
+  deleteProp = async (id) => {
+    const pr = this.getProp(id);
+    if (!pr || pr.status !== 'ARCHIVED') return;
+    if (!window.confirm('Permanently delete this archived listing? This cannot be undone.')) return;
+    this.setState({ propActionBusy: true });
+    try {
+      if (pr.fromDb) {
+        const res = await fetch('/api/listings/' + id, { method: 'DELETE', credentials: 'include' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Delete failed');
+      }
+      this.setState(s => ({
+        properties: s.properties.filter(p => p.id !== id),
+        propActionBusy: false,
+        openProp: null,
+      }));
+      this.showToast('Listing deleted');
+    } catch (err) {
+      this.setState({ propActionBusy: false });
+      this.showToast('Could not delete listing');
+    }
+  };
   parkingLabel(n) { return n>0 ? (n + ' space' + (n>1?'s':'')) : 'Street parking only'; }
   petLabel(p) { if (!p.petFriendly) return 'No pets'; if (p.dogs && p.cats) return 'Dogs & cats welcome'; if (p.dogs) return 'Dogs welcome'; if (p.cats) return 'Cats welcome'; return 'Pets negotiable'; }
   capText(n) { return n>0 ? ('up to $' + n + '/mo') : 'no cap'; }
@@ -1787,15 +2000,48 @@ class Component extends DCLogic {
     }));
     const funnelCount = filteredInquiries.length;
 
-    const propsRows = s.properties.map(pr => ({
-      title:pr.title, area:`${pr.area}, ${pr.city}`, typeLabel:this.typeLabelOf(pr.type),
-      rateLabel:this.moneyShort(pr.rate)+(pr.type==='SHORT_TERM'?'/night':'/mo'),
-      beds:pr.beds?`${pr.beds} bd \u00b7 ${pr.baths} ba`:'\u2014',
-      statusLabel:pr.status==='ACTIVE'?'Active':(pr.status==='DRAFT'?'Draft':'Archived'),
-      onOpen:()=>this.openPropDrawer(pr.id),
-      stFg:pr.status==='ACTIVE'?'var(--success)':(pr.status==='DRAFT'?'var(--warning)':'var(--fg-3)'),
-      stBg:pr.status==='ACTIVE'?'var(--success-tint)':(pr.status==='DRAFT'?'var(--warning-tint)':'var(--gray-100)'),
-    }));
+    const propsFiltered = s.properties.filter(pr => {
+      if (s.propFilter === 'active') return pr.status === 'ACTIVE' || pr.status === 'DRAFT';
+      if (s.propFilter === 'archived') return pr.status === 'ARCHIVED';
+      return true;
+    });
+    const propFilterOpt = (key, label) => ({ key, label, onClick: () => this.setPropFilter(key), style: this.segStyle(s.propFilter === key) });
+    const propFilters = [propFilterOpt('active', 'Active'), propFilterOpt('archived', 'Archived'), propFilterOpt('all', 'All')];
+
+    const propsRows = propsFiltered.map(pr => {
+      const isQuickEdit = s.quickEditId === pr.id;
+      const rateUnit = pr.type === 'SHORT_TERM' ? '/night' : '/mo';
+      return {
+        id: pr.id,
+        title: pr.title,
+        area: `${pr.area}, ${pr.city}`,
+        typeLabel: this.typeLabelOf(pr.type),
+        rateLabel: this.moneyShort(pr.rate) + rateUnit,
+        isQuickEdit,
+        showRateInput: isQuickEdit,
+        showRateLabel: !isQuickEdit,
+        quickEditRate: isQuickEdit ? s.quickEditRate : '',
+        onQuickEditRate: this.onQuickEditRate,
+        onSaveQuickEdit: (e) => this.saveQuickEdit(pr.id, e),
+        onCancelQuickEdit: this.cancelQuickEdit,
+        onStartQuickEdit: (e) => this.startQuickEdit(pr.id, e),
+        beds: pr.beds ? `${pr.beds} bd \u00b7 ${pr.baths} ba` : '\u2014',
+        statusLabel: pr.status === 'ACTIVE' ? 'Active' : (pr.status === 'DRAFT' ? 'Draft' : 'Archived'),
+        onOpen: () => this.openPropDrawer(pr.id),
+        stFg: pr.status === 'ACTIVE' ? 'var(--success)' : (pr.status === 'DRAFT' ? 'var(--warning)' : 'var(--fg-3)'),
+        stBg: pr.status === 'ACTIVE' ? 'var(--success-tint)' : (pr.status === 'DRAFT' ? 'var(--warning-tint)' : 'var(--gray-100)'),
+        canArchive: pr.status !== 'ARCHIVED',
+        canDelete: pr.status === 'ARCHIVED',
+        onArchive: (e) => { e.stopPropagation(); this.archiveProp(pr.id); },
+        onDelete: (e) => { e.stopPropagation(); this.deleteProp(pr.id); },
+        onEdit: (e) => { e.stopPropagation(); this.startEditListing(pr.id); },
+        onQuickEditKey: (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); this.saveQuickEdit(pr.id, e); }
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.cancelQuickEdit(e); }
+        },
+        propActionBusy: s.propActionBusy,
+      };
+    });
 
     // uploader view-models
     const typeOpt = (key,label) => ({ key, label, onClick:()=>this.setUp('type',key), style:this.segStyle(s.up.type===key) });
@@ -1863,7 +2109,7 @@ class Component extends DCLogic {
     }
 
     // chrome
-    const titles = { overview:['Overview','Tuesday, June 15'], properties:['Properties','Your portfolio'], uploader:['New listing','Spin one up in under a minute'], funnel:['Leasing pipeline','Move prospects through to signed'], bookings:['Bookings','Short stays this month'], viewings:['Scheduled viewings','Upcoming property viewings'] };
+    const titles = { overview:['Overview','Tuesday, June 15'], properties:['Properties','Your portfolio'], uploader: s.editListingId ? ['Edit listing','Update details and pricing'] : ['New listing','Spin one up in under a minute'], funnel:['Leasing pipeline','Move prospects through to signed'], bookings:['Bookings','Short stays this month'], viewings:['Scheduled viewings','Upcoming property viewings'] };
     const t = titles[s.mgrView] || titles.overview;
 
     // extended listing fields — uploader controls
@@ -1876,8 +2122,47 @@ class Component extends DCLogic {
     const onUpParking=(e)=>this.setUp('parking',e.target.value), onUpYearBuilt=(e)=>this.setUp('yearBuilt',e.target.value), onUpStoreys=(e)=>this.setUp('storeys',e.target.value), onUpHeating=(e)=>this.setUp('heatingType',e.target.value), onUpWater=(e)=>this.setUp('waterHeater',e.target.value), onUpPowerMeter=(e)=>this.setUp('powerMeter',e.target.value), onUpOilCompany=(e)=>this.setUp('oilCompany',e.target.value), onUpInternalNotes=(e)=>this.setUp('internalNotes',e.target.value);
     const showUtilDetail = !!s.up.utilitiesIncluded;
     // manager property drawer
-    let propDrawer=null, propDrawerOpen=false;
-    if (s.openProp) { const pr=this.getProp(s.openProp); if (pr) { propDrawerOpen=true; propDrawer = { ...pr, typeLabel:this.typeLabelOf(pr.type), statusLabel:pr.status==='ACTIVE'?'Active':(pr.status==='DRAFT'?'Draft':'Archived'), rateLabel:this.moneyShort(pr.rate)+(pr.type==='SHORT_TERM'?' / night':' / mo'), specs:`${pr.beds} bed \u00b7 ${pr.baths} bath \u00b7 ${pr.sqft} sq ft`, parkingLabel:this.parkingLabel(pr.parking), petLabel:this.petLabel(pr), utilIncluded:pr.utilitiesIncluded, utilTypes:pr.utilityTypes, hasUtilTypes:pr.utilityTypes.length>0, utilCapLabel:this.capText(pr.utilityCap), firewallLabel:pr.firewall?'Yes':'No', img0:`url('${pr.images[0]}')`, oilCompanyLabel:pr.oilCompany||'\u2014', internalNotesLabel:pr.internalNotes||'No internal notes yet.' }; } }
+  let propDrawer=null, propDrawerOpen=false;
+    if (s.openProp) {
+      const pr = this.getProp(s.openProp);
+      if (pr) {
+        propDrawerOpen = true;
+        const rateUnit = pr.type === 'SHORT_TERM' ? ' / night' : ' / mo';
+        const isQuickEdit = s.quickEditId === pr.id;
+        propDrawer = {
+          ...pr,
+          id: pr.id,
+          typeLabel: this.typeLabelOf(pr.type),
+          statusLabel: pr.status === 'ACTIVE' ? 'Active' : (pr.status === 'DRAFT' ? 'Draft' : 'Archived'),
+          rateLabel: this.moneyShort(pr.rate) + rateUnit,
+          isQuickEdit,
+          showQuickEditForm: isQuickEdit,
+          showQuickEditLabel: !isQuickEdit,
+          quickEditRate: isQuickEdit ? s.quickEditRate : String(pr.rate || ''),
+          onQuickEditRate: this.onQuickEditRate,
+          onSaveQuickEdit: () => this.saveQuickEdit(pr.id),
+          onStartQuickEdit: () => this.startQuickEdit(pr.id),
+          onCancelQuickEdit: this.cancelQuickEdit,
+          specs: `${pr.beds} bed \u00b7 ${pr.baths} bath \u00b7 ${pr.sqft} sq ft`,
+          parkingLabel: this.parkingLabel(pr.parking),
+          petLabel: this.petLabel(pr),
+          utilIncluded: pr.utilitiesIncluded,
+          utilTypes: pr.utilityTypes,
+          hasUtilTypes: pr.utilityTypes.length > 0,
+          utilCapLabel: this.capText(pr.utilityCap),
+          firewallLabel: pr.firewall ? 'Yes' : 'No',
+          img0: `url('${pr.images[0]}')`,
+          oilCompanyLabel: pr.oilCompany || '\u2014',
+          internalNotesLabel: pr.internalNotes || 'No internal notes yet.',
+          canArchive: pr.status !== 'ARCHIVED',
+          canDelete: pr.status === 'ARCHIVED',
+          onArchive: () => this.archiveProp(pr.id),
+          onDelete: () => this.deleteProp(pr.id),
+          onEdit: () => this.startEditListing(pr.id),
+          propActionBusy: s.propActionBusy,
+        };
+      }
+    }
 
     // manager property drawer
     const mgrUser = s.managerUser;
@@ -1940,7 +2225,9 @@ class Component extends DCLogic {
       columns, funnelCount, funnelFilteredLabel, inqPropertyOptions, inqLeaseTypeOptions,
       inqFilterProperty:s.inqFilterProperty, inqFilterLeaseType:s.inqFilterLeaseType, inqFilterMinBeds:s.inqFilterMinBeds,
       setInqFilterMinBeds:this.setInqFilterMinBeds,
-      propsRows,
+      propsRows, propFilters,
+      isEditingListing: !!s.editListingId,
+      publishLabel: s.editListingId ? (s.publishSubmitting ? 'Saving…' : 'Save changes') : (s.publishSubmitting ? 'Publishing…' : 'Publish listing'),
       typeOpts, isShortType, rateLabel, up:s.up,
       onUpTitle:this.onUpTitle, onUpAddress:this.onUpAddress, onUpCity:this.onUpCity, onUpProvince:this.onUpProvince, onUpPostal:this.onUpPostal,
       onUpRate:this.onUpRate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
