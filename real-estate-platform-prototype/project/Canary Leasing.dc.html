@@ -36,6 +36,7 @@
         </a>
         <nav style="display:flex;gap:26px;align-items:center">
           <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
+          <a onClick="{{ goShortStays }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Short-term</a>
         </nav>
         <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border);border-radius:9999px;background:var(--paper);width:min(320px,100%);flex-shrink:1">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--fg-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -73,18 +74,131 @@
       <section style="max-width:1200px;margin:0 auto;padding:46px 24px 96px">
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap">
           <div>
-            <h2 style="font-size:32px;letter-spacing:-0.02em">Available now</h2>
+            <h2 style="font-size:32px;letter-spacing:-0.02em">{{ pubListingsTitle }}</h2>
             <p style="color:var(--fg-2);font-size:16px;margin-top:6px">{{ pubListingsSubtitle }}</p>
           </div>
-          <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px">
-            <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="3">
+          <div style="display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px;flex-wrap:wrap">
+            <sc-for list="{{ pubFilters }}" as="f" hint-placeholder-count="4">
               <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
             </sc-for>
           </div>
         </div>
 
-        <sc-if value="{{ pubListingsEmpty }}" hint-placeholder-val="{{ false }}">
-        <div style="padding:64px 24px;text-align:center;color:var(--fg-3);font-size:15px">No listings match your search.</div>
+        <div style="display:{{ pubHospitableDisplay }};margin-bottom:24px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-1);padding:24px 28px 32px">
+          <sc-if value="{{ hospitableNotConfigured }}" hint-placeholder-val="{{ false }}">
+          <p style="color:var(--fg-2);font-size:15px;line-height:1.55;margin:0">Short-term search needs a Hospitable API token. Add <code style="font-size:13px;background:var(--gray-100);padding:2px 6px;border-radius:6px">HOSPITABLE_API_TOKEN</code> to <code style="font-size:13px;background:var(--gray-100);padding:2px 6px;border-radius:6px">.env.local</code> and restart the server.</p>
+          </sc-if>
+          <sc-if value="{{ hospitableConfigured }}" hint-placeholder-val="{{ true }}">
+          <p style="color:var(--fg-2);font-size:15px;line-height:1.55;margin:0 0 18px">Browse our nightly rentals below, or search dates to check live availability.</p>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end">
+            <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Check-in</label><input type="date" value="{{ hospitableCheckIn }}" onChange="{{ setHospitableCheckIn }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/></div>
+            <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Check-out</label><input type="date" value="{{ hospitableCheckOut }}" onChange="{{ setHospitableCheckOut }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/></div>
+            <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Guests</label><input value="{{ hospitableAdults }}" onChange="{{ setHospitableAdults }}" inputmode="numeric" placeholder="2" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+            <div><button onClick="{{ searchHospitable }}" disabled="{{ hospitableSearching }}" style="width:100%;height:44px;border-radius:12px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;opacity:{{ hospitableSearchOpacity }}">{{ hospitableSearchLabel }}</button></div>
+          </div>
+          <sc-if value="{{ hospitableError }}" hint-placeholder-val="{{ false }}">
+          <p style="margin-top:14px;color:var(--fg-3);font-size:14px">{{ hospitableError }}</p>
+          </sc-if>
+          <sc-if value="{{ hospitableCatalogLoading }}" hint-placeholder-val="{{ false }}">
+          <p style="margin-top:18px;color:var(--fg-3);font-size:14px">Loading short-term homes…</p>
+          </sc-if>
+          <sc-if value="{{ hospitableSearching }}" hint-placeholder-val="{{ false }}">
+          <p style="margin-top:18px;color:var(--fg-3);font-size:14px">Checking availability…</p>
+          </sc-if>
+          <sc-if value="{{ hospitableHasResults }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:24px">
+            <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:12px">{{ hospitableResultsLabel }}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+              <sc-for list="{{ hospitableCards }}" as="h" hint-placeholder-count="3">
+              <article style="background:var(--paper);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-1)">
+                <div style="height:180px;background-size:cover;background-position:center;background-color:var(--gray-100);background-image:{{ h.imgCss }}"></div>
+                <div style="padding:16px 18px 18px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                    <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.01em">{{ h.title }}</h3>
+                    <span class="tnum" style="font-size:16px;font-weight:600;white-space:nowrap">{{ h.priceLabel }}</span>
+                  </div>
+                  <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ h.city }}</div>
+                  <div style="color:var(--fg-2);font-size:14px;margin-top:2px">{{ h.specs }}</div>
+                  <sc-if value="{{ h.unavailable }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:13px;color:var(--fg-3)">{{ h.unavailableLabel }}</div>
+                  </sc-if>
+                  <sc-if value="{{ h.hasBookUrl }}" hint-placeholder-val="{{ true }}">
+                  <a href="{{ h.bookUrl }}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:14px;height:40px;line-height:40px;text-align:center;border-radius:9999px;background:var(--ink);color:var(--fg-on-ink);font-size:14px;font-weight:600;text-decoration:none">Book on Hospitable</a>
+                  </sc-if>
+                </div>
+              </article>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+          <sc-if value="{{ hospitableEmpty }}" hint-placeholder-val="{{ false }}">
+          <p style="margin-top:18px;color:var(--fg-3);font-size:14px">{{ hospitableEmptyLabel }}</p>
+          </sc-if>
+          </sc-if>
+        </div>
+        </div>
+
+        <sc-if value="{{ pubShowLocalListings }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ pubSearchNoResults }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:640px;margin:0 auto;padding:24px 0 8px">
+          <sc-if value="{{ searchInquirySubmitted }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--success-tint);border:1px solid var(--border);border-radius:20px;padding:28px;text-align:center">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px"><path d="M20 6 9 17l-5-5"/></svg>
+            <div style="font-weight:600;font-size:18px">Search request sent</div>
+            <p style="color:var(--fg-2);font-size:15px;margin-top:8px;line-height:1.55">We’ll review your criteria and reach out when something matches.</p>
+          </div>
+          </sc-if>
+          <sc-if value="{{ searchInquiryOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-1);padding:28px">
+            <h3 style="font-size:22px;letter-spacing:-0.02em;margin:0">Nothing matched “{{ pubSearchTrimmed }}”</h3>
+            <p style="color:var(--fg-2);font-size:15px;line-height:1.55;margin-top:8px">Send us your search criteria and we’ll follow up when a fit comes available.</p>
+            <div style="margin-top:22px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:12px;font-weight:600;color:var(--fg-2)">Contact</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <input value="{{ vFirst }}" onChange="{{ setVFirst }}" placeholder="First name *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <input value="{{ vLast }}" onChange="{{ setVLast }}" placeholder="Last name *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+              </div>
+              <input value="{{ vEmail }}" onChange="{{ setVEmail }}" placeholder="Email *" type="email" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+              <input value="{{ vPhone }}" onChange="{{ setVPhone }}" placeholder="Phone *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+              <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:8px">Your search criteria</div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+                <input value="{{ vMinBeds }}" onChange="{{ setVMinBeds }}" placeholder="Min beds" inputmode="numeric" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
+                <input value="{{ vMinBaths }}" onChange="{{ setVMinBaths }}" placeholder="Min baths" inputmode="decimal" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
+                <input value="{{ vMinParking }}" onChange="{{ setVMinParking }}" placeholder="Min parking" inputmode="numeric" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
+              </div>
+              <input value="{{ vPets }}" onChange="{{ setVPets }}" placeholder="Pets (e.g. No pets, 1 small dog)" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Move-in date</label>
+                  <input type="date" value="{{ vMoveIn }}" onChange="{{ setVMoveIn }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Preferred viewing date</label>
+                  <input type="date" value="{{ vDate }}" onChange="{{ setVDate }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)"/>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Lease type</label>
+                  <select value="{{ vLeaseType }}" onChange="{{ setVLeaseType }}" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;font-family:inherit;font-size:15px;background:var(--paper);color:var(--ink)">
+                    <option>Long-term</option><option>Short-term</option><option>Flexible</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Max price / month</label>
+                  <input value="{{ vMaxPrice }}" onChange="{{ setVMaxPrice }}" placeholder="e.g. 1800" inputmode="numeric" style="width:100%;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                </div>
+              </div>
+              <textarea value="{{ vOtherDetails }}" onChange="{{ setVOtherDetails }}" placeholder="Other details (neighbourhood, must-haves, timeline…)" style="width:100%;height:88px;border:1px solid var(--border-strong);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;background:var(--paper);resize:vertical;line-height:1.5"></textarea>
+              <button onClick="{{ submitSearchInquiry }}" disabled="{{ searchInquirySubmitting }}" style="width:100%;height:48px;margin-top:6px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;opacity:{{ searchInquirySubmitOpacity }}">{{ searchInquirySubmitLabel }}</button>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+        <sc-if value="{{ pubListingsEmptyNoSearch }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:64px 24px;text-align:center;color:var(--fg-3);font-size:15px">No listings available right now.</div>
         </sc-if>
         <sc-if value="{{ pubListingsHasResults }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
@@ -106,9 +220,10 @@
               <div style="padding:18px 20px 20px">
                 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
                   <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">{{ l.addr }}</h3>
-                  <span class="tnum" style="font-size:17px;font-weight:600;white-space:nowrap">{{ l.priceMain }}<span style="font-size:13px;font-weight:400;color:var(--fg-2)">{{ l.priceUnit }}</span></span>
+                  <span class="tnum" style="font-size:17px;font-weight:600;white-space:nowrap">{{ l.priceMain }}<span style="font-size:13px;font-weight:400;color:var(--fg-2)">{{ l.priceUnit }}{{ l.priceUtilTag }}</span></span>
                 </div>
-                <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.city }} · {{ l.specs }}</div>
+                <div style="color:var(--fg-2);font-size:14px;margin-top:6px">{{ l.city }}</div>
+                <div style="color:var(--fg-2);font-size:14px;margin-top:2px">{{ l.specs }}</div>
                 <sc-if value="{{ l.hasAvailLine }}" hint-placeholder-val="{{ false }}">
                 <div style="color:var(--fg-2);font-size:13px;margin-top:4px">{{ l.availLine }}</div>
                 </sc-if>
@@ -120,6 +235,7 @@
             </article>
           </sc-for>
         </div>
+        </sc-if>
         </sc-if>
       </section>
     </div>
@@ -142,7 +258,8 @@
             <span style="width:6px;height:6px;border-radius:9999px;background:{{ selProp.dot }}"></span>{{ selProp.typeLabel }}
           </span>
           <h1 style="font-size:38px;letter-spacing:-0.025em;margin-top:14px">{{ selProp.title }}</h1>
-          <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.city }} · {{ selProp.specs }}</p>
+          <p style="color:var(--fg-2);font-size:17px;margin-top:8px">{{ selProp.city }}</p>
+          <p style="color:var(--fg-2);font-size:17px;margin-top:4px">{{ selProp.specs }}</p>
           <sc-if value="{{ selProp.hasAvailableDate }}" hint-placeholder-val="{{ false }}">
           <p style="color:var(--fg-2);font-size:15px;margin-top:10px;display:flex;align-items:center;gap:8px">
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--atlantic)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
@@ -283,10 +400,10 @@
                 <input value="{{ vEmail }}" onChange="{{ setVEmail }}" placeholder="Email *" type="email" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
                 <input value="{{ vPhone }}" onChange="{{ setVPhone }}" placeholder="Phone *" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
                 <div style="font-size:12px;font-weight:600;color:var(--fg-2);margin-top:8px">Your search criteria</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-                  <input value="{{ vMinBeds }}" onChange="{{ setVMinBeds }}" placeholder="Min beds" inputmode="numeric" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
-                  <input value="{{ vMinBaths }}" onChange="{{ setVMinBaths }}" placeholder="Min baths" inputmode="decimal" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
-                  <input value="{{ vMinParking }}" onChange="{{ setVMinParking }}" placeholder="Min parking" inputmode="numeric" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+                  <input value="{{ vMinBeds }}" onChange="{{ setVMinBeds }}" placeholder="Min beds" inputmode="numeric" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
+                  <input value="{{ vMinBaths }}" onChange="{{ setVMinBaths }}" placeholder="Min baths" inputmode="decimal" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
+                  <input value="{{ vMinParking }}" onChange="{{ setVMinParking }}" placeholder="Min parking" inputmode="numeric" style="width:100%;min-width:0;height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper);box-sizing:border-box"/>
                 </div>
                 <input value="{{ vPets }}" onChange="{{ setVPets }}" placeholder="Pets (e.g. No pets, 1 small dog)" style="height:44px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -879,9 +996,9 @@
         <div style="padding:28px 32px;max-width:900px;margin:0 auto;width:100%">
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:22px">
             <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:10px">Listing type</label>
-              <div style="display:flex;gap:8px">
-                <sc-for list="{{ typeOpts }}" as="t" hint-placeholder-count="3">
+              <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:10px">Lease term</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ typeOpts }}" as="t" hint-placeholder-count="4">
                   <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
                 </sc-for>
               </div>
@@ -953,18 +1070,14 @@
             </div>
             <div style="border-top:1px solid var(--border);padding-top:20px">
               <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:14px">Pets & parking</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end">
-                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Parking type</label><div style="display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ parkingTypeOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:end">
+                <div style="min-width:0"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Parking type</label><div style="display:flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:12px;width:100%;box-sizing:border-box"><sc-for list="{{ parkingTypeOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
                 <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Number of spaces</label><input value="{{ up.parking }}" onChange="{{ onUpParking }}" inputmode="numeric" placeholder="0" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;align-items:end">
-                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Pet friendly</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynPetFriendly }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
-                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Dogs allowed</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynDogs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
-                <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cats allowed</label><div style="display:inline-flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:9999px"><sc-for list="{{ ynCats }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px;align-items:end">
+                <div style="min-width:0"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Pet friendly</label><div style="display:flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:12px;width:100%;box-sizing:border-box"><sc-for list="{{ petPolicyPetFriendly }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+                <div style="min-width:0"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Dogs allowed</label><div style="display:flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:12px;width:100%;box-sizing:border-box"><sc-for list="{{ petPolicyDogs }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
+                <div style="min-width:0"><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Cats allowed</label><div style="display:flex;flex-wrap:wrap;gap:4px;background:var(--gray-100);padding:4px;border-radius:12px;width:100%;box-sizing:border-box"><sc-for list="{{ petPolicyCats }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button></sc-for></div></div>
               </div>
             </div>
 
@@ -1390,10 +1503,6 @@
             <button onClick="{{ propDrawer.onViewListings }}" style="height:36px;padding:0 14px;border-radius:9999px;border:1px solid var(--border);background:var(--surface);color:var(--fg-1);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">View listings ({{ propDrawer.listingCount }})</button>
           </div>
 
-          <sc-if value="{{ propDrawer.showPublishBlocked }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:14px;font-size:13px;color:var(--fg-3);padding:10px 12px;background:var(--gray-50);border:1px solid var(--border);border-radius:10px;line-height:1.45">Tenant is renewing — this unit cannot be published until the lease status changes.</div>
-          </sc-if>
-
           <div style="margin-top:22px">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
               <div style="font-size:12px;font-weight:600;color:var(--fg-2);letter-spacing:0.02em">Property photos</div>
@@ -1456,7 +1565,6 @@
               <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Monthly rent</label><input value="{{ leaseDraft.monthlyRate }}" onChange="{{ onLeaseMonthlyRate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
               <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Start date</label><input type="date" value="{{ leaseDraft.startDate }}" onChange="{{ onLeaseStartDate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
               <div><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">End date</label><input type="date" value="{{ leaseDraft.endDate }}" onChange="{{ onLeaseEndDate }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"/></div>
-              <div style="grid-column:span 2"><label style="display:block;font-size:12px;font-weight:600;color:var(--fg-2);margin-bottom:6px">Renewal status</label><select value="{{ leaseDraft.renewalStatus }}" onChange="{{ onLeaseRenewalStatus }}" style="width:100%;height:40px;border:1px solid var(--border-strong);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper)"><option value="UNKNOWN">Unknown</option><option value="RENEWING">Renewing</option><option value="NOT_RENEWING">Not renewing</option></select></div>
             </div>
             <div style="display:flex;gap:8px;margin-top:14px">
               <button onClick="{{ saveLease }}" style="height:36px;padding:0 14px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">{{ leaseSavingLabel }}</button>
@@ -1605,11 +1713,11 @@ class Component extends DCLogic {
       pubView: 'listings', propId: null, pubFilter: 'all', pubSearch: '',
       photoLightboxOpen: false, photoLightboxIdx: 0,
       rangeStart: '2026-06-20', rangeEnd: '2026-06-24',
-      bookSubmitted: false, viewSubmitted: false,
+      bookSubmitted: false, viewSubmitted: false, searchInquirySubmitted: false,
       vFirst: '', vLast: '', vEmail: '', vPhone: '', vDate: '',
       vMinBeds: '', vMinBaths: '', vMinParking: '', vPets: '', vMoveIn: '',
       vOtherDetails: '', vLeaseType: 'Long-term', vMaxPrice: '',
-      viewSubmitting: false,
+      viewSubmitting: false, searchInquirySubmitting: false,
       inqFilterProperty: 'all', inqFilterLeaseType: 'all', inqFilterMinBeds: '',
       inqViewMode: 'kanban', inqSortKey: 'status', inqSortDir: 'asc', inqActionMenuId: null,
       mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false, mgrSearch: '',
@@ -1627,6 +1735,11 @@ class Component extends DCLogic {
       listFilter: 'all', listFilterProperty: 'all', listSortKey: 'title', listSortDir: 'desc', listSelectedIds: [], listActionMenuId: null, listStatusBusyId: null,
       leaseFilter: 'all', leaseSortKey: 'start', leaseSortDir: 'desc', leaseBulkUploading: false,
       leaseDraft: null, leaseSaving: false,
+      hospitableConfigured: false,
+      hospitableCheckIn: '', hospitableCheckOut: '', hospitableAdults: '2',
+      hospitableSearching: false, hospitableError: null,
+      hospitableAvailable: [], hospitableUnavailable: [], hospitableCatalog: [],
+      hospitableCatalogLoading: false, hospitableSearched: false,
     };
     this._toastT = null; this._copyT = null; this._kanbanDragged = false;
     this._kanbanDragId = null;
@@ -1662,7 +1775,7 @@ class Component extends DCLogic {
 
   blankUploader() {
     return { title:'', type:'SINGLE', address:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', offices:'', baths:'', sqft:'', availableDate:'', description:'', features:[], images:[],
-      parking:'', parkingType:'OFF_STREET', petFriendly:false, dogs:false, cats:false, utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
+      parking:'', parkingType:'OFF_STREET', petFriendly:'NO', dogs:'NO', cats:'NO', utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
       yearBuilt:'', storeys:'', heatingTypes:['Electric baseboard'], waterHeater:'Electric tank', firewall:false,
       powerMeter:'', electricCompany:'NL Power', oilCompany:'', internalNotes:'' };
   }
@@ -1671,6 +1784,7 @@ class Component extends DCLogic {
     this.bootstrapAuth();
     this.loadListings();
     this.loadMapsConfig();
+    this.loadHospitableConfig();
     this.loadKanbanOrder();
     this.loadCustomStatuses();
     document.addEventListener('click', this._onDocClick);
@@ -1694,6 +1808,17 @@ class Component extends DCLogic {
     ) {
       setTimeout(() => this.initListingMap(this.getProp(this.state.propId)), 0);
     }
+    const showHospitable =
+      this.state.surface === 'public' &&
+      this.state.pubView === 'listings' &&
+      this.state.pubFilter === 'short';
+    const prevShowHospitable =
+      prevState.surface === 'public' &&
+      prevState.pubView === 'listings' &&
+      prevState.pubFilter === 'short';
+    if (showHospitable && s.hospitableConfigured && (!prevShowHospitable || !prevState.hospitableConfigured)) {
+      this.ensureHospitableDefaultSearch();
+    }
   }
   componentWillUnmount() {
     clearTimeout(this._toastT);
@@ -1701,6 +1826,124 @@ class Component extends DCLogic {
     document.removeEventListener('click', this._onDocClick);
     document.removeEventListener('dragover', this._onKanbanDragOver);
     document.removeEventListener('keydown', this._onPhotoLightboxKey);
+  }
+
+  loadHospitableConfig = async () => {
+    try {
+      const res = await fetch('/api/config');
+      if (!res.ok) return;
+      const cfg = await res.json();
+      const hospitableConfigured = !!cfg.hospitableConfigured;
+      this.setState({ hospitableConfigured });
+      if (hospitableConfigured && this.state.pubFilter === 'short') {
+        this.ensureHospitableDefaultSearch();
+      }
+    } catch (e) {}
+  };
+
+  formatIsoDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  defaultHospitableDates() {
+    const checkIn = new Date();
+    checkIn.setDate(checkIn.getDate() + 1);
+    const checkOut = new Date(checkIn);
+    checkOut.setDate(checkOut.getDate() + 2);
+    return { checkIn: this.formatIsoDate(checkIn), checkOut: this.formatIsoDate(checkOut) };
+  }
+
+  ensureHospitableDefaultSearch = async () => {
+    if (this.state.pubFilter !== 'short' || !this.state.hospitableConfigured || this.state.hospitableSearching) return;
+    const { checkIn, checkOut } = this.defaultHospitableDates();
+    this.setState({ hospitableCheckIn: checkIn, hospitableCheckOut: checkOut });
+    await this.searchHospitable({ start: checkIn, end: checkOut });
+  };
+
+  loadHospitableCatalog = async () => {
+    if (this.state.pubFilter !== 'short' || this.state.hospitableCatalogLoading) return;
+    this.setState({ hospitableCatalogLoading: true, hospitableError: null });
+    try {
+      const res = await fetch('/api/hospitable/properties');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not load short-term properties');
+      this.setState({
+        hospitableCatalog: data.properties || [],
+        hospitableCatalogLoading: false,
+        hospitableError: null,
+      });
+    } catch (err) {
+      this.setState({
+        hospitableCatalogLoading: false,
+        hospitableError: err.message || 'Could not load short-term properties',
+      });
+    }
+  };
+
+  searchHospitable = async ({ start, end } = {}) => {
+    const checkIn = start || this.state.hospitableCheckIn;
+    const checkOut = end || this.state.hospitableCheckOut;
+    if (!checkIn || !checkOut) {
+      this.showToast('Pick check-in and check-out dates');
+      return;
+    }
+    if (checkOut <= checkIn) {
+      this.showToast('Check-out must be after check-in');
+      return;
+    }
+    this.setState({ hospitableSearching: true, hospitableError: null });
+    try {
+      const params = new URLSearchParams({
+        start_date: checkIn,
+        end_date: checkOut,
+        adults: String(Number(this.state.hospitableAdults) || 2),
+      });
+      const res = await fetch('/api/hospitable/search?' + params.toString());
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Search failed');
+      this.setState({
+        hospitableSearching: false,
+        hospitableSearched: true,
+        hospitableCheckIn: checkIn,
+        hospitableCheckOut: checkOut,
+        hospitableAvailable: data.available || [],
+        hospitableUnavailable: data.unavailable || [],
+        hospitableError: null,
+      });
+    } catch (err) {
+      this.setState({
+        hospitableSearching: false,
+        hospitableError: err.message || 'Could not search availability',
+      });
+    }
+  };
+
+  setHospitableCheckIn = e => this.setState({ hospitableCheckIn: e.target.value });
+  setHospitableCheckOut = e => this.setState({ hospitableCheckOut: e.target.value });
+  setHospitableAdults = e => this.setState({ hospitableAdults: e.target.value });
+
+  hospitableCardVM(p, { unavailable = false } = {}) {
+    const specs = [
+      p.bedrooms ? `${p.bedrooms} bed` : '',
+      p.baths ? `${p.baths} bath` : '',
+      p.maxGuests ? `${p.maxGuests} guests` : '',
+    ].filter(Boolean).join(' · ');
+    return {
+      title: p.title,
+      city: p.city || p.address || '',
+      specs,
+      priceLabel: p.priceLabel || 'See pricing',
+      imgCss: p.picture ? `url('${p.picture}')` : 'none',
+      unavailable,
+      unavailableLabel: p.unavailableReason
+        ? 'Unavailable — ' + String(p.unavailableReason).replace(/_/g, ' ')
+        : 'Unavailable for these dates',
+      hasBookUrl: !!p.bookUrl && !unavailable,
+      bookUrl: p.bookUrl || '#',
+    };
   }
 
   loadMapsConfig = async () => {
@@ -2036,9 +2279,9 @@ class Component extends DCLogic {
     images: (p.images || []).map(url => typeof url === 'string' ? { url } : url),
     parking: String(p.parking || ''),
     parkingType: p.parkingType || 'OFF_STREET',
-    petFriendly: !!p.petFriendly,
-    dogs: !!p.dogs,
-    cats: !!p.cats,
+    petFriendly: this.normalizePetPolicy(p.petFriendly),
+    dogs: this.normalizePetPolicy(p.dogs),
+    cats: this.normalizePetPolicy(p.cats),
     utilitiesIncluded: !!p.utilitiesIncluded,
     utilityTypes: (p.utilityTypes || []).slice(),
     utilityCap: p.utilityCap || 0,
@@ -2212,6 +2455,24 @@ class Component extends DCLogic {
     if (Number.isNaN(d.getTime())) return String(dateStr);
     return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
   }
+  isMoveInAvailableNow(dateStr) {
+    if (!dateStr) return false;
+    const d = new Date(String(dateStr).slice(0, 10) + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return false;
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    return d <= today;
+  }
+  moveInAvailabilityLabel(dateStr) {
+    if (!dateStr) return '';
+    if (this.isMoveInAvailableNow(dateStr)) return 'Available Immediately';
+    return this.formatDateLabel(dateStr);
+  }
+  moveInCardLine(dateStr) {
+    if (!dateStr) return '';
+    if (this.isMoveInAvailableNow(dateStr)) return 'Available Immediately';
+    return 'Move-in ' + this.formatDateLabel(dateStr);
+  }
   getProp(id) { return this.state.properties.find(p => p.id === id); }
   getPortfolio(id) { return this.state.portfolio.find(p => p.id === id); }
   getListing(id) { return this.state.managerListings.find(p => p.id === id) || this.getProp(id); }
@@ -2219,7 +2480,8 @@ class Component extends DCLogic {
   showToast(msg) { clearTimeout(this._toastT); this.setState({ toast: msg }); this._toastT = setTimeout(() => this.setState({ toast: null }), 2600); }
 
   // navigation
-  goHome = () => this.setState({ surface:'public', pubView:'listings', photoLightboxOpen:false });
+  goHome = () => this.setState({ surface:'public', pubView:'listings', pubFilter:'all', photoLightboxOpen:false });
+  goShortStays = () => this.setState({ surface:'public', pubView:'listings', pubFilter:'short', pubSearch:'', photoLightboxOpen:false });
   goPublic = () => this.setState({ surface:'public' });
   goManager = () => {
     if (this.state.managerUser) this.setState({ surface:'manager' });
@@ -2352,6 +2614,77 @@ class Component extends DCLogic {
     };
     this.setState(st => ({ inquiries: [iq, ...st.inquiries], viewSubmitted: true, viewSubmitting: false }));
     this.showToast('Viewing request saved locally');
+  };
+  submitSearchInquiry = async () => {
+    const s = this.state;
+    if (!String(s.pubSearch || '').trim()) return;
+    if (!s.vFirst.trim() || !s.vLast.trim()) { this.showToast('First and last name are required'); return; }
+    if (!s.vEmail.trim() || !s.vPhone.trim()) { this.showToast('Email and phone are required'); return; }
+    this.setState({ searchInquirySubmitting: true });
+    const searchSummary = String(s.pubSearch || '').trim();
+    const detailParts = [s.vOtherDetails.trim(), searchSummary ? `Search query: ${searchSummary}` : ''].filter(Boolean);
+    const payload = {
+      firstName: s.vFirst.trim(),
+      lastName: s.vLast.trim(),
+      email: s.vEmail.trim(),
+      phone: s.vPhone.trim(),
+      inquiryType: 'LONG_TERM_RENTAL',
+      propertyTitle: `Search: ${searchSummary}`,
+      minBedrooms: s.vMinBeds ? Number(s.vMinBeds) : null,
+      minBathrooms: s.vMinBaths ? Number(s.vMinBaths) : null,
+      minParking: s.vMinParking ? Number(s.vMinParking) : null,
+      pets: s.vPets.trim() || null,
+      moveInDate: s.vMoveIn || null,
+      otherDetails: detailParts.join('\n') || null,
+      leaseType: s.vLeaseType || null,
+      maxPrice: s.vMaxPrice ? Number(s.vMaxPrice) : null,
+      preferredViewingDate: s.vDate || null,
+    };
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const saved = await res.json().catch(() => null);
+      if (res.ok && saved) {
+        this.setState(st => ({
+          inquiries: [saved, ...st.inquiries],
+          searchInquirySubmitted: true,
+          searchInquirySubmitting: false,
+        }));
+        this.showToast('Search request sent');
+        return;
+      }
+    } catch (e) {}
+    const iq = {
+      id: 'q' + Date.now(),
+      first: payload.firstName,
+      last: payload.lastName,
+      email: payload.email,
+      phone: payload.phone,
+      propId: null,
+      propertyTitle: payload.propertyTitle,
+      type: 'LONG_TERM_RENTAL',
+      desired: searchSummary,
+      status: 'NEW',
+      notes: [{ text: 'Search request via website.', time: 'just now' }],
+      minBedrooms: payload.minBedrooms,
+      minBathrooms: payload.minBathrooms,
+      minParking: payload.minParking,
+      pets: payload.pets,
+      moveInDate: payload.moveInDate,
+      otherDetails: payload.otherDetails,
+      leaseType: payload.leaseType,
+      maxPrice: payload.maxPrice,
+      preferredViewingDate: payload.preferredViewingDate,
+    };
+    this.setState(st => ({
+      inquiries: [iq, ...st.inquiries],
+      searchInquirySubmitted: true,
+      searchInquirySubmitting: false,
+    }));
+    this.showToast('Search request saved locally');
   };
 
   // pipeline
@@ -2534,6 +2867,7 @@ class Component extends DCLogic {
     this.setState({ photoUploading: true, photoUploadProgress: { done: 0, total: files.length } });
     const added = [];
     let failed = 0;
+    let lastError = '';
     const uploadOne = async (file) => {
       try {
         const form = new FormData();
@@ -2549,12 +2883,14 @@ class Component extends DCLogic {
           }));
         } else {
           failed++;
+          lastError = data.error || (res.status === 401 ? 'Sign in required.' : 'Photo upload failed.');
           this.setState(s => ({
             photoUploadProgress: { done: (s.photoUploadProgress?.done || 0) + 1, total: files.length },
           }));
         }
       } catch (err) {
         failed++;
+        lastError = err.message || 'Photo upload failed.';
         this.setState(s => ({
           photoUploadProgress: { done: (s.photoUploadProgress?.done || 0) + 1, total: files.length },
         }));
@@ -2572,7 +2908,7 @@ class Component extends DCLogic {
         : added.length + ' photos uploaded' + (failed ? ` (${failed} failed)` : '');
       this.showToast(msg);
     } else {
-      this.showToast('Photo upload failed — sign in and run supabase/schema.sql');
+      this.showToast(lastError || 'Photo upload failed.');
     }
   };
   publish = async () => {
@@ -2596,7 +2932,9 @@ class Component extends DCLogic {
           beds: Number(u.beds) || 0, offices: Number(u.offices) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
           features: u.features.slice(), description: u.description || '',
           parking: Number(u.parking) || 0, parkingType: u.parkingType || 'OFF_STREET',
-          petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
+          petFriendly: this.normalizePetPolicy(u.petFriendly),
+          dogs: this.normalizePetPolicy(u.dogs),
+          cats: this.normalizePetPolicy(u.cats),
           utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
           yearBuilt: u.yearBuilt ? Number(u.yearBuilt) : null,
           storeys: u.storeys ? Number(u.storeys) : null,
@@ -2677,7 +3015,9 @@ class Component extends DCLogic {
       status: editingId ? (this.getListing(editingId)?.status || 'ACTIVE') : 'ACTIVE',
       features: u.features.slice(), description: u.description || '',
       parking: Number(u.parking) || 0, parkingType: u.parkingType || 'OFF_STREET',
-      petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
+      petFriendly: this.normalizePetPolicy(u.petFriendly),
+      dogs: this.normalizePetPolicy(u.dogs),
+      cats: this.normalizePetPolicy(u.cats),
       utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
       yearBuilt: Number(u.yearBuilt) || 0, storeys: Number(u.storeys) || 0,
       heatingTypes: u.heatingTypes.slice(), waterHeater: u.waterHeater, firewall: !!u.firewall,
@@ -2710,19 +3050,37 @@ class Component extends DCLogic {
     this.showToast('Could not save listing');
   };
 
-  typeLabelOf(t) { return t==='SHORT_TERM' ? 'Short stay' : (t==='MULTI' ? 'Multi-unit' : 'Single unit'); }
+  typeLabelOf(t) {
+    if (t === 'SHORT_TERM') return 'Short-term';
+    if (t === 'MID_TERM') return 'Mid-term';
+    if (t === 'MULTI') return 'Multi-unit';
+    return 'Long-term';
+  }
+  isNightlyType(t) { return t === 'SHORT_TERM'; }
+  listingMatchesPubFilter(p, filter) {
+    const type = p.type || 'SINGLE';
+    if (filter === 'all') return true;
+    if (filter === 'long') return type === 'SINGLE' || type === 'MULTI';
+    if (filter === 'mid') return type === 'MID_TERM';
+    if (filter === 'short') return type === 'SHORT_TERM';
+    return true;
+  }
+  listingTypeTag(p) {
+    if (p.type === 'SHORT_TERM') return 'Short-term';
+    if (p.type === 'MID_TERM') return 'Mid-term';
+    return 'Long-term';
+  }
+  listingTypeDot(p) {
+    if (p.type === 'SHORT_TERM') return 'var(--canary)';
+    if (p.type === 'MID_TERM') return 'var(--warning)';
+    return 'var(--atlantic)';
+  }
   statusMeta(status) {
     if (status === 'ACTIVE') return { label: 'Live', fg: 'var(--success)', bg: 'var(--success-tint)' };
     if (status === 'DRAFT') return { label: 'Draft', fg: 'var(--warning)', bg: 'var(--warning-tint)' };
     if (status === 'ARCHIVED') return { label: 'Archived', fg: 'var(--fg-3)', bg: 'var(--gray-100)' };
     return { label: status || 'Unknown', fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
   }
-  renewalMeta(status) {
-    if (status === 'RENEWING') return { label: 'Renewing', fg: 'var(--success)', bg: 'var(--success-tint)' };
-    if (status === 'NOT_RENEWING') return { label: 'Not renewing', fg: 'var(--warning)', bg: 'var(--warning-tint)' };
-    return { label: 'Unknown', fg: 'var(--fg-2)', bg: 'var(--gray-100)' };
-  }
-
   inqVM(q) {
     const p = this.getProp(q.propId);
     const isShort = q.type === 'SHORT_TERM_BOOKING';
@@ -2731,7 +3089,7 @@ class Component extends DCLogic {
     return {
       id:q.id, name:(q.first+' '+q.last).trim(), initials:((q.first[0]||'')+(q.last[0]||'')).toUpperCase(),
       prop:p?p.title:(q.propertyTitle||'\u2014'), email:q.email, phone:q.phone, desired:q.desired,
-      typeLabel:q.type==='VIEWING_REQUEST'?'Viewing':(isShort?'Short-term':'Long-term'), isShort,
+      typeLabel:q.type==='VIEWING_REQUEST'?'Viewing':(q.type==='LONG_TERM_RENTAL' && !q.propId ? 'Search request' : (isShort?'Short-term':'Long-term')), isShort,
       typeFg:isShort?'#7a5a12':'var(--atlantic)', typeBg:isShort?'var(--warning-tint)':'var(--atlantic-tint)',
       notes:q.notes.slice().reverse(), hasNotes:q.notes.length>0, noNotes:q.notes.length===0,
       ...crit,
@@ -2798,13 +3156,11 @@ class Component extends DCLogic {
   setPropFilter = (key) => this.setState({ propFilter: key });
   setListFilter = (key) => this.setState({ listFilter: key });
   setPropViewMode = (mode) => this.setState({ propViewMode: mode, propActionMenuId: null });
-  OCCUPANCY_STATUSES = ['vacant', 'leased', 'renewing', 'not_renewing', 'short_term'];
-  LEASE_MANAGED_STATUSES = ['vacant', 'leased', 'renewing', 'not_renewing'];
+  OCCUPANCY_STATUSES = ['vacant', 'leased', 'short_term'];
+  LEASE_MANAGED_STATUSES = ['vacant', 'leased'];
   BUILTIN_KANBAN_COLUMNS = [
     ['leased', 'Leased'],
     ['vacant', 'Vacant'],
-    ['renewing', 'Renewing'],
-    ['not_renewing', 'Not renewing'],
     ['short_term', 'Short term'],
   ];
   LISTING_STATUSES = ['ACTIVE', 'DRAFT', 'ARCHIVED'];
@@ -2816,7 +3172,7 @@ class Component extends DCLogic {
     return String(slug || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
   isCustomStatusKey(key) {
-    if (!key || key === 'standard' || key === 'short_term' || key === 'mgmt_archived') return false;
+    if (!key || key === 'standard' || key === 'short_term' || key === 'mgmt_archived' || key === 'all' || key === 'archived') return false;
     return !this.LEASE_MANAGED_STATUSES.includes(key);
   }
   getCustomStatusDef(key) {
@@ -2946,7 +3302,6 @@ class Component extends DCLogic {
   }
   getPropertyListingContext(pr) {
     const hasLiveListing = pr.liveListingStatus === 'ACTIVE' && !!pr.liveListingId;
-    const renewing = pr.activeLease?.renewalStatus === 'RENEWING';
     const archived = this.isPropertyArchived(pr);
     const propertyListings = this.state.managerListings
       .filter(l => l.propertyId === pr.id)
@@ -2955,11 +3310,10 @@ class Component extends DCLogic {
       liveListingId: pr.liveListingId || null,
       hasLiveListing,
       propertyListings,
-      canPublish: !archived && !renewing && !hasLiveListing,
-      canRelist: !archived && !renewing && hasLiveListing,
+      canPublish: !archived && !hasLiveListing,
+      canRelist: !archived && hasLiveListing,
       canEditListing: !!pr.liveListingId,
       canArchiveListing: hasLiveListing,
-      showPublishBlocked: !archived && renewing,
     };
   }
   getOccupancyStatus(pr) {
@@ -2970,11 +3324,7 @@ class Component extends DCLogic {
     if (occ !== 'standard' && pr.type === 'SHORT_TERM' && !lease) {
       return 'short_term';
     }
-    if (lease) {
-      if (lease.renewalStatus === 'RENEWING') return 'renewing';
-      if (lease.renewalStatus === 'NOT_RENEWING') return 'not_renewing';
-      return 'leased';
-    }
+    if (lease) return 'leased';
     return 'vacant';
   }
   getPortfolioStatus(pr) {
@@ -2993,8 +3343,6 @@ class Component extends DCLogic {
     const map = {
       vacant: { label: 'Vacant', fg: 'var(--fg-2)', bg: 'var(--gray-100)' },
       leased: { label: 'Leased', fg: 'var(--atlantic)', bg: 'var(--atlantic-tint)' },
-      renewing: { label: 'Renewing', fg: 'var(--success)', bg: 'var(--success-tint)' },
-      not_renewing: { label: 'Not renewing', fg: 'var(--warning)', bg: 'var(--warning-tint)' },
       short_term: { label: 'Short term', fg: '#7a5a12', bg: 'var(--warning-tint)' },
       mgmt_archived: { label: 'Archived', fg: 'var(--fg-3)', bg: 'var(--gray-100)' },
     };
@@ -3347,47 +3695,6 @@ class Component extends DCLogic {
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || 'Could not create lease');
-        } else if (lease.renewalStatus !== 'UNKNOWN') {
-          const res = await fetch('/api/leases/' + lease.id, {
-            method: 'PATCH', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ renewalStatus: 'UNKNOWN' }),
-          });
-          if (!res.ok) throw new Error('Could not update lease');
-        }
-      } else if (newStatus === 'renewing') {
-        if (!lease) {
-          const res = await fetch('/api/properties/' + propertyId + '/leases/quick', {
-            method: 'POST', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ occupancy: 'leased', renewalStatus: 'RENEWING' }),
-          });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.error || 'Could not create lease');
-        } else {
-          const res = await fetch('/api/leases/' + lease.id, {
-            method: 'PATCH', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ renewalStatus: 'RENEWING' }),
-          });
-          if (!res.ok) throw new Error('Could not update lease');
-        }
-      } else if (newStatus === 'not_renewing') {
-        if (!lease) {
-          const res = await fetch('/api/properties/' + propertyId + '/leases/quick', {
-            method: 'POST', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ occupancy: 'leased', renewalStatus: 'NOT_RENEWING' }),
-          });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.error || 'Could not create lease');
-        } else {
-          const res = await fetch('/api/leases/' + lease.id, {
-            method: 'PATCH', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ renewalStatus: 'NOT_RENEWING' }),
-          });
-          if (!res.ok) throw new Error('Could not update lease');
         }
       }
       await this.loadPortfolio();
@@ -3692,7 +3999,6 @@ class Component extends DCLogic {
         monthlyRate: String(lease.monthlyRate || ''),
         startDate: lease.startDate || '',
         endDate: lease.endDate || '',
-        renewalStatus: lease.renewalStatus || 'UNKNOWN',
       } : {
         propertyId,
         leaseId: null,
@@ -3702,7 +4008,6 @@ class Component extends DCLogic {
         monthlyRate: String(pr?.suggestedRate || ''),
         startDate: '',
         endDate: '',
-        renewalStatus: 'UNKNOWN',
       },
     });
   };
@@ -3714,7 +4019,6 @@ class Component extends DCLogic {
   onLeaseMonthlyRate = e => this.setLeaseDraft('monthlyRate', e.target.value);
   onLeaseStartDate = e => this.setLeaseDraft('startDate', e.target.value);
   onLeaseEndDate = e => this.setLeaseDraft('endDate', e.target.value);
-  onLeaseRenewalStatus = e => this.setLeaseDraft('renewalStatus', e.target.value);
   saveLease = async () => {
     const d = this.state.leaseDraft;
     if (!d) return;
@@ -3726,7 +4030,6 @@ class Component extends DCLogic {
       monthlyRate: Number(d.monthlyRate),
       startDate: d.startDate,
       endDate: d.endDate,
-      renewalStatus: d.renewalStatus,
     };
     try {
       const url = d.leaseId
@@ -3951,17 +4254,53 @@ class Component extends DCLogic {
     }
   };
   parkingLabel(n) { return this.parkingDetailLabel('OFF_STREET', n); }
+  normalizePetPolicy(value) {
+    if (value === true) return 'BY_APPROVAL';
+    if (value === false) return 'NO';
+    const raw = String(value ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_');
+    if (['YES', 'Y', 'ALLOWED', 'TRUE', '1'].includes(raw)) return 'YES';
+    if (['BY_APPROVAL', 'APPROVAL', 'BYAPPROVAL'].includes(raw)) return 'BY_APPROVAL';
+    if (['NO', 'N', 'NONE', 'FALSE', '0', ''].includes(raw)) return 'NO';
+    return 'NO';
+  }
+  petPolicyText(value, label) {
+    const policy = this.normalizePetPolicy(value);
+    if (policy === 'NO') return null;
+    if (policy === 'YES') return label + ' allowed';
+    return label + ' by approval';
+  }
   petLabel(p) {
-    if (!p.petFriendly) return 'No pets';
-    if (p.dogs && p.cats) return 'Dogs & cats welcome by approval';
-    if (p.dogs) return 'Dogs welcome by approval';
-    if (p.cats) return 'Cats welcome by approval';
-    return 'Pets welcome by approval';
+    const pet = this.normalizePetPolicy(p.petFriendly);
+    const dogs = this.normalizePetPolicy(p.dogs);
+    const cats = this.normalizePetPolicy(p.cats);
+    const parts = [];
+    const dogText = this.petPolicyText(dogs, 'Dogs');
+    const catText = this.petPolicyText(cats, 'Cats');
+    if (dogText) parts.push(dogText);
+    if (catText) parts.push(catText);
+    if (parts.length) return parts.join(' · ');
+    if (pet === 'YES') return 'Pets allowed';
+    if (pet === 'BY_APPROVAL') return 'Pets by approval';
+    return 'No pets';
   }
   capText(n) { return n>0 ? ('up to $' + n + '/mo') : 'no cap'; }
   chipStyle(active) { return { display:'inline-flex', alignItems:'center', gap:'7px', height:'34px', padding:'0 14px', borderRadius:'9999px', border:'1px solid '+(active?'var(--ink)':'var(--border-strong)'), cursor:'pointer', fontFamily:'inherit', fontSize:'13.5px', fontWeight:500, background: active?'var(--ink)':'var(--surface)', color: active?'var(--fg-on-ink)':'var(--fg-2)' }; }
   setMgrSearch = (e) => this.setState({ mgrSearch: e.target.value });
-  setPubSearch = (e) => this.setState({ pubSearch: e.target.value });
+  setPubSearch = (e) => {
+    const pubSearch = e.target.value;
+    const parsed = this.parsePublicSearchQuery(pubSearch);
+    this.setState(s => {
+      const next = { pubSearch, searchInquirySubmitted: false };
+      if (String(pubSearch).trim()) {
+        if (!s.vMinBeds && parsed.beds != null) next.vMinBeds = String(parsed.beds);
+        if (!s.vMinBaths && parsed.baths != null) next.vMinBaths = String(parsed.baths);
+        if (!s.vMinParking && parsed.minParking != null) next.vMinParking = String(parsed.minParking);
+        if (!s.vMaxPrice && parsed.maxPrice != null) next.vMaxPrice = String(parsed.maxPrice);
+        if (!s.vOtherDetails) next.vOtherDetails = parsed.text || pubSearch.trim();
+      }
+      return next;
+    });
+  };
   matchesSearch(query, ...fields) {
     const q = String(query || '').trim().toLowerCase();
     if (!q) return true;
@@ -4013,15 +4352,158 @@ class Component extends DCLogic {
       listing.status,
     );
   }
-  publicListingMatchesSearch(p, query) {
-    return this.matchesSearch(
-      query,
+  PUBLIC_LOCATION_ALIASES = [
+    ['paradise', ['paradise']],
+    ['mount pearl', ['mount pearl', 'mount-pearl']],
+    ["st john's", ["st john's", 'st johns', "st. john's", 'st. johns', 'st john']],
+  ];
+  normalizeSearchText(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/[\u2018\u2019'`´]/g, "'")
+      .replace(/[^a-z0-9'\s-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  extractLocationFromSearch(text) {
+    const norm = this.normalizeSearchText(text);
+    if (!norm) return { location: null, text: '' };
+    const aliases = [...this.PUBLIC_LOCATION_ALIASES].sort((a, b) => b[0].length - a[0].length);
+    for (const [key, variants] of aliases) {
+      for (const variant of [...variants].sort((a, b) => b.length - a.length)) {
+        if (!norm.includes(variant)) continue;
+        const remaining = norm.replace(variant, ' ').replace(/\s+/g, ' ').trim();
+        return { location: key, text: remaining };
+      }
+    }
+    return { location: null, text: norm };
+  }
+  listingLocationText(p) {
+    return this.normalizeSearchText([p.city, p.area, p.address, p.title, p.postal].join(' '));
+  }
+  listingMatchesLocation(p, location) {
+    if (!location) return true;
+    const hay = this.listingLocationText(p);
+    const entry = this.PUBLIC_LOCATION_ALIASES.find(([key]) => key === location);
+    const variants = entry ? entry[1] : [location];
+    return variants.some(v => hay.includes(v));
+  }
+  publicTextMatches(p, text) {
+    const q = this.normalizeSearchText(text);
+    if (!q) return true;
+    const tokens = q.split(' ').filter(Boolean);
+    if (!tokens.length) return true;
+    const hay = this.normalizeSearchText([
       p.title,
       p.city,
+      p.area,
       p.address,
+      p.postal,
       p.description,
       ...(p.features || []),
-    );
+    ].join(' '));
+    return tokens.every(tok => hay.includes(tok));
+  }
+  publicListingMatchesSearch(p, query) {
+    const parsed = this.parsePublicSearchQuery(query);
+    if (!String(query || '').trim()) return true;
+
+    if (parsed.beds != null && Number(p.beds || 0) !== parsed.beds) return false;
+    if (parsed.baths != null && Number(p.baths || 0) !== parsed.baths) return false;
+    if (parsed.minParking != null && Number(p.parking || 0) < parsed.minParking) return false;
+    if (parsed.maxPrice != null && Number(p.rate || 0) > parsed.maxPrice) return false;
+    if (parsed.type === 'SHORT_TERM' && p.type !== 'SHORT_TERM') return false;
+    if (parsed.type === 'MID_TERM' && p.type !== 'MID_TERM') return false;
+    if (parsed.type === 'LONG_TERM' && (p.type === 'SHORT_TERM' || p.type === 'MID_TERM')) return false;
+    if (parsed.utilitiesIncluded === true && !p.utilitiesIncluded) return false;
+    if (parsed.utilitiesIncluded === false && p.utilitiesIncluded) return false;
+    if (parsed.petsRequired) {
+      const pet = this.normalizePetPolicy(p.petFriendly);
+      const dogs = this.normalizePetPolicy(p.dogs);
+      const cats = this.normalizePetPolicy(p.cats);
+      if (pet === 'NO' && dogs === 'NO' && cats === 'NO') return false;
+    }
+    if (parsed.noPets) {
+      const pet = this.normalizePetPolicy(p.petFriendly);
+      if (pet !== 'NO') return false;
+    }
+    if (parsed.location && !this.listingMatchesLocation(p, parsed.location)) return false;
+
+    return this.publicTextMatches(p, parsed.text);
+  }
+  parsePublicSearchQuery(query) {
+    let text = String(query || '').trim().toLowerCase();
+    const parsed = {
+      text: '',
+      beds: null,
+      baths: null,
+      minParking: null,
+      maxPrice: null,
+      type: null,
+      location: null,
+      utilitiesIncluded: null,
+      petsRequired: false,
+      noPets: false,
+    };
+    if (!text) return parsed;
+
+    const located = this.extractLocationFromSearch(text);
+    parsed.location = located.location;
+    text = located.text;
+
+    const priceMatch = text.match(/(?:under|max|up to|<=?)\s*\$?\s*([\d,]+)|\$\s*([\d,]+)\s*(?:\/\s*mo|mo\b)?|\b([\d,]+)\s*(?:\/\s*mo|per month)\b/);
+    if (priceMatch) {
+      parsed.maxPrice = Number(String(priceMatch[1] || priceMatch[2] || priceMatch[3]).replace(/,/g, ''));
+      text = text.replace(priceMatch[0], ' ').trim();
+    }
+
+    const bedMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:\+?\s*)?(?:bed(?:room)?s?|br)\b/);
+    if (bedMatch) {
+      parsed.beds = Number(bedMatch[1]);
+      text = text.replace(bedMatch[0], ' ').trim();
+    }
+
+    const bathMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:\+?\s*)?(?:bath(?:room)?s?|ba)\b/);
+    if (bathMatch) {
+      parsed.baths = Number(bathMatch[1]);
+      text = text.replace(bathMatch[0], ' ').trim();
+    }
+
+    const parkMatch = text.match(/(\d+)\s*(?:\+?\s*)?parking\b/);
+    if (parkMatch) {
+      parsed.minParking = Number(parkMatch[1]);
+      text = text.replace(parkMatch[0], ' ').trim();
+    }
+
+    if (/\bshort(?:\s|-)?(?:term|stay)s?\b/.test(text)) {
+      parsed.type = 'SHORT_TERM';
+      text = text.replace(/\bshort(?:\s|-)?(?:term|stay)s?\b/g, ' ').trim();
+    } else if (/\bmid(?:\s|-)?term\b/.test(text)) {
+      parsed.type = 'MID_TERM';
+      text = text.replace(/\bmid(?:\s|-)?term\b/g, ' ').trim();
+    } else if (/\blong(?:\s|-)?term\b/.test(text)) {
+      parsed.type = 'LONG_TERM';
+      text = text.replace(/\blong(?:\s|-)?term\b/g, ' ').trim();
+    }
+
+    if (/\b(?:pou|utilities?\s*not\s*included|pay\s*own)\b/.test(text)) {
+      parsed.utilitiesIncluded = false;
+      text = text.replace(/\b(?:pou|utilities?\s*not\s*included|pay\s*own)\b/g, ' ').trim();
+    } else if (/\b(?:incl(?:uded)?|utilities?\s*included)\b/.test(text)) {
+      parsed.utilitiesIncluded = true;
+      text = text.replace(/\b(?:incl(?:uded)?|utilities?\s*included)\b/g, ' ').trim();
+    }
+
+    if (/\b(?:no\s*pets?|pet\s*free)\b/.test(text)) {
+      parsed.noPets = true;
+      text = text.replace(/\b(?:no\s*pets?|pet\s*free)\b/g, ' ').trim();
+    } else if (/\b(?:pet\s*friendly|dogs?\s*ok|cats?\s*ok|pets?\s*allowed)\b/.test(text)) {
+      parsed.petsRequired = true;
+      text = text.replace(/\b(?:pet\s*friendly|dogs?\s*ok|cats?\s*ok|pets?\s*allowed)\b/g, ' ').trim();
+    }
+
+    parsed.text = text.replace(/\s+/g, ' ').trim();
+    return parsed;
   }
   inquiryMatchesSearch(q, query) {
     const p = this.getProp(q.propId);
@@ -4052,10 +4534,10 @@ class Component extends DCLogic {
 
     // ---- public listings ----
     const active = s.properties.filter(p => p.status === 'ACTIVE');
-    const filtered = active.filter(p => s.pubFilter==='all' ? true : (s.pubFilter==='short' ? p.type==='SHORT_TERM' : p.type!=='SHORT_TERM'));
+    const filtered = active.filter(p => this.listingMatchesPubFilter(p, s.pubFilter));
     const pubSearchFiltered = filtered.filter(p => this.publicListingMatchesSearch(p, s.pubSearch));
     const listingCards = pubSearchFiltered.map(p => {
-      const isShort = p.type==='SHORT_TERM';
+      const isShort = this.isNightlyType(p.type);
       const imgIdx = s.cardPhotoIdx[p.id] || 0;
       const imgUrl = p.images[imgIdx] || p.images[0] || '';
       const hover = s.cardPhotoHover[p.id];
@@ -4072,13 +4554,15 @@ class Component extends DCLogic {
       const arrowOffset = Math.round(arrowBox / 2);
       return {
         id:p.id, addr:p.title, city:p.city,
-        tag:isShort?'Short stay':'Long-term', dot:isShort?'var(--canary)':'var(--atlantic)',
-        priceMain:this.moneyShort(p.rate), priceUnit:isShort?'/night':'/mo',
+        tag: this.listingTypeTag(p), dot: this.listingTypeDot(p),
+        priceMain:this.moneyShort(p.rate),
+        priceUnit:isShort?'/night':'/mo',
+        priceUtilTag:!isShort ? (p.utilitiesIncluded ? ' Incl' : ' POU') : '',
         specs: this.unitSpecs(p),
         parkingLabel: this.parkingDetailLabel(p.parkingType, p.parking),
         imgCss:`url('${imgUrl}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
         hasAvailLine: !isShort && p.availableDate,
-        availLine: !isShort && p.availableDate ? ('Move-in ' + this.formatDateLabel(p.availableDate)) : '',
+        availLine: !isShort && p.availableDate ? this.moveInCardLine(p.availableDate) : '',
         hasMultiPhotos: p.images.length > 1,
         leftSemiStyle:`position:absolute;left:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:0 ${semiR}px ${semiR}px 0;background:${barTint};opacity:${showLeft?1:0};${fade}z-index:1;`,
         rightSemiStyle:`position:absolute;right:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:${semiR}px 0 0 ${semiR}px;background:${barTint};opacity:${showRight?1:0};${fade}z-index:1;`,
@@ -4092,15 +4576,20 @@ class Component extends DCLogic {
         onOpen:()=>this.openProperty(p.id),
       };
     });
-    const filt = (key,label) => ({ key, label, onClick:()=>this.setState({ pubFilter:key }), style:this.segStyle(s.pubFilter===key) });
-    const pubFilters = [filt('all','All'), filt('long','Long-term'), filt('short','Short stays')];
+    const filt = (key, label) => ({
+      key,
+      label,
+      onClick: () => (key === 'short' ? this.goShortStays() : this.setState({ pubFilter: key, pubSearch: key === 'short' ? '' : s.pubSearch })),
+      style: this.segStyle(s.pubFilter === key),
+    });
+    const pubFilters = [filt('all','All'), filt('long','Long-term'), filt('mid','Mid-term'), filt('short','Short-term')];
 
     // ---- selected property ----
     const p = this.getProp(s.propId);
     let selProp = null, shortTerm=false, longTerm=false, rangeValid=false, rangeInvalid=false;
     let nights=0, baseLine='', baseTotal='', cleaningFee='', grandTotal='', applyRef='';
     if (p) {
-      selProp = { ...p, typeLabel:this.typeLabelOf(p.type), dot:(p.type==='SHORT_TERM'?'var(--canary)':'var(--atlantic)'),
+      selProp = { ...p, typeLabel:this.typeLabelOf(p.type), dot:this.listingTypeDot(p),
         priceMain:this.moneyShort(p.rate), specs: this.unitSpecs(p),
         img0:`url('${p.images[0]}')`, img1:`url('${p.images[1]||p.images[0]}')`, img2:`url('${p.images[2]||p.images[0]}')`,
       };
@@ -4121,7 +4610,7 @@ class Component extends DCLogic {
       selProp.locationLine = [p.address || p.title, p.city, p.province, p.postal].filter(Boolean).join(', ');
       selProp.hasMap = !!(p.latitude && p.longitude);
       selProp.hasAvailableDate = !shortTerm && !!p.availableDate;
-      selProp.availableDateLabel = p.availableDate ? this.formatDateLabel(p.availableDate) : '';
+      selProp.availableDateLabel = p.availableDate ? this.moveInAvailabilityLabel(p.availableDate) : '';
       applyRef = this.refCode(p.id);
     }
     const applySteps = [
@@ -4227,8 +4716,6 @@ class Component extends DCLogic {
       if (s.propFilter === 'vacant') return occ === 'vacant';
       if (s.propFilter === 'short_term') return occ === 'short_term';
       if (this.isCustomStatusKey(s.propFilter)) return occ === s.propFilter;
-      if (s.propFilter === 'renewing') return occ === 'renewing';
-      if (s.propFilter === 'not_renewing') return occ === 'not_renewing';
       return true;
     }).filter(pr => this.propertyMatchesSearch(pr, s.mgrSearch));
     const propFilterOpt = (key, label) => ({ key, label, onClick: () => this.setPropFilter(key), style: this.segStyle(s.propFilter === key) });
@@ -4238,8 +4725,6 @@ class Component extends DCLogic {
       propFilterOpt('vacant', 'Vacant'),
       propFilterOpt('short_term', 'Short term'),
       ...(s.customStatuses || []).map(cs => propFilterOpt(cs.key, cs.label)),
-      propFilterOpt('renewing', 'Renewing'),
-      propFilterOpt('not_renewing', 'Not renewing'),
     ];
     const propFilterArchived = propFilterOpt('archived', 'Archived');
 
@@ -4491,8 +4976,13 @@ class Component extends DCLogic {
 
     // uploader view-models
     const typeOpt = (key,label) => ({ key, label, onClick:()=>this.setUp('type',key), style:this.segStyle(s.up.type===key) });
-    const typeOpts = [typeOpt('SINGLE','Single unit'), typeOpt('MULTI','Multi-unit'), typeOpt('SHORT_TERM','Short-term')];
-    const isShortType = s.up.type==='SHORT_TERM';
+    const typeOpts = [
+      typeOpt('SINGLE', 'Long-term'),
+      typeOpt('MID_TERM', 'Mid-term'),
+      typeOpt('SHORT_TERM', 'Short-term'),
+      typeOpt('MULTI', 'Multi-unit'),
+    ];
+    const isShortType = this.isNightlyType(s.up.type);
     const rateLabel = s.editPropertyId && !s.publishPropertyId
       ? (isShortType ? 'Suggested nightly rate' : 'Suggested monthly rent')
       : (isShortType ? 'Nightly rate (listing)' : 'Monthly rent (listing)');
@@ -4598,7 +5088,7 @@ class Component extends DCLogic {
           ? ['Edit property','Update base unit details']
           : (s.editListingId ? ['Edit listing','Update details and pricing'] : ['New listing','Spin one up in under a minute'])),
       funnel:['Inquiries','Move prospects through to signed'],
-      bookings:['Bookings','Short stays this month'],
+      bookings:['Bookings','Short-term stays this month'],
       viewings:['Scheduled viewings','Upcoming property viewings'],
       listings:['Listings','Public storefront offerings — live and historical'],
       leases:['Leases','Active and historical lease records'],
@@ -4607,7 +5097,15 @@ class Component extends DCLogic {
 
     // extended listing fields — uploader controls
     const ynOf = (f) => [ {label:'Yes',onClick:()=>this.setUp(f,true),style:this.segStyle(s.up[f]===true)}, {label:'No',onClick:()=>this.setUp(f,false),style:this.segStyle(s.up[f]===false)} ];
-    const ynPetFriendly=ynOf('petFriendly'), ynDogs=ynOf('dogs'), ynCats=ynOf('cats'), ynUtilities=ynOf('utilitiesIncluded'), ynFirewall=ynOf('firewall');
+    const petPolicyOf = (f) => [
+      { label: 'No', onClick: () => this.setUp(f, 'NO'), style: this.petSegStyle(this.normalizePetPolicy(s.up[f]) === 'NO') },
+      { label: 'Yes', onClick: () => this.setUp(f, 'YES'), style: this.petSegStyle(this.normalizePetPolicy(s.up[f]) === 'YES') },
+      { label: 'Approval', onClick: () => this.setUp(f, 'BY_APPROVAL'), style: this.petSegStyle(this.normalizePetPolicy(s.up[f]) === 'BY_APPROVAL') },
+    ];
+    const petPolicyPetFriendly = petPolicyOf('petFriendly');
+    const petPolicyDogs = petPolicyOf('dogs');
+    const petPolicyCats = petPolicyOf('cats');
+    const ynUtilities=ynOf('utilitiesIncluded'), ynFirewall=ynOf('firewall');
     const UTILS=['Electric','Oil','Mini-split','Air conditioning','Internet'];
     const utilTypeOpts = UTILS.map(u=>({ label:u, onClick:()=>this.toggleUtil(u), style:this.chipStyle(s.up.utilityTypes.includes(u)) }));
     const CAPS=[0,100,200,300,400,500];
@@ -4672,7 +5170,6 @@ class Component extends DCLogic {
           canRelist: listingCtx.canRelist,
           canEditListing: listingCtx.canEditListing,
           canArchiveListing: listingCtx.canArchiveListing,
-          showPublishBlocked: listingCtx.showPublishBlocked,
           onPublish: () => this.startPublishListing(pr.id),
           onRelist: () => this.startRelist(pr.id),
           onEditListing: () => { this.setState({ openProp: null }); this.startEditListing(listingCtx.liveListingId); },
@@ -4754,9 +5251,40 @@ class Component extends DCLogic {
     const mgrSearchPlaceholder = mgrSearchPlaceholders[s.mgrView] || 'Search…';
     const hasMgrSearch = !!String(s.mgrSearch || '').trim();
     const hasPubSearch = !!String(s.pubSearch || '').trim();
-    const pubListingsSubtitle = hasPubSearch
-      ? `${listingCards.length} home${listingCards.length === 1 ? '' : 's'} match your search`
+    const pubListingsTitle = s.pubFilter === 'short' ? 'Short-term stays' : (s.pubFilter === 'mid' ? 'Mid-term rentals' : 'Available now');
+    const pubListingsSubtitle = s.pubFilter === 'short'
+      ? 'Browse nightly rentals or search by dates and guests for live availability.'
+      : s.pubFilter === 'mid'
+        ? 'Flexible leases shorter than a standard 12-month term.'
+      : hasPubSearch
+      ? (listingCards.length
+        ? `${listingCards.length} home${listingCards.length === 1 ? '' : 's'} match your search`
+        : 'No homes match your search yet')
       : `${active.length} homes ready for viewings and bookings.`;
+    const pubShowHospitable = isPublic && s.pubView === 'listings' && s.pubFilter === 'short';
+    const pubShowLocalListings = isPublic && s.pubView === 'listings' && s.pubFilter !== 'short';
+    const pubHospitableDisplay = pubShowHospitable ? 'block' : 'none';
+    const hospitableConfigured = !!s.hospitableConfigured;
+    const hospitableNotConfigured = !hospitableConfigured;
+    const hospitableSearching = !!s.hospitableSearching;
+    const hospitableSearchLabel = hospitableSearching ? 'Searching…' : 'Search availability';
+    const hospitableSearchOpacity = hospitableSearching ? 0.7 : 1;
+    const hospitableCards = (s.hospitableSearched
+      ? [...(s.hospitableAvailable || []), ...(s.hospitableUnavailable || [])]
+      : (s.hospitableCatalog || [])
+    ).map(p => this.hospitableCardVM(p, { unavailable: s.hospitableSearched && p.available === false }));
+    const hospitableHasResults = hospitableConfigured && hospitableCards.length > 0;
+    const hospitableEmpty = hospitableConfigured && s.hospitableSearched && hospitableCards.length === 0;
+    const hospitableEmptyLabel = 'No homes are available for those dates. Try different dates or fewer guests.';
+    const hospitableResultsLabel = s.hospitableSearched
+      ? `${(s.hospitableAvailable || []).length} available · ${(s.hospitableUnavailable || []).length} unavailable`
+      : `${(s.hospitableCatalog || []).length} short-term home${(s.hospitableCatalog || []).length === 1 ? '' : 's'}`;
+    const pubSearchNoResults = hasPubSearch && listingCards.length === 0;
+    const pubListingsEmptyNoSearch = !hasPubSearch && listingCards.length === 0;
+    const pubSearchTrimmed = String(s.pubSearch || '').trim();
+    const searchInquiryOpen = pubSearchNoResults && !s.searchInquirySubmitted;
+    const searchInquirySubmitLabel = s.searchInquirySubmitting ? 'Sending…' : 'Send search request';
+    const searchInquirySubmitOpacity = s.searchInquirySubmitting ? 0.7 : 1;
     const propsEmptyLabel = hasMgrSearch ? 'No properties match your search.' : 'No properties match this filter.';
     const listingsEmptyLabel = hasMgrSearch ? 'No listings match your search.' : 'No listings match this filter.';
     const leasesEmptyLabel = hasMgrSearch ? 'No leases match your search.' : 'No leases match this filter.';
@@ -4796,7 +5324,7 @@ class Component extends DCLogic {
       publicIsListings: isPublic && s.pubView==='listings',
       publicIsDetail: isPublic && s.pubView==='detail',
       publicIsApply: isPublic && s.pubView==='apply',
-      goHome:this.goHome, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
+      goHome:this.goHome, goShortStays:this.goShortStays, goPublic:this.goPublic, goManager:this.goManager, goUploader:this.goUploader,
       signInGoogle:this.signInGoogle, signInMicrosoft:this.signInMicrosoft, signOut:this.signOut,
       setSignInEmail:this.setSignInEmail, setSignInPassword:this.setSignInPassword, submitSignIn:this.submitSignIn,
       signInEmail:s.signInEmail, signInPassword:s.signInPassword, signInSubmitting, signInBtnLabel, signInBtnOpacity,
@@ -4806,7 +5334,19 @@ class Component extends DCLogic {
       goApply:this.goApply, goBackDetail:this.goBackDetail,
       openGalleryPhoto0:this.openGalleryPhoto0, openGalleryPhoto1:this.openGalleryPhoto1, openGalleryPhoto2:this.openGalleryPhoto2,
       pubSearch: s.pubSearch, setPubSearch: this.setPubSearch,
-      pubListingsSubtitle, pubListingsEmpty: listingCards.length === 0, pubListingsHasResults: listingCards.length > 0,
+      pubListingsTitle, pubListingsSubtitle, pubShowHospitable, pubShowLocalListings, pubHospitableDisplay,
+      hospitableConfigured, hospitableNotConfigured,
+      hospitableCheckIn: s.hospitableCheckIn, hospitableCheckOut: s.hospitableCheckOut, hospitableAdults: s.hospitableAdults,
+      setHospitableCheckIn: this.setHospitableCheckIn, setHospitableCheckOut: this.setHospitableCheckOut, setHospitableAdults: this.setHospitableAdults,
+      searchHospitable: this.searchHospitable, hospitableSearching, hospitableSearchLabel, hospitableSearchOpacity,
+      hospitableError: s.hospitableError, hospitableCatalogLoading: s.hospitableCatalogLoading,
+      hospitableHasResults, hospitableResultsLabel, hospitableCards,
+      hospitableEmpty, hospitableEmptyLabel,
+      pubListingsHasResults: listingCards.length > 0,
+      pubSearchNoResults, pubListingsEmptyNoSearch, pubSearchTrimmed,
+      searchInquirySubmitted: s.searchInquirySubmitted, searchInquiryOpen,
+      searchInquirySubmitting: s.searchInquirySubmitting, searchInquirySubmitLabel, searchInquirySubmitOpacity,
+      submitSearchInquiry: this.submitSearchInquiry,
       activeCount: active.length, listingCards, pubFilters, cardTagStyle,
       selProp, shortTerm, longTerm,
       photoLightboxOpen, photoLightboxHasMulti, photoLightboxImgCss, photoLightboxCounter,
@@ -4989,7 +5529,7 @@ class Component extends DCLogic {
       imgDraft:s.imgDraft, onImgDraft:this.onImgDraft, onImgKey:this.onImgKey, addImg:this.addImg, upImages,
       photoSectionLabel, photoSectionHint, photoUploadLabel, photoUploadOpacity, onPhotoPick:this.onPhotoPick, onPhotoDragOver:this.onPhotoDragOver, onPhotoDrop:this.onPhotoDrop,
       publish:this.publish,
-      ynPetFriendly, ynDogs, ynCats, ynUtilities, ynFirewall, utilTypeOpts, heatingTypeOpts, parkingTypeOpts, capOpts, showUtilDetail, showOilCompany,
+      petPolicyPetFriendly, petPolicyDogs, petPolicyCats, ynUtilities, ynFirewall, utilTypeOpts, heatingTypeOpts, parkingTypeOpts, capOpts, showUtilDetail, showOilCompany,
       onUpParking, onUpYearBuilt, onUpStoreys, onUpWater, onUpPowerMeter, onUpElectricCompany, onUpOilCompany, onUpInternalNotes,
       propDrawer, propDrawerOpen, closePropDrawer:this.closePropDrawer,
       leaseDraft: s.leaseDraft ? {
@@ -5004,7 +5544,6 @@ class Component extends DCLogic {
       onLeaseMonthlyRate: this.onLeaseMonthlyRate,
       onLeaseStartDate: this.onLeaseStartDate,
       onLeaseEndDate: this.onLeaseEndDate,
-      onLeaseRenewalStatus: this.onLeaseRenewalStatus,
       drawer, drawerOpen, closeDrawer:this.closeDrawer, stop:this.stop,
       tabPublic:this.tabStyle(isPublic), tabManager:this.tabStyle(isManager || isManagerSignIn),
       isDark, rootStyle, knobStyle, toggleTheme:this.toggleTheme, themeTitle: isDark?'Switch to light mode':'Switch to dark mode',
@@ -5018,6 +5557,9 @@ class Component extends DCLogic {
   }
   segStyle(active) {
     return { height:'34px', padding:'0 16px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'14px', fontWeight:500, background: active?'var(--surface)':'transparent', color: active?'var(--ink)':'var(--fg-2)', boxShadow: active?'var(--shadow-1)':'none', whiteSpace:'nowrap' };
+  }
+  petSegStyle(active) {
+    return { height:'32px', padding:'0 10px', borderRadius:'9999px', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:'13px', fontWeight:500, background: active?'var(--surface)':'transparent', color: active?'var(--ink)':'var(--fg-2)', boxShadow: active?'var(--shadow-1)':'none', flex:'1 1 auto', minWidth:'0', whiteSpace:'nowrap' };
   }
   checkStyle(selected) {
     return {

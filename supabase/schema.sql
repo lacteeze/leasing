@@ -6,7 +6,7 @@ create table if not exists public.properties (
   id uuid primary key default gen_random_uuid(),
   property_code text,
   title text not null,
-  type text not null check (type in ('SINGLE', 'MULTI', 'SHORT_TERM')),
+  type text not null check (type in ('SINGLE', 'MULTI', 'MID_TERM', 'SHORT_TERM')),
   area text,
   address text,
   city text,
@@ -25,9 +25,12 @@ create table if not exists public.properties (
   parking integer not null default 0,
   parking_type text not null default 'OFF_STREET'
     check (parking_type in ('ON_STREET', 'OFF_STREET', 'GARAGE')),
-  pet_friendly boolean not null default false,
-  dogs boolean not null default false,
-  cats boolean not null default false,
+  pet_friendly text not null default 'NO'
+    check (pet_friendly in ('NO', 'YES', 'BY_APPROVAL')),
+  dogs text not null default 'NO'
+    check (dogs in ('NO', 'YES', 'BY_APPROVAL')),
+  cats text not null default 'NO'
+    check (cats in ('NO', 'YES', 'BY_APPROVAL')),
   utilities_included boolean not null default false,
   utility_types jsonb not null default '[]'::jsonb,
   utility_cap integer not null default 0,
@@ -81,7 +84,7 @@ create table if not exists public.listings (
   property_id uuid references public.properties (id) on delete set null,
   source_listing_id uuid references public.listings (id) on delete set null,
   title text not null,
-  type text not null check (type in ('SINGLE', 'MULTI', 'SHORT_TERM')),
+  type text not null check (type in ('SINGLE', 'MULTI', 'MID_TERM', 'SHORT_TERM')),
   area text,
   address text,
   city text,
@@ -102,9 +105,12 @@ create table if not exists public.listings (
   parking integer not null default 0,
   parking_type text not null default 'OFF_STREET'
     check (parking_type in ('ON_STREET', 'OFF_STREET', 'GARAGE')),
-  pet_friendly boolean not null default false,
-  dogs boolean not null default false,
-  cats boolean not null default false,
+  pet_friendly text not null default 'NO'
+    check (pet_friendly in ('NO', 'YES', 'BY_APPROVAL')),
+  dogs text not null default 'NO'
+    check (dogs in ('NO', 'YES', 'BY_APPROVAL')),
+  cats text not null default 'NO'
+    check (cats in ('NO', 'YES', 'BY_APPROVAL')),
   utilities_included boolean not null default false,
   utility_types jsonb not null default '[]'::jsonb,
   utility_cap integer not null default 0,

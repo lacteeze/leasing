@@ -35,3 +35,11 @@ export function googleMapsApiKey() {
 export function isGoogleMapsConfigured() {
   return !!googleMapsApiKey();
 }
+
+export function hospitableApiToken() {
+  return process.env.HOSPITABLE_API_TOKEN || "";
+}
+
+export function isHospitableConfigured() {
+  return !!hospitableApiToken();
+}

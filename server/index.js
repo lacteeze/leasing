@@ -3,7 +3,7 @@ import express from "express";
 import path from "node:path";
 import multer from "multer";
 import { fileURLToPath } from "node:url";
-import { isSupabaseConfigured, isGoogleMapsConfigured, googleMapsApiKey, isServiceRoleConfigured } from "./env.js";
+import { isSupabaseConfigured, isGoogleMapsConfigured, googleMapsApiKey, isServiceRoleConfigured, isHospitableConfigured } from "./env.js";
 import { createClient } from "../utils/supabase/server.js";
 import { createAdminClient } from "../utils/supabase/admin.js";
 import { refreshSession } from "../utils/supabase/middleware.js";
@@ -39,7 +39,6 @@ import {
   uploadPropertyPhoto,
 } from "./properties.js";
 import {
-  archiveActiveListingForProperty,
   buildQuickLeaseBody,
   bulkInsertLeases,
   bulkLeaseTemplateCsv,
@@ -68,6 +67,14 @@ import {
   logAudit,
   readAuditLog,
 } from "./audit.js";
+import {
+  formatPetPolicyDbError,
+  runWithPetPolicyCompat,
+} from "./property-fields.js";
+import {
+  fetchHospitableProperties,
+  searchHospitableProperties,
+} from "./hospitable.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -124,7 +131,49 @@ function sessionUser(user) {
 app.get("/api/config", (_req, res) => {
   res.json({
     googleMapsApiKey: googleMapsApiKey() || null,
+    hospitableConfigured: isHospitableConfigured(),
   });
+});
+
+app.get("/api/hospitable/properties", async (_req, res) => {
+  if (!isHospitableConfigured()) {
+    return res.status(503).json({
+      error:
+        "Add HOSPITABLE_API_TOKEN to .env.local — create a Personal Access Token in Hospitable.",
+    });
+  }
+
+  try {
+    const properties = await fetchHospitableProperties();
+    res.json({ properties });
+  } catch (err) {
+    console.error("[hospitable] properties error:", err.message);
+    res.status(502).json({ error: err.message || "Could not load Hospitable properties." });
+  }
+});
+
+app.get("/api/hospitable/search", async (req, res) => {
+  if (!isHospitableConfigured()) {
+    return res.status(503).json({
+      error:
+        "Add HOSPITABLE_API_TOKEN to .env.local — create a Personal Access Token in Hospitable.",
+    });
+  }
+
+  try {
+    const result = await searchHospitableProperties({
+      startDate: req.query.start_date || req.query.startDate,
+      endDate: req.query.end_date || req.query.endDate,
+      adults: req.query.adults,
+      children: req.query.children,
+      infants: req.query.infants,
+      pets: req.query.pets,
+    });
+    res.json(result);
+  } catch (err) {
+    console.error("[hospitable] search error:", err.message);
+    res.status(400).json({ error: err.message || "Could not search Hospitable properties." });
+  }
 });
 
 app.get("/api/auth/session", async (req, res) => {
@@ -259,7 +308,8 @@ app.post("/api/listings/photos", upload.single("photo"), async (req, res) => {
     res.json({ url, path: storagePath });
   } catch (err) {
     console.error("[listings] upload error:", err.message);
-    res.status(500).json({ error: "Photo upload failed." });
+    const status = /sign in|jwt|auth/i.test(err.message) ? 401 : 500;
+    res.status(status).json({ error: err.message || "Photo upload failed." });
   }
 });
 
@@ -343,11 +393,9 @@ app.post("/api/properties", async (req, res) => {
     }
 
     const payload = propertyInsertPayload(body, user.id);
-    const { data: property, error } = await supabase
-      .from("properties")
-      .insert(payload)
-      .select("*")
-      .single();
+    const { data: property, error } = await runWithPetPolicyCompat(payload, (p) =>
+      supabase.from("properties").insert(p).select("*").single()
+    );
 
     if (error) throw error;
 
@@ -387,11 +435,13 @@ app.patch("/api/properties/:id", async (req, res) => {
       return res.status(400).json({ error: "No updates provided." });
     }
 
-    const { error } = await supabase
-      .from("properties")
-      .update(payload)
-      .eq("id", propertyId)
-      .eq("created_by", user.id);
+    const { error } = await runWithPetPolicyCompat(payload, (p) =>
+      supabase
+        .from("properties")
+        .update(p)
+        .eq("id", propertyId)
+        .eq("created_by", user.id)
+    );
 
     if (error) throw error;
 
@@ -441,6 +491,10 @@ app.patch("/api/properties/:id", async (req, res) => {
         error:
           "Run supabase/properties.sql in the Supabase SQL Editor to create the property_photos table.",
       });
+    }
+    const petMsg = formatPetPolicyDbError(err);
+    if (petMsg) {
+      return res.status(400).json({ error: petMsg });
     }
     res.status(400).json({ error: msg });
   }
@@ -647,7 +701,8 @@ app.post("/api/properties/photos", upload.single("photo"), async (req, res) => {
     res.json({ url, path: storagePath });
   } catch (err) {
     console.error("[properties] upload error:", err.message);
-    res.status(500).json({ error: "Photo upload failed." });
+    const status = /sign in|jwt|auth/i.test(err.message) ? 401 : 500;
+    res.status(status).json({ error: err.message || "Photo upload failed." });
   }
 });
 
@@ -961,13 +1016,7 @@ app.post("/api/properties/:id/leases/quick", async (req, res) => {
       });
     }
 
-    const renewalStatus =
-      req.body?.renewalStatus === "RENEWING"
-        ? "RENEWING"
-        : req.body?.renewalStatus === "NOT_RENEWING"
-          ? "NOT_RENEWING"
-          : "UNKNOWN";
-    const body = buildQuickLeaseBody(property, { renewalStatus });
+    const body = buildQuickLeaseBody(property);
     validateLeaseBody(body, { requireTenant: false });
 
     const payload = leaseInsertPayload(body, user.id, propertyId);
@@ -978,10 +1027,6 @@ app.post("/api/properties/:id/leases/quick", async (req, res) => {
       .single();
 
     if (error) throw error;
-
-    if (renewalStatus === "RENEWING") {
-      await archiveActiveListingForProperty(supabase, propertyId);
-    }
 
     res.status(201).json(mapLeaseRow(lease));
   } catch (err) {
@@ -1028,10 +1073,6 @@ app.post("/api/properties/:id/leases", async (req, res) => {
 
     if (error) throw error;
 
-    if (body.renewalStatus === "RENEWING") {
-      await archiveActiveListingForProperty(supabase, propertyId);
-    }
-
     res.status(201).json(mapLeaseRow(lease));
   } catch (err) {
     console.error("[leases] create error:", err.message);
@@ -1076,10 +1117,6 @@ app.patch("/api/leases/:id", async (req, res) => {
       .single();
 
     if (error) throw error;
-
-    if (updated.renewal_status === "RENEWING" && updated.status === "ACTIVE") {
-      await archiveActiveListingForProperty(supabase, updated.property_id);
-    }
 
     res.json(mapLeaseRow(updated));
   } catch (err) {
@@ -1175,13 +1212,15 @@ app.patch("/api/listings/:id", async (req, res) => {
       return res.status(400).json({ error: "No updates provided." });
     }
 
-    const { data: listing, error } = await supabase
-      .from("listings")
-      .update(payload)
-      .eq("id", listingId)
-      .eq("created_by", user.id)
-      .select("*")
-      .single();
+    const { data: listing, error } = await runWithPetPolicyCompat(payload, (p) =>
+      supabase
+        .from("listings")
+        .update(p)
+        .eq("id", listingId)
+        .eq("created_by", user.id)
+        .select("*")
+        .single()
+    );
 
     if (error) throw error;
 
@@ -1198,7 +1237,10 @@ app.patch("/api/listings/:id", async (req, res) => {
     res.json(mapListingRow(listing, photos || []));
   } catch (err) {
     console.error("[listings] update error:", err.message);
-    res.status(500).json({ error: "Could not update listing." });
+    const petMsg = formatPetPolicyDbError(err);
+    res.status(400).json({
+      error: petMsg || err.message || "Could not update listing.",
+    });
   }
 });
 
@@ -1251,11 +1293,9 @@ app.post("/api/listings", async (req, res) => {
     }
 
     const payload = listingInsertPayload(body, user.id);
-    const { data: listing, error } = await supabase
-      .from("listings")
-      .insert(payload)
-      .select("*")
-      .single();
+    const { data: listing, error } = await runWithPetPolicyCompat(payload, (p) =>
+      supabase.from("listings").insert(p).select("*").single()
+    );
 
     if (error) throw error;
 

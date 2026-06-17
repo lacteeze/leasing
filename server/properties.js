@@ -6,12 +6,16 @@ import {
   heatingTypesLabel,
   normalizeHeatingTypes,
   normalizeParkingType,
+  normalizePetPolicy,
+  normalizePetPolicyFields,
+  parsePetPolicy,
   parkingDetailLabel,
+  runWithPetPolicyCompat,
 } from "./property-fields.js";
 
 const PHOTO_BUCKET = "listing-photos";
 
-const BULK_TYPES = new Set(["SINGLE", "MULTI", "SHORT_TERM"]);
+const BULK_TYPES = new Set(["SINGLE", "MULTI", "MID_TERM", "SHORT_TERM"]);
 
 const HEADER_ALIASES = {
   "monthly rent": "suggested_rate",
@@ -56,8 +60,6 @@ const HEADER_ALIASES = {
 const BUILTIN_BULK_STATUSES = new Set([
   "vacant",
   "leased",
-  "renewing",
-  "not_renewing",
   "short_term",
   "archived",
 ]);
@@ -83,10 +85,6 @@ export function parseBulkPortfolioStatus(raw, propertyType) {
   if (BUILTIN_BULK_STATUSES.has(slug)) return { kind: slug };
 
   const lower = label.toLowerCase();
-  if (lower.includes("not") && lower.includes("renew")) return { kind: "not_renewing" };
-  if (lower === "renewing" || (lower.includes("renew") && !lower.includes("not"))) {
-    return { kind: "renewing" };
-  }
   const compact = slug.replace(/_/g, "");
   if (compact === "shortterm" || slug === "airbnb") return { kind: "short_term" };
   if (compact === "owneroccupied") return { kind: "custom", slug: "owner_occupied" };
@@ -94,7 +92,7 @@ export function parseBulkPortfolioStatus(raw, propertyType) {
   if (slug === "occupied") return { kind: "leased" };
 
   if (!/^[a-z0-9_]+$/i.test(slug)) {
-    throw new Error(`status "${label}" is not valid — use vacant, leased, renewing, not renewing, short term, archived, or a name like Owner occupied`);
+    throw new Error(`status "${label}" is not valid — use vacant, leased, short term, archived, or a name like Owner occupied`);
   }
   return { kind: "custom", slug };
 }
@@ -306,9 +304,9 @@ export function mapPropertyRow(row, photos = [], activeLease = null, listingSumm
     description: row.description || "",
     parking: row.parking || 0,
     parkingType: row.parking_type || "OFF_STREET",
-    petFriendly: !!row.pet_friendly,
-    dogs: !!row.dogs,
-    cats: !!row.cats,
+    petFriendly: normalizePetPolicy(row.pet_friendly),
+    dogs: normalizePetPolicy(row.dogs),
+    cats: normalizePetPolicy(row.cats),
     utilitiesIncluded: !!row.utilities_included,
     utilityTypes: row.utility_types || [],
     utilityCap: row.utility_cap || 0,
@@ -338,8 +336,9 @@ export function bulkTemplateCsv() {
     "GOWER-002,142 Gower Street #2,SINGLE,leased,2026-12-31,Jane Tenant,142 Gower Street,St. John's,NL,A1C 1J3,2,1,0,760,Bright downtown apartment with gas heat.,Gas heat;In-unit laundry,1,OFF_STREET,yes,no,no,yes,Electric;Internet,200,1920,2,Electric baseboard,Electric tank,no,12345,NL Power,Local Oil Co.,Owner prefers long-term tenants.,1800,0,https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800";
   const guide =
     "# property_id: your stable Property ID — use the same value in lease and listing imports\n" +
-    "# status: vacant | leased | renewing | not renewing | short term | archived | Owner occupied (or any custom label)\n" +
-    "# lease_end: required for leased/renewing/not renewing (YYYY-MM-DD). tenant_name optional.\n";
+    "# status: vacant | leased | short term | archived | Owner occupied (or any custom label)\n" +
+    "# lease_end: required for leased (YYYY-MM-DD). tenant_name optional.\n" +
+    "# pet_friendly, dogs, cats: yes | no | by approval\n";
   return guide + header + "\n" + example + "\n";
 }
 
@@ -360,7 +359,7 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
 
   const type = get("type").toUpperCase() || "SINGLE";
   if (!BULK_TYPES.has(type)) {
-    throw new Error(`type must be SINGLE, MULTI, or SHORT_TERM (got "${get("type")}")`);
+    throw new Error(`type must be SINGLE, MULTI, MID_TERM, or SHORT_TERM (got "${get("type")}")`);
   }
 
   const beds = parseNum(get("beds"), 0);
@@ -391,14 +390,14 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
   const storeys = storeysRaw ? parseNum(storeysRaw, 0) : 0;
   if (storeysRaw && storeys === null) throw new Error("storeys must be a number");
 
-  const petFriendly = parseBool(get("pet_friendly"));
-  if (petFriendly === null) throw new Error("pet_friendly must be yes/no");
+  const petFriendly = parsePetPolicy(get("pet_friendly"));
+  if (petFriendly === null) throw new Error("pet_friendly must be yes, no, or by approval");
 
-  const dogs = parseBool(get("dogs"));
-  if (dogs === null) throw new Error("dogs must be yes/no");
+  const dogs = parsePetPolicy(get("dogs"));
+  if (dogs === null) throw new Error("dogs must be yes, no, or by approval");
 
-  const cats = parseBool(get("cats"));
-  if (cats === null) throw new Error("cats must be yes/no");
+  const cats = parsePetPolicy(get("cats"));
+  if (cats === null) throw new Error("cats must be yes, no, or by approval");
 
   const utilitiesIncluded = parseBool(get("utilities_included"));
   if (utilitiesIncluded === null) throw new Error("utilities_included must be yes/no");
@@ -430,18 +429,18 @@ export function parseBulkPropertyRow(rawRow, rowIndex) {
     throw new Error("lease_end must be a valid date (YYYY-MM-DD)");
   }
   if (
-    ["leased", "renewing", "not_renewing"].includes(portfolioStatus.kind) &&
+    portfolioStatus.kind === "leased" &&
     !leaseEnd
   ) {
     throw new Error(
-      `lease_end is required when status is ${portfolioStatus.kind.replace(/_/g, " ")}`
+      "lease_end is required when status is leased"
     );
   }
   if (
-    ["leased", "renewing", "not_renewing"].includes(portfolioStatus.kind) &&
+    portfolioStatus.kind === "leased" &&
     !suggestedRate
   ) {
-    throw new Error("suggested_rate is required when status is leased, renewing, or not renewing");
+    throw new Error("suggested_rate is required when status is leased");
   }
 
   return {
@@ -497,7 +496,7 @@ export function propertyInsertPayload(body, userId) {
     occupancy_status = "short_term";
   } else if (status.kind === "custom") {
     occupancy_status = status.slug;
-  } else if (["leased", "renewing", "not_renewing"].includes(status.kind)) {
+  } else if (status.kind === "leased") {
     occupancy_status = "standard";
   } else if (body.type === "SHORT_TERM" && status.kind === "vacant") {
     occupancy_status = "short_term";
@@ -524,9 +523,9 @@ export function propertyInsertPayload(body, userId) {
     features: body.features || [],
     description: body.description,
     parking: body.parking,
-    pet_friendly: body.petFriendly,
-    dogs: body.dogs,
-    cats: body.cats,
+    pet_friendly: normalizePetPolicy(body.petFriendly),
+    dogs: normalizePetPolicy(body.dogs),
+    cats: normalizePetPolicy(body.cats),
     utilities_included: body.utilitiesIncluded,
     utility_types: body.utilityTypes || [],
     utility_cap: body.utilityCap,
@@ -611,6 +610,7 @@ export function propertyUpdatePayload(body) {
       })
     );
   }
+  normalizePetPolicyFields(payload);
   return payload;
 }
 
@@ -842,7 +842,7 @@ export async function updatePropertyPhotos(supabase, propertyId, images) {
 export async function uploadPropertyPhoto(supabase, userId, file) {
   const ext = (file.originalname.split(".").pop() || "jpg").toLowerCase();
   const safeExt = ext.replace(/[^a-z0-9]/g, "") || "jpg";
-  const path = `properties/${userId}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${safeExt}`;
+  const path = `${userId}/properties/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${safeExt}`;
 
   const { error } = await supabase.storage
     .from(PHOTO_BUCKET)
@@ -867,11 +867,9 @@ export async function bulkInsertProperties(supabase, userId, rawRows, { onRowCom
       const body = parseBulkPropertyRow(rawRows[i], i);
       const payload = propertyInsertPayload(body, userId);
 
-      const { data: property, error } = await supabase
-        .from("properties")
-        .insert(payload)
-        .select("*")
-        .single();
+      const { data: property, error } = await runWithPetPolicyCompat(payload, (p) =>
+        supabase.from("properties").insert(p).select("*").single()
+      );
 
       if (error) throw error;
 
@@ -880,14 +878,8 @@ export async function bulkInsertProperties(supabase, userId, rawRows, { onRowCom
       }
 
       const status = body.portfolioStatus;
-      if (["leased", "renewing", "not_renewing"].includes(status.kind)) {
+      if (status.kind === "leased") {
         const startDate = new Date().toISOString().slice(0, 10);
-        const renewal_status =
-          status.kind === "renewing"
-            ? "RENEWING"
-            : status.kind === "not_renewing"
-              ? "NOT_RENEWING"
-              : "UNKNOWN";
         const { error: leaseError } = await supabase.from("leases").insert({
           property_id: property.id,
           tenant_name: body.tenantName,
@@ -895,7 +887,7 @@ export async function bulkInsertProperties(supabase, userId, rawRows, { onRowCom
           start_date: startDate,
           end_date: body.leaseEnd,
           status: "ACTIVE",
-          renewal_status,
+          renewal_status: "UNKNOWN",
           created_by: userId,
         });
         if (leaseError) throw leaseError;

@@ -6,7 +6,7 @@ import {
 } from "./properties.js";
 import { formatImportError } from "./audit.js";
 
-const RENEWAL_STATUSES = new Set(["UNKNOWN", "RENEWING", "NOT_RENEWING"]);
+const RENEWAL_STATUSES = new Set(["UNKNOWN"]);
 const LEASE_STATUSES = new Set(["ACTIVE", "ENDED"]);
 
 export const BULK_LEASE_CSV_HEADERS = [
@@ -28,7 +28,7 @@ export function bulkLeaseTemplateCsv() {
   const guide =
     "# property_id: must match a Property ID from Properties (same as properties CSV)\n" +
     "# status: ENDED for historical leases, ACTIVE for current (only one active lease per property)\n" +
-    "# renewal_status: UNKNOWN | RENEWING | NOT_RENEWING (optional, defaults to UNKNOWN)\n";
+    "# renewal_status: optional, must be UNKNOWN if provided\n";
   return guide + header + "\n" + example + "\n";
 }
 
@@ -188,14 +188,14 @@ export function validateLeaseBody(body, { requireTenant = true } = {}) {
     throw new Error("endDate must be on or after startDate");
   }
   if (body.renewalStatus && !RENEWAL_STATUSES.has(body.renewalStatus)) {
-    throw new Error("renewalStatus must be UNKNOWN, RENEWING, or NOT_RENEWING");
+    throw new Error("renewalStatus must be UNKNOWN");
   }
   if (body.status && !LEASE_STATUSES.has(body.status)) {
     throw new Error("status must be ACTIVE or ENDED");
   }
 }
 
-export function buildQuickLeaseBody(property, { renewalStatus = "UNKNOWN" } = {}) {
+export function buildQuickLeaseBody(property) {
   const today = new Date();
   const startDate = today.toISOString().slice(0, 10);
   const end = new Date(today);
@@ -209,7 +209,7 @@ export function buildQuickLeaseBody(property, { renewalStatus = "UNKNOWN" } = {}
     monthlyRate: rate > 0 ? rate : 1,
     startDate,
     endDate,
-    renewalStatus,
+    renewalStatus: "UNKNOWN",
   };
 }
 

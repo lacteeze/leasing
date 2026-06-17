@@ -62,7 +62,16 @@ export function inquiryInsertPayload(body) {
     lease_type: body.leaseType || null,
     max_price: body.maxPrice ?? null,
     preferred_viewing_date: body.preferredViewingDate || null,
-    notes: [{ text: "Viewing requested via website.", time: "just now" }],
+    notes:
+      Array.isArray(body.notes) && body.notes.length
+        ? body.notes
+        : [{
+            text:
+              body.inquiryType === "LONG_TERM_RENTAL"
+                ? "Search request via website."
+                : "Viewing requested via website.",
+            time: "just now",
+          }],
   };
 }
 

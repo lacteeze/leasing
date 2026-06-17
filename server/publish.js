@@ -5,7 +5,7 @@ import {
 } from "./properties.js";
 import { getActiveLease, archiveActiveListingForProperty } from "./leases.js";
 import { slugFromTitle, mapListingRow, updateListingPhotos } from "./listings.js";
-import { heatingTypesFromRow } from "./property-fields.js";
+import { heatingTypesFromRow, normalizePetPolicy, runWithPetPolicyCompat } from "./property-fields.js";
 
 export function listingPrefillFromProperty(property, activeLease, overrides = {}) {
   const isShort = property.type === "SHORT_TERM";
@@ -23,9 +23,6 @@ export function listingPrefillFromProperty(property, activeLease, overrides = {}
       else if (property.suggested_rate != null) {
         rate = Number(property.suggested_rate);
       } else rate = 0;
-    }
-    if (!availableDate && activeLease?.renewal_status === "NOT_RENEWING") {
-      availableDate = activeLease.end_date;
     }
   }
 
@@ -58,9 +55,9 @@ export function propertyToListingBody(property, prefill, overrides = {}) {
     description: property.description,
     parking: property.parking,
     parkingType: property.parking_type || "OFF_STREET",
-    petFriendly: property.pet_friendly,
-    dogs: property.dogs,
-    cats: property.cats,
+    petFriendly: normalizePetPolicy(property.pet_friendly),
+    dogs: normalizePetPolicy(property.dogs),
+    cats: normalizePetPolicy(property.cats),
     utilitiesIncluded: property.utilities_included,
     utilityTypes: property.utility_types || [],
     utilityCap: property.utility_cap,
@@ -107,12 +104,6 @@ export async function publishListingFromProperty(
   const property = await getOwnedProperty(supabase, userId, propertyId);
   const activeLease = await getActiveLease(supabase, propertyId);
 
-  if (activeLease?.renewal_status === "RENEWING") {
-    throw new Error(
-      "Cannot publish: tenant is renewing. The unit should stay off the public storefront."
-    );
-  }
-
   const prefill = listingPrefillFromProperty(property, activeLease, overrides);
   const body = propertyToListingBody(property, prefill, overrides);
 
@@ -124,9 +115,7 @@ export async function publishListingFromProperty(
 
   await archiveActiveListingForProperty(supabase, propertyId);
 
-  const { data: listing, error } = await supabase
-    .from("listings")
-    .insert({
+  const listingPayload = {
       slug: body.slug,
       title: body.title,
       type: body.type,
@@ -149,9 +138,9 @@ export async function publishListingFromProperty(
       description: body.description,
       parking: body.parking,
       parking_type: body.parkingType || "OFF_STREET",
-      pet_friendly: body.petFriendly,
-      dogs: body.dogs,
-      cats: body.cats,
+      pet_friendly: normalizePetPolicy(body.petFriendly),
+      dogs: normalizePetPolicy(body.dogs),
+      cats: normalizePetPolicy(body.cats),
       utilities_included: body.utilitiesIncluded,
       utility_types: body.utilityTypes,
       utility_cap: body.utilityCap,
@@ -168,9 +157,11 @@ export async function publishListingFromProperty(
       property_id: propertyId,
       source_listing_id: body.sourceListingId,
       created_by: userId,
-    })
-    .select("*")
-    .single();
+    };
+
+  const { data: listing, error } = await runWithPetPolicyCompat(listingPayload, (p) =>
+    supabase.from("listings").insert(p).select("*").single()
+  );
 
   if (error) {
     if (/available_date/i.test(error.message || "")) {
@@ -224,6 +215,6 @@ export async function getPublishPrefill(supabase, userId, propertyId) {
       cleaning: prefill.cleaning,
       availableDate: prefill.availableDate,
     },
-    canPublish: activeLease?.renewal_status !== "RENEWING",
+    canPublish: true,
   };
 }

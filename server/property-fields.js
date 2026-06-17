@@ -1,3 +1,83 @@
+export const PET_POLICY_VALUES = ["NO", "YES", "BY_APPROVAL"];
+
+export function normalizePetPolicy(value, defaultValue = "NO") {
+  if (value === true) return "BY_APPROVAL";
+  if (value === false) return "NO";
+  const raw = String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+  if (["YES", "Y", "ALLOWED", "TRUE", "1"].includes(raw)) return "YES";
+  if (["BY_APPROVAL", "APPROVAL", "BYAPPROVAL"].includes(raw)) return "BY_APPROVAL";
+  if (["NO", "N", "NONE", "FALSE", "0"].includes(raw)) return "NO";
+  if (PET_POLICY_VALUES.includes(raw)) return raw;
+  return defaultValue;
+}
+
+export function parsePetPolicy(raw) {
+  const label = String(raw ?? "").trim();
+  if (!label) return "NO";
+  const normalized = normalizePetPolicy(label, null);
+  if (!normalized || !PET_POLICY_VALUES.includes(normalized)) return null;
+  return normalized;
+}
+
+const PET_POLICY_DB_KEYS = ["pet_friendly", "dogs", "cats"];
+
+export function normalizePetPolicyFields(payload) {
+  for (const key of PET_POLICY_DB_KEYS) {
+    if (payload[key] !== undefined) {
+      payload[key] = normalizePetPolicy(payload[key]);
+    }
+  }
+  return payload;
+}
+
+export function payloadHasPetPolicyFields(payload) {
+  return PET_POLICY_DB_KEYS.some((key) => payload?.[key] !== undefined);
+}
+
+export function isLegacyBooleanPetPolicyError(err) {
+  const msg = String(err?.message || "").toLowerCase();
+  return msg.includes("invalid input syntax for type boolean");
+}
+
+export function petPolicyPayloadAsLegacyBoolean(payload) {
+  const out = { ...payload };
+  for (const key of PET_POLICY_DB_KEYS) {
+    if (out[key] !== undefined) {
+      out[key] = normalizePetPolicy(out[key]) !== "NO";
+    }
+  }
+  return out;
+}
+
+export async function runWithPetPolicyCompat(payload, write) {
+  let result = await write(payload);
+  if (
+    result?.error &&
+    isLegacyBooleanPetPolicyError(result.error) &&
+    payloadHasPetPolicyFields(payload)
+  ) {
+    result = await write(petPolicyPayloadAsLegacyBoolean(payload));
+  }
+  return result;
+}
+
+export function formatPetPolicyDbError(err) {
+  if (!err) return null;
+  const msg = String(err.message || "");
+  if (
+    isLegacyBooleanPetPolicyError(err) ||
+    /properties_pet_friendly_check|listings_pet_friendly_check|properties_dogs_check|listings_dogs_check|properties_cats_check|listings_cats_check/i.test(
+      msg
+    )
+  ) {
+    return "Pet policy fields need a database update — run supabase/pet-policy-tristate.sql in the Supabase SQL Editor, then try again.";
+  }
+  return null;
+}
+
 export const HEATING_TYPE_OPTIONS = [
   "Electric baseboard",
   "Mini-split heat pump",

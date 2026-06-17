@@ -4,6 +4,8 @@ import {
   extendedPropertyFields,
   heatingTypesFromRow,
   heatingTypesLabel,
+  normalizePetPolicy,
+  normalizePetPolicyFields,
 } from "./property-fields.js";
 
 export function mapListingRow(row, photos = []) {
@@ -40,9 +42,9 @@ export function mapListingRow(row, photos = []) {
     description: row.description || "",
     parking: row.parking || 0,
     parkingType: row.parking_type || "OFF_STREET",
-    petFriendly: !!row.pet_friendly,
-    dogs: !!row.dogs,
-    cats: !!row.cats,
+    petFriendly: normalizePetPolicy(row.pet_friendly),
+    dogs: normalizePetPolicy(row.dogs),
+    cats: normalizePetPolicy(row.cats),
     utilitiesIncluded: !!row.utilities_included,
     utilityTypes: row.utility_types || [],
     utilityCap: row.utility_cap || 0,
@@ -96,9 +98,9 @@ export function listingInsertPayload(body, userId) {
     features: body.features || [],
     description: body.description,
     parking: body.parking,
-    pet_friendly: body.petFriendly,
-    dogs: body.dogs,
-    cats: body.cats,
+    pet_friendly: normalizePetPolicy(body.petFriendly),
+    dogs: normalizePetPolicy(body.dogs),
+    cats: normalizePetPolicy(body.cats),
     utilities_included: body.utilitiesIncluded,
     utility_types: body.utilityTypes || [],
     utility_cap: body.utilityCap,
@@ -237,6 +239,7 @@ export function listingUpdatePayload(body) {
       })
     );
   }
+  normalizePetPolicyFields(payload);
   return payload;
 }
 
