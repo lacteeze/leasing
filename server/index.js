@@ -3,7 +3,7 @@ import express from "express";
 import path from "node:path";
 import multer from "multer";
 import { fileURLToPath } from "node:url";
-import { isSupabaseConfigured } from "./env.js";
+import { isSupabaseConfigured, isGoogleMapsConfigured, googleMapsApiKey } from "./env.js";
 import { createClient } from "../utils/supabase/server.js";
 import { refreshSession } from "../utils/supabase/middleware.js";
 import {
@@ -32,7 +32,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const staticDir = path.join(rootDir, "real-estate-platform-prototype", "project");
 const port = Number(process.env.PORT) || 4173;
-const baseUrl = process.env.AUTH_URL || `http://localhost:${port}`;
+const baseUrl =
+  process.env.AUTH_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${port}`);
 const appPage = "/Canary%20Leasing.dc.html";
 
 if (!isSupabaseConfigured()) {
@@ -64,6 +66,12 @@ function sessionUser(user) {
     },
   };
 }
+
+app.get("/api/config", (_req, res) => {
+  res.json({
+    googleMapsApiKey: googleMapsApiKey() || null,
+  });
+});
 
 app.get("/api/auth/session", async (req, res) => {
   if (!isSupabaseConfigured()) return res.json(null);
@@ -343,18 +351,28 @@ app.get("/", (_req, res) => {
   res.redirect(appPage);
 });
 
+app.use("/Open_Sans", express.static(path.join(rootDir, "Open_Sans")));
 app.use(express.static(staticDir));
 
-app.listen(port, () => {
-  console.log(`Canary preview: http://localhost:${port}${appPage}`);
-  console.log(
-    isSupabaseConfigured()
-      ? "Auth: Supabase (Google OAuth via Supabase dashboard)"
-      : "Auth: not configured (see .env.local)"
-  );
-  console.log(
-    isEmailConfigured()
-      ? "Email: Pingram confirmation emails enabled"
-      : "Email: not configured (see .env.example)"
-  );
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Canary preview: http://localhost:${port}${appPage}`);
+    console.log(
+      isSupabaseConfigured()
+        ? "Auth: Supabase (Google OAuth via Supabase dashboard)"
+        : "Auth: not configured (see .env.local)"
+    );
+    console.log(
+      isEmailConfigured()
+        ? "Email: Pingram confirmation emails enabled"
+        : "Email: not configured (see .env.example)"
+    );
+    console.log(
+      isGoogleMapsConfigured()
+        ? "Maps: Google Places autocomplete enabled"
+        : "Maps: not configured (set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)"
+    );
+  });
+}

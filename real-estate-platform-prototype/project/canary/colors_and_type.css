@@ -3,54 +3,54 @@
    Import this file at the top of every kit / page.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-
-/* Brand sans — Optima (uploaded by brand team).
-   Optima is a humanist sans with flared terminals; covers UI body + headings.
-   Italic only available at 400; 500 and 700 italic fall back to upright. */
 @font-face {
-  font-family: 'Optima';
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/Open_Sans/OpenSans-Italic-VariableFont_wdth,wght.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('fonts/OPTIMA.TTF') format('truetype');
+  src: url('/Open_Sans/static/OpenSans-Regular.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Optima';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('fonts/Optima_Italic.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Optima';
+  font-family: 'Open Sans';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('fonts/Optima_Medium.ttf') format('truetype');
+  src: url('/Open_Sans/static/OpenSans-Medium.ttf') format('truetype');
 }
-/* No 600 file shipped — alias to Medium so semibold still renders branded */
 @font-face {
-  font-family: 'Optima';
+  font-family: 'Open Sans';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('fonts/Optima_Medium.ttf') format('truetype');
+  src: url('/Open_Sans/static/OpenSans-SemiBold.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Optima';
+  font-family: 'Open Sans';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('fonts/OPTIMA_B.TTF') format('truetype');
+  src: url('/Open_Sans/static/OpenSans-Bold.ttf') format('truetype');
 }
-/* No 800 file shipped — alias to Bold */
 @font-face {
-  font-family: 'Optima';
+  font-family: 'Open Sans';
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url('fonts/OPTIMA_B.TTF') format('truetype');
+  src: url('/Open_Sans/static/OpenSans-ExtraBold.ttf') format('truetype');
 }
 
 :root {
@@ -102,8 +102,8 @@
   /* --------------------------------------------------------
      TYPOGRAPHY
      -------------------------------------------------------- */
-  --font-sans: 'Optima', 'Optima Nova', 'URW Classico', 'Palatino', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Type scale (px) */
@@ -221,11 +221,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .display {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: var(--text-64);
   line-height: var(--lh-tight);
   letter-spacing: var(--track-tight);
-  font-weight: 400;
+  font-weight: 600;
 }
 .display em { font-style: italic; }
 

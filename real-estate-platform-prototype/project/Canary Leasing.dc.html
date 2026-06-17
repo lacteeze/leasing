@@ -19,6 +19,7 @@
   @keyframes cnUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes cnFade{from{opacity:0}to{opacity:1}}
   @keyframes cnSlide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+  .pac-container{z-index:10000;font-family:var(--font-sans)}
 </style>
 </helmet>
 
@@ -35,8 +36,6 @@
         </a>
         <nav style="display:flex;gap:26px;align-items:center">
           <a onClick="{{ goHome }}" style="cursor:pointer;color:var(--fg-2);font-size:15px">Listings</a>
-          <span style="color:var(--fg-2);font-size:15px;cursor:default">For owners</span>
-          <span style="color:var(--fg-2);font-size:15px;cursor:default">About</span>
         </nav>
         <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
           <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Toggle dark mode" style="position:relative;width:56px;height:30px;border-radius:9999px;border:1px solid var(--border);background:var(--gray-100);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 7px">
@@ -44,7 +43,7 @@
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--fg-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
             <span style="{{ knobStyle }}"></span>
           </button>
-          <a onClick="{{ goManager }}" style="cursor:pointer;color:var(--fg-1);font-size:15px;font-weight:500">Manager sign in</a>
+          <a onClick="{{ goManager }}" style="cursor:pointer;color:var(--fg-1);font-size:15px;font-weight:500">Sign In</a>
           <button onClick="{{ goUploader }}" style="height:40px;padding:0 18px;border-radius:9999px;border:none;background:var(--ink);color:var(--fg-on-ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">List a property</button>
         </div>
       </div>
@@ -61,7 +60,7 @@
             <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:9999px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);backdrop-filter:blur(6px);font-size:13px;font-weight:500">
               <span style="width:7px;height:7px;border-radius:9999px;background:var(--canary)"></span>St. John’s · Mount Pearl · Paradise
             </span>
-            <h1 style="font-family:var(--font-serif);font-weight:400;font-size:60px;line-height:1.04;letter-spacing:-0.02em;margin-top:16px;max-width:680px;color:#fff">Homes worth settling into.</h1>
+            <h1 style="font-family:var(--font-sans);font-weight:600;font-size:54px;line-height:1.04;letter-spacing:-0.02em;margin-top:16px;max-width:682px;height:125px;color:#fff;display:flex;flex-wrap:wrap">Homes worth settling into.</h1>
             <p style="font-size:18px;line-height:1.5;color:rgba(255,255,255,0.92);max-width:520px;margin-top:12px">Long-term rentals and short stays across Newfoundland — leased, booked, and managed start to finish by Canary.</p>
           </div>
         </div>
@@ -83,13 +82,17 @@
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
           <sc-for list="{{ listingCards }}" as="l" hint-placeholder-count="6">
             <article onClick="{{ l.onOpen }}" style="cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-1);transition:box-shadow 200ms var(--ease-out-soft),transform 200ms var(--ease-out-soft)" style-hover="box-shadow:var(--shadow-2);transform:translateY(-3px)">
-              <div style="position:relative;height:208px;background-size:cover;background-position:center;background-image:{{ l.imgCss }}">
-                <span style="position:absolute;top:13px;left:13px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;background:rgba(255,255,255,0.94);font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-1);z-index:2">
+              <div onMouseLeave="{{ l.onPhotoLeave }}" style="position:relative;height:208px;background-size:cover;background-position:center;background-image:{{ l.imgCss }}">
+                <span style="{{ cardTagStyle }}">
                   <span style="width:6px;height:6px;border-radius:9999px;background:{{ l.dot }}"></span>{{ l.tag }}
                 </span>
                 <sc-if value="{{ l.hasMultiPhotos }}" hint-placeholder-val="{{ true }}">
-                <button onClick="{{ l.onPrevPhoto }}" title="Previous photo" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:9999px;border:none;background:rgba(255,255,255,0.92);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-1);font-size:17px;line-height:1;z-index:2;padding:0 0 1px 0">‹</button>
-                <button onClick="{{ l.onNextPhoto }}" title="Next photo" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:9999px;border:none;background:rgba(255,255,255,0.92);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-1);font-size:17px;line-height:1;z-index:2;padding:0 0 1px 0">›</button>
+                <div style="{{ l.leftSemiStyle }}"></div>
+                <div style="{{ l.rightSemiStyle }}"></div>
+                <span style="{{ l.leftArrowStyle }}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></span>
+                <span style="{{ l.rightArrowStyle }}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+                <div onMouseEnter="{{ l.onPhotoEnterLeft }}" onClick="{{ l.onPrevPhoto }}" title="Previous photo" style="position:absolute;left:0;top:0;bottom:0;width:50%;z-index:3;cursor:pointer"></div>
+                <div onMouseEnter="{{ l.onPhotoEnterRight }}" onClick="{{ l.onNextPhoto }}" title="Next photo" style="position:absolute;right:0;top:0;bottom:0;width:50%;z-index:3;cursor:pointer"></div>
                 </sc-if>
               </div>
               <div style="padding:18px 20px 20px">
@@ -174,8 +177,11 @@
           <h4 style="font-size:20px;margin-top:32px">Location</h4>
           <div style="display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--fg-2);font-size:15px">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--atlantic)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            {{ selProp.title }}, {{ selProp.city }}, {{ selProp.province }} {{ selProp.postal }}
+            {{ selProp.locationLine }}
           </div>
+          <sc-if value="{{ selProp.hasMap }}" hint-placeholder-val="{{ false }}">
+          <div id="listing-map" style="margin-top:16px;border-radius:16px;border:1px solid var(--border);overflow:hidden;height:280px;max-width:560px;background:var(--gray-50)"></div>
+          </sc-if>
         </div>
 
         <!-- STICKY WIDGET -->
@@ -351,7 +357,7 @@
           <img src="{{ logoSrc }}" alt="" style="width:32px;height:32px"/>
           <span style="font-weight:700;font-size:22px;letter-spacing:-0.01em;color:var(--ink)">Canary</span>
         </div>
-        <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px">Manager sign in</h1>
+        <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px">Sign In</h1>
         <p style="color:var(--fg-2);font-size:15px;line-height:1.55;margin:0 0 28px">Sign in with your work account to access listings, inquiries, and bookings.</p>
         <sc-if value="{{ authLoading }}" hint-placeholder-val="{{ false }}">
         <div style="text-align:center;color:var(--fg-3);font-size:14px;padding:20px 0">Checking session…</div>
@@ -572,7 +578,7 @@
               <input value="{{ up.title }}" onChange="{{ onUpTitle }}" placeholder="e.g. 142 Gower Street, #2" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/>
             </div>
             <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Street address</label><input value="{{ up.address }}" onChange="{{ onUpAddress }}" placeholder="Street address" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
+              <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Street address</label><input id="address-autocomplete" value="{{ up.address }}" onChange="{{ onUpAddress }}" placeholder="Start typing an address…" autocomplete="off" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
               <div><label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">City</label><input value="{{ up.city }}" onChange="{{ onUpCity }}" style="width:100%;height:46px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:15px;background:var(--paper)"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:16px">
@@ -604,7 +610,7 @@
                 <button onClick="{{ addFeat }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add</button>
               </div>
             </div>
-            <div>
+            <div onDragOver="{{ onPhotoDragOver }}" onDrop="{{ onPhotoDrop }}">
               <label style="display:block;font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Photos</label>
               <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px">
                 <sc-for list="{{ upImages }}" as="im" hint-placeholder-count="0">
@@ -612,11 +618,12 @@
                 </sc-for>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                <label style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+                <label style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;opacity:{{ photoUploadOpacity }}">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                   {{ photoUploadLabel }}
-                  <input type="file" accept="image/*" multiple onChange="{{ onPhotoPick }}" style="display:none"/>
+                  <input type="file" accept="image/*" multiple="multiple" onChange="{{ onPhotoPick }}" style="display:none"/>
                 </label>
+                <span style="font-size:13px;color:var(--fg-3)">Select or drop multiple images</span>
                 <input value="{{ imgDraft }}" onChange="{{ onImgDraft }}" onKeyDown="{{ onImgKey }}" placeholder="Or paste an image URL" style="flex:1;min-width:180px;height:42px;border:1px solid var(--border-strong);border-radius:12px;padding:0 14px;font-family:inherit;font-size:14px;background:var(--paper)"/>
                 <button onClick="{{ addImg }}" style="height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Add URL</button>
               </div>
@@ -1000,59 +1007,6 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    const IMG = (id) => `https://images.unsplash.com/${id}?w=1400&q=80&auto=format&fit=crop`;
-    this.IMG = IMG;
-    const ph = {
-      rowhouse: '1502672260266-1c1ef2d93688',
-      house2: '1493809842364-78817add7ffb',
-      apartment: '1494526585095-c41746248156',
-      living: '1502005229762-cf1b2da7c5d6',
-      bedroom: '1505691938895-1758d7feb511',
-      kitchen: '1484154218962-a197022b5858',
-      house3: '1568605114967-8130f3a36994',
-      whitehouse: '1512917774080-9991f1c4c750',
-      coastal: '1449844908441-8829872d2607',
-    };
-    const properties = [
-      { id:'p1', slug:'142-gower-2', title:'142 Gower Street, #2', type:'MULTI', area:'Downtown', city:'St. John\u2019s', province:'NL', postal:'A1C 1J3', rate:1820, cleaning:0, beds:2, baths:1, sqft:760, status:'ACTIVE', features:['Black fixtures','Gas heat','In-unit laundry','Original hardwood'], images:[IMG(ph.rowhouse),IMG(ph.living),IMG(ph.kitchen)], description:'A bright second-floor flat on one of downtown\u2019s best-kept streets. Black fixtures, gas heat, and original hardwood, a few minutes from Water Street.' },
-      { id:'p2', slug:'84-pleasant', title:'84 Pleasant Street', type:'SINGLE', area:'Georgestown', city:'St. John\u2019s', province:'NL', postal:'A1C 4M7', rate:2140, cleaning:0, beds:3, baths:2, sqft:1080, status:'ACTIVE', features:['Fenced yard','Finished basement','Parking for 2','Pet friendly'], images:[IMG(ph.house2),IMG(ph.bedroom),IMG(ph.living)], description:'A three-bedroom rowhouse in Georgestown with a fenced yard and a finished basement \u2014 room for a family or a couple who both work from home.' },
-      { id:'p3', slug:'17-topsail-b', title:'17 Topsail Road, #B', type:'MULTI', area:'Mount Pearl', city:'Mount Pearl', province:'NL', postal:'A1N 1W4', rate:1560, cleaning:0, beds:1, baths:1, sqft:540, status:'ACTIVE', features:['Utilities included','Quartz counters','Bike storage'], images:[IMG(ph.apartment),IMG(ph.kitchen),IMG(ph.living)], description:'A tidy one-bedroom in Mount Pearl with utilities included and quartz counters. Low-maintenance living, close to the trail.' },
-      { id:'p4', slug:'31-quidi-vidi', title:'31 Quidi Vidi Road', type:'SHORT_TERM', area:'Quidi Vidi', city:'St. John\u2019s', province:'NL', postal:'A1A 1B2', rate:189, cleaning:95, beds:1, baths:1, sqft:620, status:'ACTIVE', features:['Harbour glimpses','Wood stove','Fast Wi-Fi','Self check-in'], images:[IMG(ph.coastal),IMG(ph.living),IMG(ph.bedroom)], description:'A snug one-bedroom above the harbour in Quidi Vidi. Wood stove, fast Wi-Fi, and self check-in \u2014 built for a long weekend or a quiet week away.' },
-      { id:'p5', slug:'9-battery', title:'9 Battery Road', type:'SHORT_TERM', area:'The Battery', city:'St. John\u2019s', province:'NL', postal:'A1A 1A9', rate:245, cleaning:120, beds:2, baths:1, sqft:740, status:'ACTIVE', features:['Narrows view','Rooftop deck','Heated floors','Self check-in'], images:[IMG(ph.whitehouse),IMG(ph.living),IMG(ph.kitchen)], description:'Two bedrooms on the Battery with a clear view down the Narrows. A rooftop deck and heated floors make it a genuine year-round stay.' },
-      { id:'p6', slug:'301-empire', title:'301 Empire Avenue', type:'SINGLE', area:'Rabbittown', city:'St. John\u2019s', province:'NL', postal:'A1C 3J5', rate:1480, cleaning:0, beds:2, baths:1, sqft:690, status:'ACTIVE', features:['South-facing','New windows','Off-street parking'], images:[IMG(ph.house3),IMG(ph.bedroom),IMG(ph.kitchen)], description:'A south-facing two-bedroom in Rabbittown with new windows and off-street parking. Quiet street, quick walk to everything.' },
-    ];
-    const EX = {
-      p1:{ parking:1, petFriendly:true, dogs:false, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1921, storeys:2, heatingType:'Oil-fired hot water', waterHeater:'Electric tank', firewall:true, powerMeter:'NLH-4471902', oilCompany:'Harvey\u2019s Oil', internalNotes:'Boiler serviced Mar 2026. Tenant in #3 prefers email contact.' },
-      p2:{ parking:2, petFriendly:true, dogs:true, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1955, storeys:2, heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false, powerMeter:'NLH-5582013', oilCompany:'\u2014', internalNotes:'Separate basement entrance. Owner approves dogs under 40lb.' },
-      p3:{ parking:1, petFriendly:false, dogs:false, cats:false, utilitiesIncluded:true, utilityTypes:['Electric','Internet'], utilityCap:200, yearBuilt:1998, storeys:1, heatingType:'Mini-split heat pump', waterHeater:'Electric tank', firewall:true, powerMeter:'NLH-6610477', oilCompany:'\u2014', internalNotes:'Utilities capped at $200/mo; overage billed to tenant.' },
-      p4:{ parking:2, petFriendly:true, dogs:true, cats:true, utilitiesIncluded:true, utilityTypes:['Electric','Oil','Internet'], utilityCap:0, yearBuilt:1948, storeys:1, heatingType:'Oil stove + mini-split', waterHeater:'Electric tank', firewall:false, powerMeter:'NLH-7039118', oilCompany:'Quidi Vidi Fuels', internalNotes:'Short-term: utilities in nightly rate. Firewood in shed.' },
-      p5:{ parking:0, petFriendly:false, dogs:false, cats:false, utilitiesIncluded:true, utilityTypes:['Electric','Mini-split','Air conditioning','Internet'], utilityCap:0, yearBuilt:1962, storeys:3, heatingType:'Mini-split heat pump', waterHeater:'Tankless electric', firewall:true, powerMeter:'NLH-7781560', oilCompany:'\u2014', internalNotes:'Steep stairs; street-permit parking only. Rooftop key in lockbox.' },
-      p6:{ parking:1, petFriendly:true, dogs:false, cats:true, utilitiesIncluded:false, utilityTypes:[], utilityCap:0, yearBuilt:1971, storeys:2, heatingType:'Oil-fired forced air', waterHeater:'Oil-fired', firewall:false, powerMeter:'NLH-8123094', oilCompany:'Harvey\u2019s Oil', internalNotes:'Cat ok with pet deposit. Furnace filter changed quarterly.' },
-    };
-    properties.forEach(pp => Object.assign(pp, EX[pp.id]));
-    const inquiries = [
-      { id:'q1', first:'Saoirse', last:'Mullins', email:'saoirse.mullins@gmail.com', phone:'(709) 555-0148', propId:'p1', type:'LONG_TERM_RENTAL', desired:'Jul 1, 2026', status:'NEW', notes:[] },
-      { id:'q2', first:'Liam', last:'Foley', email:'liam.foley@gmail.com', phone:'(709) 555-0177', propId:'p4', type:'SHORT_TERM_BOOKING', desired:'Jun 20\u201324', status:'NEW', notes:[] },
-      { id:'q3', first:'Declan', last:'Hynes', email:'d.hynes@gmail.com', phone:'(709) 555-0192', propId:'p3', type:'LONG_TERM_RENTAL', desired:'Aug 1, 2026', status:'NEW', notes:[] },
-      { id:'q4', first:'Maeve', last:'Doyle', email:'maeve.doyle@gmail.com', phone:'(709) 555-0123', propId:'p2', type:'LONG_TERM_RENTAL', desired:'Aug 15, 2026', status:'CONTACTED', notes:[{ text:'Called Jun 14 \u2014 wants a Saturday viewing.', time:'2d ago' }] },
-      { id:'q5', first:'Connor', last:'Walsh', email:'c.walsh@gmail.com', phone:'(709) 555-0150', propId:'p5', type:'SHORT_TERM_BOOKING', desired:'Jul 2\u20135', status:'CONTACTED', notes:[{ text:'Asked about parking \u2014 sent street-permit info.', time:'1d ago' }] },
-      { id:'q6', first:'Niamh', last:'Power', email:'niamh.power@gmail.com', phone:'(709) 555-0168', propId:'p3', type:'LONG_TERM_RENTAL', desired:'Jul 15, 2026', status:'APPLICATION_SENT', notes:[{ text:'Application link sent Jun 12.', time:'3d ago' }] },
-      { id:'q7', first:'Brigid', last:'Carey', email:'b.carey@gmail.com', phone:'(709) 555-0139', propId:'p1', type:'LONG_TERM_RENTAL', desired:'Sep 1, 2026', status:'APPLICATION_SENT', notes:[{ text:'Reviewing application \u2014 references requested.', time:'1d ago' }] },
-      { id:'q8', first:'Aoife', last:'Kelly', email:'aoife.kelly@gmail.com', phone:'(709) 555-0111', propId:'p6', type:'LONG_TERM_RENTAL', desired:'Jul 15, 2026', status:'SIGNED', notes:[{ text:'Lease signed. Move-in Jul 15.', time:'5d ago' }] },
-    ];
-    const bookings = [
-      { id:'b1', guest:'Liam Foley', propId:'p4', dates:'Jun 20 \u2013 24', day:'20', mon:'Jun', nights:4, amount:851, status:'PENDING' },
-      { id:'b3', guest:'A. Tobin', propId:'p5', dates:'Jun 14 \u2013 17', day:'14', mon:'Jun', nights:3, amount:855, status:'CONFIRMED' },
-      { id:'b5', guest:'Maeve Doyle', propId:'p2', dates:'Jun 17 \u00b7 2:00 PM', day:'17', mon:'Jun', nights:0, amount:0, status:'VIEWING' },
-      { id:'b4', guest:'Connor Walsh', propId:'p5', dates:'Jun 21 \u2013 25', day:'21', mon:'Jun', nights:4, amount:1100, status:'CONFIRMED' },
-      { id:'b2', guest:'R. Squires', propId:'p4', dates:'Jun 27 \u2013 30', day:'27', mon:'Jun', nights:3, amount:662, status:'CONFIRMED' },
-    ];
-    const viewings = [
-      { id:'v1', name:'Maeve Doyle', propId:'p2', date:'Tue, Jun 17', time:'2:00 PM', status:'CONFIRMED', phone:'(709) 555-0123' },
-      { id:'v2', name:'Saoirse Mullins', propId:'p1', date:'Wed, Jun 18', time:'5:30 PM', status:'SCHEDULED', phone:'(709) 555-0148' },
-      { id:'v3', name:'Declan Hynes', propId:'p3', date:'Thu, Jun 19', time:'12:00 PM', status:'SCHEDULED', phone:'(709) 555-0192' },
-      { id:'v4', name:'Brigid Carey', propId:'p1', date:'Sat, Jun 21', time:'10:00 AM', status:'REQUESTED', phone:'(709) 555-0139' },
-    ];
     let theme = 'light';
     try { theme = localStorage.getItem('canary-theme') || 'light'; } catch (e) {}
     this.state = {
@@ -1067,20 +1021,20 @@ class Component extends DCLogic {
       viewSubmitting: false,
       inqFilterProperty: 'all', inqFilterLeaseType: 'all', inqFilterMinBeds: '',
       mgrView: 'overview', openInq: null, openProp: null, sideCollapsed: false,
-      properties, inquiries, bookings, viewings,
+      properties: [], inquiries: [], bookings: [], viewings: [],
       noteDrafts: {}, draggingId: null, dragOverCol: null,
       copiedId: null, toast: null,
       up: this.blankUploader(), featDraft: '', imgDraft: '',
       managerUser: null, authLoading: true, authChecked: false, authError: null,
       oauthGoogle: false, oauthMicrosoft: false, authEmail: false,
       signInEmail: '', signInPassword: '', signInSubmitting: false,
-      cardPhotoIdx: {}, photoUploading: false, publishSubmitting: false,
+      cardPhotoIdx: {}, cardPhotoHover: {}, photoUploading: false, photoUploadProgress: null, publishSubmitting: false,
     };
     this._toastT = null; this._copyT = null;
   }
 
   blankUploader() {
-    return { title:'', type:'SINGLE', address:'', city:'St. John\u2019s', province:'NL', postal:'', rate:'', cleaning:'', beds:'', baths:'', sqft:'', description:'', features:[], images:[],
+    return { title:'', type:'SINGLE', address:'', area:'', city:'St. John\u2019s', province:'NL', postal:'', latitude:null, longitude:null, rate:'', cleaning:'', beds:'', baths:'', sqft:'', description:'', features:[], images:[],
       parking:'', petFriendly:false, dogs:false, cats:false, utilitiesIncluded:false, utilityTypes:[], utilityCap:0,
       yearBuilt:'', storeys:'', heatingType:'Electric baseboard', waterHeater:'Electric tank', firewall:false,
       powerMeter:'', oilCompany:'', internalNotes:'' };
@@ -1089,8 +1043,122 @@ class Component extends DCLogic {
     this.applyTheme(this.state.theme === 'dark');
     this.bootstrapAuth();
     this.loadListings();
+    this.loadMapsConfig();
+  }
+  componentDidUpdate(_prevProps, prevState) {
+    if (this.state.mgrView === 'uploader' && prevState.mgrView !== 'uploader') {
+      setTimeout(() => this.initAddressAutocomplete(), 0);
+    }
+    if (
+      this.state.surface === 'public' &&
+      this.state.pubView === 'detail' &&
+      (prevState.pubView !== 'detail' || this.state.propId !== prevState.propId)
+    ) {
+      setTimeout(() => this.initListingMap(this.getProp(this.state.propId)), 0);
+    }
   }
   componentWillUnmount() { clearTimeout(this._toastT); clearTimeout(this._copyT); }
+
+  loadMapsConfig = async () => {
+    try {
+      const res = await fetch('/api/config');
+      if (!res.ok) return;
+      const cfg = await res.json();
+      this._mapsApiKey = cfg.googleMapsApiKey || null;
+      if (this._mapsApiKey && this.state.mgrView === 'uploader') {
+        setTimeout(() => this.initAddressAutocomplete(), 0);
+      }
+    } catch (e) {}
+  };
+
+  loadGoogleMaps = () => {
+    if (!this._mapsApiKey) return Promise.resolve(null);
+    if (window.google?.maps?.places) return Promise.resolve(window.google.maps);
+    if (this._mapsScriptPromise) return this._mapsScriptPromise;
+    this._mapsScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(this._mapsApiKey) + '&libraries=places';
+      script.async = true;
+      script.onload = () => resolve(window.google?.maps || null);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    return this._mapsScriptPromise;
+  };
+
+  parseAddressComponents(components) {
+    const get = (type, short) => {
+      const c = (components || []).find(x => x.types.includes(type));
+      return c ? (short ? c.short_name : c.long_name) : '';
+    };
+    const streetNum = get('street_number');
+    const route = get('route');
+    const address = [streetNum, route].filter(Boolean).join(' ');
+    const city = get('locality') || get('postal_town') || get('sublocality') || '';
+    const province = get('administrative_area_level_1', true) || 'NL';
+    const postal = get('postal_code');
+    const area = get('neighborhood') || get('sublocality') || city;
+    return { address, city, province, postal, area };
+  }
+
+  initAddressAutocomplete = async () => {
+    await this.loadGoogleMaps();
+    if (!window.google?.maps?.places) return;
+    const input = document.getElementById('address-autocomplete');
+    if (!input || input.dataset.autocompleteInit) return;
+    input.dataset.autocompleteInit = '1';
+    if (this._addressAutocomplete) {
+      window.google.maps.event.clearInstanceListeners(this._addressAutocomplete);
+    }
+    this._addressAutocomplete = new google.maps.places.Autocomplete(input, {
+      componentRestrictions: { country: 'ca' },
+      fields: ['address_components', 'geometry', 'formatted_address'],
+      types: ['address'],
+    });
+    this._addressAutocomplete.addListener('place_changed', () => {
+      const place = this._addressAutocomplete.getPlace();
+      if (!place?.geometry?.location) return;
+      const parsed = this.parseAddressComponents(place.address_components);
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+      this.setState(s => ({
+        up: {
+          ...s.up,
+          address: parsed.address || (place.formatted_address || '').split(',')[0] || s.up.address,
+          city: parsed.city || s.up.city,
+          province: parsed.province || s.up.province,
+          postal: parsed.postal || s.up.postal,
+          area: parsed.area || s.up.area,
+          latitude: lat,
+          longitude: lng,
+        },
+      }));
+    });
+  };
+
+  initListingMap = async (prop) => {
+    if (!prop?.latitude || !prop?.longitude) return;
+    await this.loadGoogleMaps();
+    const el = document.getElementById('listing-map');
+    if (!el || !window.google?.maps) return;
+    const center = { lat: Number(prop.latitude), lng: Number(prop.longitude) };
+    if (this._listingMap) {
+      this._listingMap.setCenter(center);
+      if (this._listingMapMarker) this._listingMapMarker.setPosition(center);
+      else this._listingMapMarker = new google.maps.Marker({ map: this._listingMap, position: center });
+      return;
+    }
+    this._listingMap = new google.maps.Map(el, {
+      center,
+      zoom: 15,
+      disableDefaultUI: true,
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+    this._listingMapMarker = new google.maps.Marker({ map: this._listingMap, position: center });
+  };
 
   authCallbackUrl() {
     return encodeURIComponent(window.location.pathname + '?manager=1');
@@ -1190,6 +1258,17 @@ class Component extends DCLogic {
     const cur = this.cardPhotoIndex(id);
     const next = (cur + 1) % p.images.length;
     this.setState(s => ({ cardPhotoIdx: { ...s.cardPhotoIdx, [id]: next } }));
+  };
+  enterCardPhotoHover = (id, side) => {
+    this.setState(s => ({ cardPhotoHover: { ...s.cardPhotoHover, [id]: side } }));
+  };
+  leaveCardPhotoHover = (id) => {
+    this.setState(s => {
+      if (!s.cardPhotoHover[id]) return {};
+      const next = { ...s.cardPhotoHover };
+      delete next[id];
+      return { cardPhotoHover: next };
+    });
   };
 
   loadInquiries = async () => {
@@ -1435,28 +1514,62 @@ class Component extends DCLogic {
   };
   removeImg = (i) => this.setState(s => ({ up: { ...s.up, images: s.up.images.filter((_, j) => j !== i) } }));
   onImgKey = e => { if (e.key === 'Enter') { e.preventDefault(); this.addImg(); } };
-  onPhotoPick = async (e) => {
-    const files = Array.from(e.target.files || []);
+  onPhotoDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
+  onPhotoDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.uploadPhotoFiles(e.dataTransfer?.files);
+  };
+  onPhotoPick = (e) => {
+    this.uploadPhotoFiles(e.target.files);
+    e.target.value = '';
+  };
+  uploadPhotoFiles = async (fileList) => {
+    const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
     if (!files.length) return;
-    this.setState({ photoUploading: true });
+    this.setState({ photoUploading: true, photoUploadProgress: { done: 0, total: files.length } });
     const added = [];
-    for (const file of files) {
+    let failed = 0;
+    const uploadOne = async (file) => {
       try {
         const form = new FormData();
         form.append('photo', file);
         const res = await fetch('/api/listings/photos', { method: 'POST', credentials: 'include', body: form });
         const data = await res.json().catch(() => ({}));
-        if (res.ok && data.url) added.push({ url: data.url, path: data.path || null });
-      } catch (err) {}
-    }
+        if (res.ok && data.url) {
+          const entry = { url: data.url, path: data.path || null };
+          added.push(entry);
+          this.setState(s => ({
+            up: { ...s.up, images: [...s.up.images, entry] },
+            photoUploadProgress: { done: (s.photoUploadProgress?.done || 0) + 1, total: files.length },
+          }));
+        } else {
+          failed++;
+          this.setState(s => ({
+            photoUploadProgress: { done: (s.photoUploadProgress?.done || 0) + 1, total: files.length },
+          }));
+        }
+      } catch (err) {
+        failed++;
+        this.setState(s => ({
+          photoUploadProgress: { done: (s.photoUploadProgress?.done || 0) + 1, total: files.length },
+        }));
+      }
+    };
+    const queue = [...files];
+    const workerCount = Math.min(3, queue.length);
+    await Promise.all(Array.from({ length: workerCount }, async () => {
+      while (queue.length) await uploadOne(queue.shift());
+    }));
+    this.setState({ photoUploading: false, photoUploadProgress: null });
     if (added.length) {
-      this.setState(s => ({ up: { ...s.up, images: [...s.up.images, ...added] }, photoUploading: false }));
-      this.showToast(added.length === 1 ? 'Photo uploaded' : added.length + ' photos uploaded');
+      const msg = added.length === 1
+        ? 'Photo uploaded'
+        : added.length + ' photos uploaded' + (failed ? ` (${failed} failed)` : '');
+      this.showToast(msg);
     } else {
-      this.setState({ photoUploading: false });
       this.showToast('Photo upload failed — sign in and run supabase/schema.sql');
     }
-    e.target.value = '';
   };
   publish = async () => {
     const u = this.state.up;
@@ -1464,16 +1577,15 @@ class Component extends DCLogic {
     if (!u.rate) { this.showToast('Add a rate'); return; }
     this.setState({ publishSubmitting: true });
     const slug = (u.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'listing') + '-' + Date.now().toString(36);
-    const imgs = u.images.length ? u.images : [
-      { url: this.IMG('1493809842364-78817add7ffb') },
-      { url: this.IMG('1502005229762-cf1b2da7c5d6') },
-      { url: this.IMG('1484154218962-a197022b5858') },
-    ];
+    const imgs = u.images;
     const payload = {
-      slug, title: u.title, type: u.type, area: u.city || 'St. John\u2019s', city: u.city || 'St. John\u2019s', province: u.province || 'NL', postal: u.postal || '',
+      slug, title: u.title, type: u.type,
+      address: u.address || '', area: u.area || u.city || 'St. John\u2019s',
+      city: u.city || 'St. John\u2019s', province: u.province || 'NL', postal: u.postal || '',
+      latitude: u.latitude ?? null, longitude: u.longitude ?? null,
       rate: Number(u.rate) || 0, cleaning: u.type === 'SHORT_TERM' ? (Number(u.cleaning) || 0) : 0,
       beds: Number(u.beds) || 0, baths: Number(u.baths) || 0, sqft: Number(u.sqft) || 0,
-      status: 'ACTIVE', features: u.features.slice(), description: u.description || 'A new Canary listing.',
+      status: 'ACTIVE', features: u.features.slice(), description: u.description || '',
       parking: Number(u.parking) || 0, petFriendly: !!u.petFriendly, dogs: !!u.dogs, cats: !!u.cats,
       utilitiesIncluded: !!u.utilitiesIncluded, utilityTypes: u.utilityTypes.slice(), utilityCap: Number(u.utilityCap) || 0,
       yearBuilt: Number(u.yearBuilt) || 0, storeys: Number(u.storeys) || 0, heatingType: u.heatingType, waterHeater: u.waterHeater, firewall: !!u.firewall,
@@ -1498,7 +1610,9 @@ class Component extends DCLogic {
     } catch (e) {}
     const id = 'p' + Date.now();
     const np = {
-      id, slug, title: payload.title, type: payload.type, area: payload.area, city: payload.city, province: payload.province, postal: payload.postal,
+      id, slug, title: payload.title, type: payload.type,
+      address: payload.address, area: payload.area, city: payload.city, province: payload.province, postal: payload.postal,
+      latitude: payload.latitude, longitude: payload.longitude,
       rate: payload.rate, cleaning: payload.cleaning, beds: payload.beds, baths: payload.baths, sqft: payload.sqft,
       status: 'ACTIVE', features: payload.features, images: imgs.map(im => im.url),
       parking: payload.parking, petFriendly: payload.petFriendly, dogs: payload.dogs, cats: payload.cats,
@@ -1559,6 +1673,7 @@ class Component extends DCLogic {
     const isDark = s.theme === 'dark';
     const rootStyle = { minHeight:'100vh', background:'var(--paper)', color:'var(--fg-1)', fontFamily:'var(--font-sans)', transition:'background 320ms var(--ease-out-soft), color 320ms var(--ease-out-soft)', ...this.themeVars(isDark) };
     const knobStyle = { position:'absolute', top:'2px', left:isDark?'30px':'2px', width:'24px', height:'24px', borderRadius:'9999px', background:'var(--surface)', border:'1px solid var(--border)', boxShadow:'0 1px 3px rgba(0,0,0,0.22)', transition:'left 220ms var(--ease-out-soft)' };
+    const cardTagStyle = 'position:absolute;top:13px;left:13px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;border-radius:9999px;font-size:12.5px;font-weight:600;z-index:4;' + (isDark ? 'background:var(--fg-on-ink);color:var(--ink);box-shadow:var(--shadow-1);' : 'background:rgba(255,255,255,0.94);color:var(--ink);box-shadow:var(--shadow-1);');
 
     // ---- public listings ----
     const active = s.properties.filter(p => p.status === 'ACTIVE');
@@ -1567,6 +1682,18 @@ class Component extends DCLogic {
       const isShort = p.type==='SHORT_TERM';
       const imgIdx = s.cardPhotoIdx[p.id] || 0;
       const imgUrl = p.images[imgIdx] || p.images[0] || '';
+      const hover = s.cardPhotoHover[p.id];
+      const showLeft = hover === 'left';
+      const showRight = hover === 'right';
+      const barTint = isDark ? 'rgba(14,15,12,0.38)' : 'rgba(255,255,255,0.38)';
+      const arrowColor = isDark ? '#0E0F0C' : '#FFFFFF';
+      const arrowShadow = isDark ? '' : 'text-shadow:0 1px 4px rgba(0,0,0,0.45);';
+      const fade = 'transition:opacity 150ms var(--ease-out-soft);pointer-events:none;';
+      const semiR = 36;
+      const semiH = semiR * 2;
+      const arrowCenter = Math.round(semiR / 2);
+      const arrowBox = 18;
+      const arrowOffset = Math.round(arrowBox / 2);
       return {
         id:p.id, addr:p.title, area:p.area,
         tag:isShort?'Short stay':'Long-term', dot:isShort?'var(--canary)':'var(--atlantic)',
@@ -1574,6 +1701,13 @@ class Component extends DCLogic {
         specs:`${p.beds} bed \u00b7 ${p.baths} bath \u00b7 ${p.sqft} sq ft`,
         imgCss:`url('${imgUrl}')`, feat0:p.features[0]||'', feat1:p.features[1]||'',
         hasMultiPhotos: p.images.length > 1,
+        leftSemiStyle:`position:absolute;left:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:0 ${semiR}px ${semiR}px 0;background:${barTint};opacity:${showLeft?1:0};${fade}z-index:1;`,
+        rightSemiStyle:`position:absolute;right:0;top:50%;transform:translateY(-50%);width:${semiR}px;height:${semiH}px;border-radius:${semiR}px 0 0 ${semiR}px;background:${barTint};opacity:${showRight?1:0};${fade}z-index:1;`,
+        leftArrowStyle:`position:absolute;left:${arrowCenter}px;top:50%;width:${arrowBox}px;height:${arrowBox}px;margin-left:-${arrowOffset}px;margin-top:-${arrowOffset}px;color:${arrowColor};${arrowShadow}opacity:${showLeft?1:0};${fade}z-index:3;display:flex;align-items:center;justify-content:center;`,
+        rightArrowStyle:`position:absolute;right:${arrowCenter}px;top:50%;width:${arrowBox}px;height:${arrowBox}px;margin-right:-${arrowOffset}px;margin-top:-${arrowOffset}px;color:${arrowColor};${arrowShadow}opacity:${showRight?1:0};${fade}z-index:3;display:flex;align-items:center;justify-content:center;`,
+        onPhotoEnterLeft:()=>this.enterCardPhotoHover(p.id,'left'),
+        onPhotoEnterRight:()=>this.enterCardPhotoHover(p.id,'right'),
+        onPhotoLeave:()=>this.leaveCardPhotoHover(p.id),
         onPrevPhoto: (e) => this.prevCardPhoto(p.id, e),
         onNextPhoto: (e) => this.nextCardPhoto(p.id, e),
         onOpen:()=>this.openProperty(p.id),
@@ -1604,6 +1738,8 @@ class Component extends DCLogic {
       selProp.hasUtilTypes = p.utilityTypes.length > 0;
       selProp.utilNotIncluded = !p.utilitiesIncluded;
       selProp.utilCapLabel = this.capText(p.utilityCap);
+      selProp.locationLine = [p.address || p.title, p.city, p.province, p.postal].filter(Boolean).join(', ');
+      selProp.hasMap = !!(p.latitude && p.longitude);
       applyRef = this.refCode(p.id);
     }
     const applySteps = [
@@ -1668,7 +1804,10 @@ class Component extends DCLogic {
     const rateLabel = isShortType ? 'Nightly rate' : 'Monthly rent';
     const upFeatures = s.up.features.map((f,i)=>({ label:f, onRemove:()=>this.removeFeat(i) }));
     const upImages = s.up.images.map((im, i) => ({ css: `url('${im.url || im}')`, onRemove: () => this.removeImg(i) }));
-    const photoUploadLabel = s.photoUploading ? 'Uploading…' : 'Upload photos';
+    const photoUploadLabel = s.photoUploading && s.photoUploadProgress
+      ? `Uploading ${s.photoUploadProgress.done}/${s.photoUploadProgress.total}…`
+      : (s.photoUploading ? 'Uploading…' : 'Upload photos');
+    const photoUploadOpacity = s.photoUploading ? 0.65 : 1;
 
     // bookings
     const segStyleFor = (seg) => {
@@ -1771,7 +1910,7 @@ class Component extends DCLogic {
       mgrName, mgrEmail, mgrAvatarUrl, mgrAvatarInitials: !mgrAvatarUrl, mgrInitials,
       goOverview:this.goOverview, goProperties:this.goProperties, goFunnel:this.goFunnel, goBookings:this.goBookings,
       goApply:this.goApply, goBackDetail:this.goBackDetail,
-      activeCount: active.length, listingCards, pubFilters,
+      activeCount: active.length, listingCards, pubFilters, cardTagStyle,
       selProp, shortTerm, longTerm,
       bookOpen: shortTerm && !s.bookSubmitted, bookSubmitted: s.bookSubmitted,
       viewOpen: longTerm && !s.viewSubmitted, viewSubmitted: s.viewSubmitted,
@@ -1807,7 +1946,7 @@ class Component extends DCLogic {
       onUpRate:this.onUpRate, onUpCleaning:this.onUpCleaning, onUpBeds:this.onUpBeds, onUpBaths:this.onUpBaths, onUpSqft:this.onUpSqft, onUpDesc:this.onUpDesc,
       featDraft:s.featDraft, onFeatDraft:this.onFeatDraft, onFeatKey:this.onFeatKey, addFeat:this.addFeat, upFeatures,
       imgDraft:s.imgDraft, onImgDraft:this.onImgDraft, onImgKey:this.onImgKey, addImg:this.addImg, upImages,
-      photoUploadLabel, onPhotoPick:this.onPhotoPick,
+      photoUploadLabel, photoUploadOpacity, onPhotoPick:this.onPhotoPick, onPhotoDragOver:this.onPhotoDragOver, onPhotoDrop:this.onPhotoDrop,
       publish:this.publish,
       ynPetFriendly, ynDogs, ynCats, ynUtilities, ynFirewall, utilTypeOpts, capOpts, showUtilDetail,
       onUpParking, onUpYearBuilt, onUpStoreys, onUpHeating, onUpWater, onUpPowerMeter, onUpOilCompany, onUpInternalNotes,
