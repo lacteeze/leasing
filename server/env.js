@@ -14,3 +14,11 @@ export function isSupabaseConfigured() {
   const { url, key } = supabaseEnv();
   return !!(url && key);
 }
+
+export function googleMapsApiKey() {
+  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+}
+
+export function isGoogleMapsConfigured() {
+  return !!googleMapsApiKey();
+}

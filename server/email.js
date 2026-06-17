@@ -44,7 +44,7 @@ function buildViewingConfirmationContent(inquiry) {
 
   const subject = "We received your viewing request — Canary";
   const html = `
-    <div style="font-family:Optima,'Segoe UI',sans-serif;background:#FAF7F1;color:#0E0F0C;padding:32px 20px">
+    <div style="font-family:'Open Sans','Segoe UI',sans-serif;background:#FAF7F1;color:#0E0F0C;padding:32px 20px">
       <div style="max-width:560px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E5DD;border-radius:16px;padding:32px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
           <div style="width:28px;height:28px;border-radius:9999px;background:#0E0F0C"></div>
