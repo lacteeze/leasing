@@ -661,23 +661,12 @@ html {
 /* ---- Fixed UI ---- */
 
 .surface-switcher {
-  position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 80;
-  display: flex;
-  gap: 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 5px;
-  border-radius: 9999px;
-  box-shadow: var(--shadow-3);
+  display: none !important;
 }
 
 .app-toast {
   position: fixed;
-  bottom: calc(78px + env(safe-area-inset-bottom));
+  bottom: max(20px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;
@@ -918,13 +907,8 @@ html {
     padding-right: 14px;
   }
 
-  .surface-switcher {
-    bottom: max(12px, env(safe-area-inset-bottom));
-    max-width: calc(100vw - 24px);
-  }
-
   .app-toast {
-    bottom: calc(64px + env(safe-area-inset-bottom));
+    bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
 
