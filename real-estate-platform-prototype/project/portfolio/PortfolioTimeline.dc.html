@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:3px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+<div style="{{ shellStyle }}">
+  <div style="{{ innerStyle }}">
+
+    <!-- STAT STRIP -->
+    <header style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap;flex:none;">
+      <sc-if value="{{ showStandaloneNav }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:10px;margin-right:4px;">
+        <a href="{{ managerUrl }}" style="padding:7px 11px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;text-decoration:none;font-family:inherit;">← Manager</a>
+        <div style="width:26px;height:26px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;">P</div>
+        <div style="font-weight:700;font-size:15px;letter-spacing:-0.01em;">Timeline</div>
+      </div>
+      </sc-if>
+
+      <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;">
+        <button onClick="{{ goLeases }}" style="{{ tabLeasesStyle }}">Leases</button>
+        <button onClick="{{ goTasks }}" style="{{ tabTasksStyle }}">Tasks</button>
+        <button onClick="{{ goProjects }}" style="{{ tabProjectsStyle }}">Projects</button>
+      </div>
+
+      
+
+      <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="{{ searchPlaceholder }}" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; width: 363px; font-family: inherit; outline: none; height: 35px"><div style="flex:1;"></div>
+
+      <button onClick="{{ onAdd }}" style="padding:8px 14px;font-size:13px;font-weight:600;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-family:inherit;">{{ addLabel }}</button><sc-if value="{{ isLeases }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleArchivedView }}" style="{{ archViewStyle }}">{{ archViewLabel }}</button></sc-if><div style="display:flex;align-items:center;gap:8px;">
+        <button onClick="{{ scrollToday }}" style="padding:7px 13px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;">Today</button>
+        <sc-if value="{{ showZoom }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;">
+        <button onClick="{{ zoomOut }}" title="Zoom out" style="width:28px;height:26px;border:none;background:transparent;color:var(--text);border-radius:6px;cursor:pointer;font-size:16px;font-family:inherit;">−</button>
+        <span style="font-size:12px;color:var(--muted);min-width:54px;text-align:center;">{{ zoomLabel }}</span>
+        <button onClick="{{ zoomIn }}" title="Zoom in" style="width:28px;height:26px;border:none;background:transparent;color:var(--text);border-radius:6px;cursor:pointer;font-size:16px;font-family:inherit;">+</button>
+      </div>
+        </sc-if><div style="font-size:13px;font-weight:600;color:var(--muted);min-width:150px;">{{ rangeLabel }}</div>
+        <sc-if value="{{ showBulkSelectControls }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toggleBulkSelectMode }}" style="{{ bulkSelectBtnStyle }}">{{ bulkSelectLabel }}</button>
+        <sc-if value="{{ showBulkArchiveBtn }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ bulkArchiveSelected }}" style="{{ bulkArchiveBtnStyle }}">{{ bulkArchiveLabel }}</button>
+        </sc-if>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ isLeases }}" hint-placeholder-val="{{ false }}">
+      
+      </sc-if>
+
+      <sc-if value="{{ showZoom }}" hint-placeholder-val="{{ true }}">
+      
+      </sc-if>
+
+      
+
+      
+    </header><div style="display:flex;gap:22px;padding:9px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex:none;overflow-x:auto;">
+      <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:1px;min-width:max-content;">
+          <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:600;">{{ s.label }}</span>
+          <span style="font-size:16px;font-weight:700;color:{{ s.color }};">{{ s.value }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- TASK FILTERS (tasks timeline / calendar) -->
+    <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap;flex:none;">
+      <sc-for list="{{ taskFilters }}" as="f" hint-placeholder-count="5">
+        <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+      </sc-for>
+      <div style="flex:1;min-width:12px;"></div>
+      <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;">
+        <sc-for list="{{ taskViewModes }}" as="m" hint-placeholder-count="2">
+          <button onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- TIMELINE (leases / projects / tasks) -->
+    <sc-if value="{{ isTimeline }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ scrollRef }}" style="flex:1;overflow:auto;position:relative;background:var(--bg);">
+      <div style="position:relative;width:{{ contentWidth }}px;min-height:100%;">
+
+        <!-- header row -->
+        <div style="position:sticky;top:0;z-index:30;display:flex;height:38px;background:var(--panel);border-bottom:1px solid var(--border);">
+          <div style="position:sticky;left:0;z-index:31;width:{{ labelW }}px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);">
+            <span>{{ rowColLabel }}</span>
+            <sc-if value="{{ isLeases }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ toggleSort }}" title="Change sort order" style="{{ sortBtnStyle }}">{{ sortLabel }}</button>
+            </sc-if>
+          </div>
+          <div style="position:relative;width:{{ timeWidth }}px;flex:none;">
+            <sc-for list="{{ headerMonths }}" as="m" hint-placeholder-count="8">
+              <div style="{{ m.style }}">{{ m.label }}</div>
+            </sc-for>
+            <div style="{{ todayLineStyle }}"></div>
+          </div>
+        </div>
+
+        <!-- rows -->
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+          <div style="{{ r.rowStyle }}">
+            <div onClick="{{ r.onLabel }}" style="{{ r.labelStyle }}">
+              <sc-if value="{{ r.showBulkCheck }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ r.onBulkToggle }}" title="Select property" style="{{ r.bulkCheckStyle }}">{{ r.bulkCheckMark }}</button>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;">
+                <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.address }}</span>
+                <span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.sub }}</span>
+              </div>
+            </div>
+            <div style="{{ r.laneStyle }}">
+              <div style="{{ todayLineStyle }}"></div>
+              <sc-for list="{{ r.bars }}" as="b" hint-placeholder-count="2">
+                <div onPointerDown="{{ b.onDown }}" onClick="{{ b.onClick }}" title="{{ b.title }}" style="{{ b.style }}">
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ b.label }}</span>
+                </div>
+              </sc-for>
+              <sc-for list="{{ r.markers }}" as="mk" hint-placeholder-count="0">
+                <div onPointerDown="{{ mk.onDown }}" onClick="{{ mk.onClick }}" title="{{ mk.title }}" style="{{ mk.style }}"></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ rowsEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:48px;text-align:center;color:var(--muted);font-size:14px;">{{ emptyMsg }}</div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- TASK MONTH CALENDAR -->
+    <sc-if value="{{ isTaskCalendar }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;overflow:auto;background:var(--bg);padding:16px 18px 40px;">
+      <div style="max-width:1120px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;">
+          <button onClick="{{ calendarPrev }}" title="Previous month" style="width:34px;height:34px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-size:18px;font-family:inherit;">‹</button>
+          <div style="font-size:17px;font-weight:700;min-width:190px;text-align:center;letter-spacing:-0.01em;">{{ calendarMonthLabel }}</div>
+          <button onClick="{{ calendarNext }}" title="Next month" style="width:34px;height:34px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-size:18px;font-family:inherit;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);">
+          <sc-for list="{{ calendarWeekdays }}" as="wd" hint-placeholder-count="7">
+            <div style="{{ wd.style }}">{{ wd.label }}</div>
+          </sc-for>
+          <sc-for list="{{ calendarCells }}" as="c" hint-placeholder-count="35">
+            <div style="{{ c.cellStyle }}">
+              <div style="{{ c.dayNumStyle }}">{{ c.dayNum }}</div>
+              <div style="display:flex;flex-direction:column;gap:4px;min-height:0;">
+                <sc-for list="{{ c.items }}" as="t" hint-placeholder-count="1">
+                  <div onClick="{{ t.onClick }}" title="{{ t.title }}" style="{{ t.style }}">{{ t.label }}</div>
+                </sc-for>
+                <sc-if value="{{ c.overflow }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:11px;color:var(--muted);font-weight:600;padding:0 2px;">{{ c.overflowLabel }}</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ calendarMonthEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:28px 0 8px;text-align:center;color:var(--muted);font-size:14px;">No tasks in this filter for {{ calendarMonthLabel }}.</div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- DETAIL DRAWER -->
+    <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.32);z-index:60;display:flex;justify-content:flex-end;">
+      <div onClick="{{ stop }}" style="width:380px;max-width:88vw;height:100%;background:var(--panel);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,0.18);display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);">
+          <span style="font-size:15px;font-weight:700;">{{ drawerTitle }}</span>
+          <button onClick="{{ closeDrawer }}" style="width:30px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:7px;cursor:pointer;font-size:15px;font-family:inherit;">×</button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:18px;">
+          {{ drawerBody }}
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- MODAL (add/edit) -->
+    <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div onClick="{{ stop }}" style="width:440px;max-width:100%;max-height:calc(100vh - 40px);background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700;flex:none;">{{ modalTitle }}</div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;min-height:0;">
+          {{ modalBody }}
+        </div>
+        <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex:none;">
+          <button onClick="{{ closeModal }}" style="padding:8px 15px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;">Cancel</button>
+          <button onClick="{{ saveModal }}" style="padding:8px 17px;font-size:13px;font-weight:600;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-family:inherit;">Save</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+const DAY = 86400000;
+const KEY = 'canary-portfolio:v1';
+const THEME_KEY = 'canary-theme';
+const MANAGER_URL = '/Canary%20Leasing.dc.html?manager=1';
+const MS_MONTH = 30.4375 * DAY;
+
+const TASK_TYPES = ['Move-in inspection','Move-out inspection','Routine inspection','Renewal inspection','Send renewal offer','Notice deadline','Custom task'];
+const TASK_COLOR = {
+  'Move-in inspection':'#5b8c7b',
+  'Move-out inspection':'#b06a4f',
+  'Routine inspection':'#6f7fb0',
+  'Renewal inspection':'#c2913f',
+  'Send renewal offer':'#9168ab',
+  'Notice deadline':'#c0563f',
+  'Custom task':'#7d8590'
+};
+const TRADES = ['Demolition','Plumbing','Electrical','Drywall','Painting','Flooring','Cleaning','Photography','Inspection','Other'];
+const TRADE_COLOR = {
+  Demolition:'#9c6b4a', Plumbing:'#4f86b0', Electrical:'#c2913f', Drywall:'#8a8d95',
+  Painting:'#6f7fb0', Flooring:'#9c7a4a', Cleaning:'#5b8c7b', Photography:'#9168ab',
+  Inspection:'#5f9ea0', Other:'#7d8590'
+};
+const STR_COLOR = '#8b7bb8';
+
+function isStrLease(l){ return l.occupancyType==='str' || (l.status||'')==='Short Term Rental'; }
+function occupancyBarLabel(l, ongoing){
+  if(isStrLease(l)) return 'Short Term Rental';
+  return (l.tenantNames||l.status||'Lease')+(ongoing?'  ⟶ ongoing':'');
+}
+
+function iso(d){ return new Date(d).toISOString().slice(0,10); }
+function pd(s){ if(!s) return null; const d = new Date(s+'T00:00:00'); return isNaN(d)?null:d; }
+function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
+function fmtMoney(n){ return n? '$'+n.toLocaleString('en-US',{maximumFractionDigits:0}) : '—'; }
+function fmtDate(d){ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtShort(d){ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+
+class Component extends DCLogic {
+  state = {
+    view:'leases', dayWidth:5, search:'',
+    overrides:{}, leaseOverrides:{}, customTasks:[], projects:null,
+    taskFilter:'open', taskLayout:'timeline', calendarMonth:'',
+    selected:null, modal:null, draft:{}, leaseEditDraft:null,
+    archived:[], showArchived:false, bulkSelectMode:false, bulkSelected:[],
+    leaseSort:'az',
+    customLeases:[], docs:{}, extracting:false, extractMsg:'',
+    ready:false, _tick:0
+  };
+
+  resolveTheme(){
+    if(this.props.embedded && this.props.theme) return this.props.theme;
+    try{ return localStorage.getItem(THEME_KEY)||'light'; }catch(e){ return 'light'; }
+  }
+
+  componentDidMount(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(KEY)||'null');
+      if(saved){
+        const { theme: _theme, ...rest } = saved;
+        this.setState(s=>({...s, ...rest}));
+      }
+    }catch(e){}
+    this.loadFromApi();
+    this._move = (e)=>this.onDragMove(e);
+    this._up = (e)=>this.onDragUp(e);
+    window.addEventListener('pointermove', this._move);
+    window.addEventListener('pointerup', this._up);
+  }
+
+  componentDidUpdate(prevProps){
+    if(this.props.embedded && prevProps.theme !== this.props.theme){
+      this.setState(s=>({ _tick: (s._tick||0)+1 }));
+    }
+  }
+
+  propertyLabel(p){
+    if(!p) return '';
+    const parts=[p.address||p.title, p.city, p.province, p.postal].filter(Boolean);
+    return parts.length ? parts.join(', ')+', Canada' : (p.title||p.id);
+  }
+
+  mapApiLease(row, prop){
+    const property=this.propertyLabel(prop)||row.propertyTitle||row.propertyId;
+    const tenants=row.tenantName?[{name:row.tenantName, phone:row.tenantPhone||'', email:row.tenantEmail||''}]:[];
+    const active=row.status==='ACTIVE';
+    return {
+      id:row.id, propertyId:row.propertyId, property, fromApi:true,
+      address:prop?.title||prop?.address||row.propertyTitle||'Property',
+      city:prop?.city||row.city||'',
+      rent:row.monthlyRate?('$'+Number(row.monthlyRate).toLocaleString('en-US',{minimumFractionDigits:2})):'',
+      rentNum:Number(row.monthlyRate)||0,
+      utilities:prop?.utilitiesIncluded?'Utilities Included':'Not Included',
+      start:row.startDate, end:row.endDate,
+      status:active?'Active':'Expired',
+      reason:'', months:'',
+      bedrooms:prop?.beds!=null?String(prop.beds):'',
+      bathrooms:prop?.baths!=null?String(prop.baths):'',
+      parking:prop?.parking!=null?String(prop.parking):'',
+      pets:'', tenants, tenantNames:row.tenantName||'', notes:'', imported:false,
+      occupancyType:prop?.occupancyStatus==='short_term'?'str':'lease',
+    };
+  }
+
+  async loadFromApi(){
+    try{
+      const [leaseRes, propRes]=await Promise.all([
+        fetch('/api/leases/mine',{credentials:'include'}),
+        fetch('/api/properties/mine',{credentials:'include'}),
+      ]);
+      if(leaseRes.status===401||propRes.status===401){
+        if(this.props.embedded){
+          this.leases=[]; this.properties=[];
+          this.setState({ready:true});
+          return;
+        }
+        window.location.href=MANAGER_URL; return;
+      }
+      const leases=leaseRes.ok?await leaseRes.json():[];
+      const properties=propRes.ok?await propRes.json():[];
+      this.properties=properties||[];
+      const propById=new Map(this.properties.map(p=>[p.id,p]));
+      this.leases=(leases||[]).map(l=>this.mapApiLease(l, propById.get(l.propertyId)));
+      const archived=this.properties.filter(p=>p.managementStatus==='ARCHIVED').map(p=>this.propertyLabel(p));
+      this.setState({archived, ready:true, customLeases:[]}, ()=>{
+        this.ensureProjects();
+        setTimeout(()=>this.scrollToToday(),60);
+      });
+    }catch(e){
+      this.leases=[];
+      this.properties=[];
+      this.setState({ready:true}, ()=>setTimeout(()=>this.scrollToToday(),60));
+    }
+  }
+
+  findPropertyMatch(label){
+    const q=(label||'').trim().toLowerCase();
+    if(!q||!this.properties?.length) return null;
+    return this.properties.find(p=>{
+      const full=this.propertyLabel(p).toLowerCase();
+      return full===q || (p.title||'').toLowerCase()===q || (p.address||'').toLowerCase()===q || full.includes(q);
+    })||null;
+  }
+
+  timelineStatusToApi(status){
+    const s=(status||'').toLowerCase();
+    if(s.includes('active')||s.includes('upcoming')||s.includes('expiring')) return 'ACTIVE';
+    return 'ENDED';
+  }
+
+  async saveLeaseToApi(draft){
+    const tenants=this.parseTenantsText(draft.tenantsText);
+    const rentNum=parseFloat(String(draft.rentNum).replace(/[^0-9.]/g,''))||0;
+    const body={
+      tenantName:tenants[0]?.name||'Tenant',
+      tenantEmail:tenants[0]?.email||null,
+      tenantPhone:tenants[0]?.phone||null,
+      monthlyRate:rentNum||1,
+      startDate:draft.start||iso(this.today()),
+      endDate:draft.end||draft.start||iso(this.today()),
+      status:draft.occupancyType==='str'?'ACTIVE':this.timelineStatusToApi(draft.status),
+    };
+    const res=await fetch('/api/leases/'+draft.id,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err.error||'Could not save lease'); }
+    const prop=this.properties?.find(p=>p.id===draft.propertyId);
+    if(prop && draft.occupancyType==='str' && prop.occupancyStatus!=='short_term'){
+      await fetch('/api/properties/'+prop.id+'/mark-short-term',{method:'POST',credentials:'include'});
+    }
+    if(prop && draft.occupancyType!=='str' && prop.occupancyStatus==='short_term'){
+      await fetch('/api/properties/'+prop.id+'/mark-standard-occupancy',{method:'POST',credentials:'include'});
+    }
+    await this.loadFromApi();
+    const updated=this.allLeases().find(x=>x.id===draft.id);
+    this.setState({leaseEditDraft:null, selected:updated?{kind:'lease',data:updated}:null});
+  }
+
+  async createLeaseOnApi(draft){
+    const prop=this.findPropertyMatch(draft.property);
+    if(!prop) throw new Error('Choose a property from your portfolio list.');
+    const tenants=this.parseTenantsText(draft.tenantsText);
+    const rentNum=parseFloat(String(draft.rentNum).replace(/[^0-9.]/g,''))||0;
+    const body={
+      tenantName:tenants[0]?.name||(draft.occupancyType==='str'?'Short-term guest':'Tenant'),
+      tenantEmail:tenants[0]?.email||null,
+      tenantPhone:tenants[0]?.phone||null,
+      monthlyRate:rentNum||1,
+      startDate:draft.start||iso(this.today()),
+      endDate:draft.end||draft.start||iso(this.today()),
+      status:'ACTIVE',
+    };
+    const res=await fetch('/api/properties/'+prop.id+'/leases',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err.error||'Could not create occupancy'); }
+    if(draft.occupancyType==='str'){
+      await fetch('/api/properties/'+prop.id+'/mark-short-term',{method:'POST',credentials:'include'});
+    }
+    await this.loadFromApi();
+    setTimeout(()=>this.scrollToToday(),40);
+  }
+  componentWillUnmount(){
+    window.removeEventListener('pointermove', this._move);
+    window.removeEventListener('pointerup', this._up);
+  }
+
+  persist(){
+    const {view,dayWidth,overrides,leaseOverrides,customTasks,projects,taskFilter,taskLayout,calendarMonth,archived,showArchived,leaseSort,customLeases,docs} = this.state;
+    try{ localStorage.setItem(KEY, JSON.stringify({view,dayWidth,overrides,leaseOverrides,customTasks,projects,taskFilter,taskLayout,calendarMonth,archived,showArchived,leaseSort,customLeases,docs})); }catch(e){}
+  }
+  set(patch, cb){ this.setState(patch, ()=>{ this.persist(); cb&&cb(); }); }
+
+  today(){ return new Date(new Date().toISOString().slice(0,10)+'T00:00:00'); }
+
+  allLeases(){
+    const ov=this.state.leaseOverrides||{};
+    const merge=(l)=>{
+      const p=ov[l.id]; if(!p) return l;
+      const m={...l,...p};
+      if(p.tenants) m.tenantNames=m.tenants.map(t=>t.name).join(', ');
+      if(p.rentNum!=null){
+        const n=Number(p.rentNum)||0;
+        m.rentNum=n;
+        m.rent=n?('$'+n.toLocaleString('en-US',{minimumFractionDigits:2})):'';
+      }
+      if(p.property){
+        m.address=(p.property||'').split(',')[0];
+        m.city=((p.property||'').split(',')[1]||'').trim();
+      }
+      return m;
+    };
+    return (this.leases||[]).map(merge).concat((this.state.customLeases||[]).map(merge));
+  }
+
+  leaseToDraft(l){
+    const tenants=l.tenants||[];
+    return {
+      id:l.id,
+      propertyId:l.propertyId||'',
+      fromApi:!!l.fromApi,
+      property:l.property||'',
+      occupancyType:isStrLease(l)?'str':'lease',
+      status:l.status||'Active',
+      tenantsText:tenants.map(t=>[t.name,t.phone,t.email].filter(x=>x).join(' · ')).join('\n'),
+      start:l.start||'',
+      end:l.end||'',
+      reason:l.reason||'',
+      rentNum:l.rentNum??'',
+      utilities:l.utilities||'',
+      bedrooms:l.bedrooms||'',
+      bathrooms:l.bathrooms||'',
+      parking:l.parking||'',
+      pets:l.pets||'',
+      notes:l.notes||'',
+    };
+  }
+
+  parseTenantsText(text){
+    return (text||'').split('\n').map(line=>{
+      const parts=line.split('·').map(s=>s.trim());
+      return parts[0]?{name:parts[0], phone:parts[1]||'', email:parts[2]||''}:null;
+    }).filter(Boolean);
+  }
+
+  saveLeaseFromDraft(draft){
+    const existing=this.allLeases().find(x=>x.id===draft.id);
+    if(existing?.fromApi||(this.properties?.length&&existing&&!String(draft.id).startsWith('cl-'))){
+      this.saveLeaseToApi({...draft, propertyId:existing.propertyId||draft.propertyId}).catch(e=>alert(e.message));
+      return;
+    }
+    const tenants=this.parseTenantsText(draft.tenantsText);
+    const rentNum=parseFloat(String(draft.rentNum).replace(/[^0-9.]/g,''))||0;
+    const prop=draft.property||'';
+    const patch={
+      property:prop,
+      address:prop.split(',')[0],
+      city:(prop.split(',')[1]||'').trim(),
+      occupancyType:draft.occupancyType==='str'?'str':'lease',
+      status:draft.occupancyType==='str'?'Short Term Rental':(draft.status||'Active'),
+      start:draft.start||'',
+      end:draft.end||null,
+      reason:draft.reason||'',
+      rentNum, rent:rentNum?('$'+rentNum.toLocaleString('en-US',{minimumFractionDigits:2})):'',
+      utilities:draft.utilities||'',
+      bedrooms:draft.bedrooms||'',
+      bathrooms:draft.bathrooms||'',
+      parking:draft.parking||'',
+      pets:draft.pets||'',
+      tenants, tenantNames:tenants.map(t=>t.name).join(', '),
+      notes:draft.notes||'',
+    };
+    const inCustom=(this.state.customLeases||[]).some(x=>x.id===draft.id);
+    if(inCustom){
+      this.set({customLeases:(this.state.customLeases||[]).map(x=>x.id===draft.id?{...x,...patch}:x)}, ()=>{
+        const updated=this.allLeases().find(x=>x.id===draft.id);
+        this.setState({leaseEditDraft:null, selected:updated?{kind:'lease',data:updated}:null});
+      });
+    } else {
+      const ov={...(this.state.leaseOverrides||{}), [draft.id]:{...(this.state.leaseOverrides?.[draft.id]||{}), ...patch}};
+      this.set({leaseOverrides:ov}, ()=>{
+        const updated=this.allLeases().find(x=>x.id===draft.id);
+        this.setState({leaseEditDraft:null, selected:updated?{kind:'lease',data:updated}:null});
+      });
+    }
+  }
+
+  async bulkArchiveSelected(){
+    const sel=this.state.bulkSelected||[];
+    if(!sel.length) return;
+    if(this.properties?.length){
+      for(const label of sel){
+        const prop=this.properties.find(p=>this.propertyLabel(p)===label);
+        if(prop) await fetch('/api/properties/'+prop.id+'/archive',{method:'POST',credentials:'include'});
+      }
+      this.setState({bulkSelected:[], bulkSelectMode:false});
+      await this.loadFromApi();
+      return;
+    }
+    const cur=this.state.archived||[];
+    const next=[...new Set([...cur, ...sel])];
+    this.set({archived:next, bulkSelected:[], bulkSelectMode:false});
+  }
+
+  // seed the two leases imported from the uploaded agreements (with attached documents)
+  ensureSeedLeases(){
+    if((this.state.customLeases||[]).length||this.properties?.length) return;
+    const mk=(o)=>({id:o.id, property:o.property, address:o.property.split(',')[0], city:(o.property.split(',')[1]||'').trim(),
+      rent:'$'+o.rentNum.toLocaleString('en-US',{minimumFractionDigits:2}), rentNum:o.rentNum, utilities:o.utilities||'',
+      start:o.start, end:o.end, status:o.status, reason:o.reason||'', months:'', bedrooms:o.bedrooms||'', bathrooms:o.bathrooms||'',
+      parking:o.parking||'', pets:o.pets||'', tenants:o.tenants, tenantNames:o.tenants.map(t=>t.name).join(', '), notes:o.notes||'', imported:true});
+    const leases=[
+      mk({id:'lease-battery6a', property:"6 A Battery Rd, St. John's, NL A1A 1A4, Canada", rentNum:1420, utilities:'Utilities Included',
+        start:'2026-06-19', end:'2027-05-31', status:'Active', bedrooms:'', bathrooms:'', parking:'1', pets:'No pets',
+        tenants:[{name:'Simone Berger', phone:'709 691 0295', email:'harris.m.berger@gmail.com'}],
+        notes:'Apartment in 2-apartment house (Lower). Security deposit $1,065. Emergency contact: Giovanna Del Negro.'}),
+      mk({id:'lease-coventry17', property:"17 Coventry Way, St. John's, NL A1E 6H3, Canada", rentNum:1975, utilities:'Not Included',
+        start:'2025-11-01', end:'2026-10-31', status:'Active', bedrooms:'', bathrooms:'', parking:'1', pets:'Approved: 2 cats, 1 dog',
+        tenants:[{name:'Ross Payne', phone:'709 680 4037', email:'rosskpayne@live.ca'},{name:'Denise Cooper', phone:'709 572 2921', email:'bob-denise@hotmail.com'}],
+        notes:'Renewal \u2014 single family home. Security deposit $1,462.50 (Oct 23, 2024). $25 rental credit. Emergency contact: Ross Payne Sr.'}),
+      mk({id:'lease-nfld546a', property:"546 Newfoundland Dr, St. John's, NL A1A 4W7, Canada", rentNum:1150, utilities:'Not Included',
+        start:'2022-09-01', end:'2025-08-31', status:'Expired', reason:'Month to month', bedrooms:'', bathrooms:'', parking:'',
+        tenants:[{name:'Barry Powell', phone:'', email:''},{name:'Barry Powell Sr.', phone:'', email:''}],
+        notes:'Month-to-month from Sep 1, 2022 at $1,150/mo. Rent increased to $1,350/mo effective Aug 31, 2025 (see current record).'}),
+      mk({id:'lease-nfld546b', property:"546 Newfoundland Dr, St. John's, NL A1A 4W7, Canada", rentNum:1350, utilities:'Not Included',
+        start:'2025-08-31', end:null, status:'Active', reason:'Month to month', bedrooms:'', bathrooms:'', parking:'',
+        tenants:[{name:'Barry Powell', phone:'', email:''},{name:'Barry Powell Sr.', phone:'', email:''}],
+        notes:'Ongoing month-to-month at $1,350/mo (rent increased from $1,150 on Aug 31, 2025).'}),
+    ];
+    const docs={...(this.state.docs||{})};
+    docs['lease-battery6a']=[{id:'doc-b1', name:'6A-Battery-Rd-lease.pdf', type:'application/pdf', url:'docs/6A-Battery-Rd-lease.pdf', addedAt:'2026-06-18'}];
+    docs['lease-coventry17']=[{id:'doc-c1', name:'17-Coventry-Way-renewal.pdf', type:'application/pdf', url:'docs/17-Coventry-Way-renewal.pdf', addedAt:'2024-10-23'}];
+    this.set({customLeases:leases, docs});
+  }
+
+  // ---------- documents ----------
+  addDoc(leaseId, file){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const docs={...(this.state.docs||{})};
+      const list=(docs[leaseId]||[]).slice();
+      const entry={id:'doc-'+Date.now(), name:file.name, type:file.type, size:file.size, addedAt:iso(this.today())};
+      if(file.size < 700000) entry.dataURL=reader.result; // persist small files only
+      else { entry.note='too large to store \u2014 session only'; this._blobUrls=this._blobUrls||{}; this._blobUrls[entry.id]=URL.createObjectURL(file); }
+      list.push(entry); docs[leaseId]=list;
+      this.set({docs});
+    };
+    reader.readAsDataURL(file);
+  }
+  removeDoc(leaseId, docId){
+    const docs={...(this.state.docs||{})};
+    docs[leaseId]=(docs[leaseId]||[]).filter(d=>d.id!==docId);
+    this.set({docs});
+  }
+  openDoc(d){
+    const href = d.url || d.dataURL || (this._blobUrls&&this._blobUrls[d.id]);
+    if(href) window.open(href,'_blank');
+    else alert('This file was uploaded in a previous session and is no longer available to preview. Re-upload to view.');
+  }
+
+  docSection(leaseId){
+    const R=React.createElement;
+    const list=(this.state.docs||{})[leaseId]||[];
+    const inputId='docup-'+leaseId;
+    return R('div',{style:{marginTop:'18px',paddingTop:'16px',borderTop:'1px solid var(--border)'}},
+      R('div',{style:{fontSize:'11px',textTransform:'uppercase',letterSpacing:'0.05em',color:'var(--muted)',fontWeight:600,marginBottom:'9px'}}, 'Documents ('+list.length+')'),
+      R('div',{style:{display:'flex',flexDirection:'column',gap:'7px',marginBottom:'11px'}},
+        list.length? list.map(d=>R('div',{key:d.id,style:{display:'flex',alignItems:'center',gap:'9px',padding:'9px 11px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'9px'}},
+          R('span',{style:{width:'26px',height:'26px',flex:'none',borderRadius:'6px',background:'var(--accent)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:700}},'PDF'),
+          R('div',{onClick:()=>this.openDoc(d),style:{flex:1,minWidth:0,cursor:'pointer'}},
+            R('div',{style:{fontSize:'13px',fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}, d.name),
+            R('div',{style:{fontSize:'11px',color:'var(--muted)'}}, (d.note?d.note:'Added '+fmtShort(pd(d.addedAt||iso(this.today()))))+' · click to view')),
+          R('button',{onClick:()=>this.removeDoc(leaseId,d.id),title:'Remove',style:{flex:'none',width:'26px',height:'26px',border:'1px solid var(--border)',background:'transparent',color:'var(--muted)',borderRadius:'6px',cursor:'pointer',fontFamily:'inherit'}},'×')
+        )) : R('div',{style:{fontSize:'13px',color:'var(--muted)'}},'No documents attached yet.')
+      ),
+      R('label',{htmlFor:inputId,style:{display:'inline-flex',alignItems:'center',gap:'7px',padding:'9px 14px',fontSize:'13px',fontWeight:600,border:'1px dashed var(--border)',background:'var(--surface)',color:'var(--text)',borderRadius:'9px',cursor:'pointer'}},'⤒ Upload document'),
+      R('input',{id:inputId,type:'file',accept:'.pdf,.png,.jpg,.jpeg,.doc,.docx',style:{display:'none'},onChange:(e)=>{ const f=e.target.files[0]; if(f) this.addDoc(leaseId,f); e.target.value=''; }})
+    );
+  }
+
+  // ---------- OCR extraction ----------
+  async extractFromFile(file){
+    this.setState({extracting:true, extractMsg:'Reading document\u2026'});
+    try{
+      let text='';
+      if((file.type||'').includes('pdf') || /\.pdf$/i.test(file.name)){
+        const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs');
+        pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs';
+        const buf=new Uint8Array(await file.arrayBuffer());
+        const doc=await pdfjs.getDocument({data:buf}).promise;
+        const fields=await doc.getFieldObjects();
+        const fv={};
+        if(fields){ Object.keys(fields).forEach(k=>fields[k].forEach(fo=>{ if(fo.value&&fo.value!=='Off'&&String(fo.value).trim()) fv[k]=fo.value; })); }
+        let body=''; const n=Math.min(doc.numPages,6);
+        for(let i=1;i<=n;i++){ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); body+=tc.items.map(it=>it.str).join(' ')+'\n'; }
+        text='FORM FIELDS:\n'+JSON.stringify(fv)+'\n\nDOCUMENT TEXT:\n'+body;
+      } else {
+        text=await file.text();
+      }
+      this.setState({extractMsg:'Extracting lease details with AI\u2026'});
+      const prompt='You are extracting structured data from a residential lease agreement (Newfoundland & Labrador standard form). Return ONLY a compact JSON object, no prose, with keys: address (street + apt only, e.g. "6 A Battery Rd"), city, province, postal, rent (number, monthly), start (YYYY-MM-DD), end (YYYY-MM-DD or null if month-to-month), tenants (array of {name,phone,email}), parking, pets, utilities, notes. If a value is unknown use null. Source:\n'+text.slice(0,6000);
+      let data=null;
+      if(window.claude&&window.claude.complete){
+        const out=await window.claude.complete(prompt);
+        const m=out.match(/\{[\s\S]*\}/); if(m) data=JSON.parse(m[0]);
+      }
+      if(!data) throw new Error('no-ai');
+      const draft={...this.state.draft,
+        property:[ (data.address||''), (data.city||''), ((data.province||'NL')+' '+(data.postal||'')).trim(), 'Canada'].filter(Boolean).join(', '),
+        rentNum:data.rent||'', start:data.start||'', end:data.end||'', status:'Active',
+        parking:data.parking||'', pets:data.pets||'', utilities:data.utilities||'', notes:data.notes||'',
+        tenantsText:(data.tenants||[]).map(t=>[t.name,t.phone,t.email].filter(Boolean).join(' \u00b7 ')).join('\n'),
+        _pendingFile:file };
+      this.setState({draft, extracting:false, extractMsg:'\u2713 Extracted \u2014 review the details below.'});
+    }catch(e){
+      this.setState({extracting:false, extractMsg:'Could not auto-extract. Enter details manually below.'});
+    }
+  }
+
+  toggleBulkProperty(p){
+    const cur=this.state.bulkSelected||[];
+    const next=cur.includes(p)?cur.filter(x=>x!==p):[...cur,p];
+    this.setState({bulkSelected:next});
+  }
+
+  // ---------- range ----------
+  range(){
+    const ls = this.allLeases();
+    let min=Infinity,max=-Infinity;
+    const push=(d)=>{ if(!d) return; const t=d.getTime(); if(t<min)min=t; if(t>max)max=t; };
+    ls.forEach(l=>{ push(pd(l.start)); push(pd(l.end)); });
+    (this.allProjects()).forEach(p=>{ push(pd(p.start)); push(pd(p.end||p.start)); });
+    this.allTasks().forEach(t=>{ push(pd(t.date)); });
+    const tod=this.today();
+    push(addDays(tod,-120)); push(addDays(tod,400));
+    if(min===Infinity){ min=addDays(tod,-120).getTime(); max=addDays(tod,400).getTime(); }
+    const start=new Date(min); start.setDate(1);
+    const end=new Date(max); end.setMonth(end.getMonth()+2,1);
+    return {start, end};
+  }
+  x(d){ const r=this.range(); return ((new Date(d).getTime()-r.start.getTime())/DAY)*this.state.dayWidth; }
+  timeWidth(){ const r=this.range(); return ((r.end.getTime()-r.start.getTime())/DAY)*this.state.dayWidth; }
+
+  scrollToToday(){
+    if(this.state.view==='tasks' && this.state.taskLayout==='calendar'){
+      const tod=this.today();
+      this.set({calendarMonth:iso(new Date(tod.getFullYear(), tod.getMonth(), 1))});
+      return;
+    }
+    const el=this._scroll; if(!el) return;
+    el.scrollLeft = Math.max(0, this.x(this.today()) - el.clientWidth*0.35);
+  }
+
+  // ---------- tasks ----------
+  genTasks(){
+    const tod=this.today();
+    const out=[];
+    (this.allLeases()).forEach(l=>{
+      if(isStrLease(l)) return;
+      const s=pd(l.start), e=pd(l.end);
+      if(!s||!e) return;
+      if(e.getTime() < tod.getTime()-30*DAY) return; // only current/future leases
+      const months=Math.round((e-s)/MS_MONTH);
+      const m2m = /month/i.test(l.reason||'');
+      const floor = tod.getTime()-21*DAY; // drop tasks that are well in the past (already handled)
+      const mk=(type,date)=>{ const dt=new Date(date); if(dt.getTime()<floor) return; out.push({id:l.id+'::'+type, leaseId:l.id, property:l.property, address:l.address, type, date:iso(dt), auto:true}); };
+      mk('Move-in inspection', s);
+      mk('Move-out inspection', e);
+      mk('Routine inspection', new Date((s.getTime()+e.getTime())/2));
+      if(months>=10 && months<=14){
+        mk('Renewal inspection', addDays(e, -Math.round(6.5*30.4375)));
+        mk('Send renewal offer', addDays(e, -Math.round(6*30.4375)));
+      }
+      // manager must give 3 months notice before the end of a fixed term
+      if(!m2m && months>=4){ mk('Notice deadline', addDays(e, -91)); }
+    });
+    return out;
+  }
+  allTasks(){
+    const ov=this.state.overrides;
+    const base=this.genTasks().map(t=>{
+      const o=ov[t.id]||{};
+      return {...t, date:o.date||t.date, done:!!o.done, note:o.note||''};
+    });
+    const custom=(this.state.customTasks||[]).map(t=>({...t, auto:false, done:!!t.done}));
+    return base.concat(custom).sort((a,b)=>a.date<b.date?-1:1);
+  }
+
+  // ---------- projects ----------
+  allProjects(){ return this.state.projects||[]; }
+  ensureProjects(){
+    if(this.state.projects) return;
+    // pick a few properties that are currently vacant (latest lease ended before today) to seed a reno
+    const tod=this.today();
+    const byProp={};
+    (this.allLeases()).forEach(l=>{ (byProp[l.property]=byProp[l.property]||[]).push(l); });
+    const vacant=[];
+    Object.keys(byProp).forEach(p=>{
+      const ends=byProp[p].map(l=>pd(l.end)).filter(Boolean).map(d=>d.getTime());
+      const hasFuture=byProp[p].some(l=>{ const e=pd(l.end); return !l.end || (e&&e.getTime()>=tod.getTime()); });
+      if(ends.length && !hasFuture){ vacant.push({prop:p, addr:byProp[p][0].address, last:Math.max(...ends)}); }
+    });
+    vacant.sort((a,b)=>b.last-a.last);
+    const projects=[];
+    let pid=0;
+    const seq=[['Demolition',3],['Plumbing',2],['Electrical',2],['Drywall',4],['Painting',3],['Flooring',3]];
+    vacant.slice(0,2).forEach((v,vi)=>{
+      let cur=addDays(tod, 7 + vi*2);
+      seq.forEach(([trade,dur])=>{
+        const start=new Date(cur);
+        const end=addDays(cur, dur-1);
+        projects.push({id:'proj-'+(pid++), property:v.prop, address:v.addr, title:trade, trade, start:iso(start), end:iso(end), done:false});
+        cur=addDays(end, 2);
+      });
+      projects.push({id:'proj-'+(pid++), property:v.prop, address:v.addr, title:'Final clean', trade:'Cleaning', start:iso(addDays(cur,1)), end:iso(addDays(cur,1)), done:false});
+      projects.push({id:'proj-'+(pid++), property:v.prop, address:v.addr, title:'Listing photos', trade:'Photography', start:iso(addDays(cur,3)), end:iso(addDays(cur,3)), done:false});
+    });
+    this.set({projects});
+  }
+
+  // ---------- lease risk ----------
+  leaseInfo(){
+    // returns map propertyKey -> {leases sorted, current, risk per lease}
+    const tod=this.today();
+    const byProp={};
+    (this.allLeases()).forEach(l=>{ (byProp[l.property]=byProp[l.property]||[]).push(l); });
+    Object.keys(byProp).forEach(p=>{
+      byProp[p].sort((a,b)=>(a.start||'')<(b.start||'')?-1:1);
+      byProp[p].forEach(l=>{
+        const e=pd(l.end);
+        l._current = (()=>{ const s=pd(l.start); if(!s) return false; const end=e||addDays(tod,3650); return s.getTime()<=tod.getTime() && end.getTime()>=tod.getTime(); })();
+        let risk=false;
+        if(!isStrLease(l) && e && e.getTime()>=tod.getTime() && (e.getTime()-tod.getTime())<=183*DAY){
+          const follow=byProp[p].some(o=>{ if(o===l) return false; const os=pd(o.start); return os && os.getTime()>=e.getTime()-31*DAY; });
+          risk=!follow;
+        }
+        l._risk=risk;
+      });
+    });
+    return byProp;
+  }
+
+  leaseColor(l){
+    if(isStrLease(l)) return STR_COLOR;
+    if(l._risk) return 'var(--red)';
+    const st=(l.status||'').toLowerCase();
+    if(st==='upcoming') return 'var(--amber)';
+    if(st.includes('active')||st.includes('expiring')) return 'var(--green)';
+    return 'var(--gray)';
+  }
+
+  // ---------- drag ----------
+  startDrag(kind, id, e){
+    e.stopPropagation();
+    e.preventDefault();
+    this._drag = {kind, id, startX:e.clientX, moved:false};
+    this._dragOrig = this.dragItemDate(kind,id);
+  }
+  dragItemDate(kind,id){
+    if(kind==='task'){ const t=this.allTasks().find(t=>t.id===id); return t?pd(t.date):null; }
+    if(kind==='project'){ const p=this.allProjects().find(p=>p.id===id); return p?pd(p.start):null; }
+    return null;
+  }
+  onDragMove(e){
+    if(!this._drag) return;
+    const dx=e.clientX-this._drag.startX;
+    if(Math.abs(dx)>3) this._drag.moved=true;
+    const days=Math.round(dx/this.state.dayWidth);
+    if(this._drag._lastDays===days) return;
+    this._drag._lastDays=days;
+    const newDate=addDays(this._dragOrig, days);
+    this.applyDate(this._drag.kind, this._drag.id, newDate);
+  }
+  onDragUp(){
+    if(this._drag){ if(this._drag.moved) this.persist(); }
+    this._drag=null;
+  }
+  applyDate(kind,id,newDate){
+    if(kind==='task'){
+      const tasks=this.allTasks(); const t=tasks.find(t=>t.id===id); if(!t) return;
+      if(t.auto){
+        const ov={...this.state.overrides}; ov[id]={...(ov[id]||{}), date:iso(newDate)};
+        this.setState({overrides:ov});
+      } else {
+        const ct=this.state.customTasks.map(x=>x.id===id?{...x,date:iso(newDate)}:x);
+        this.setState({customTasks:ct});
+      }
+    } else if(kind==='project'){
+      const p=this.allProjects().find(p=>p.id===id); if(!p) return;
+      const dur=(pd(p.end||p.start)-pd(p.start));
+      const ns=newDate, ne=new Date(newDate.getTime()+dur);
+      const projects=this.allProjects().map(x=>x.id===id?{...x,start:iso(ns),end:iso(ne)}:x);
+      this.setState({projects});
+    }
+  }
+
+  toggleTask(id){
+    const tasks=this.allTasks(); const t=tasks.find(t=>t.id===id); if(!t) return;
+    if(t.auto){ const ov={...this.state.overrides}; ov[id]={...(ov[id]||{}), done:!t.done}; this.set({overrides:ov}); }
+    else { this.set({customTasks:this.state.customTasks.map(x=>x.id===id?{...x,done:!x.done}:x)}); }
+  }
+
+  // ---------- modal save ----------
+  saveModalNow(){
+    const d=this.state.draft; const kind=this.state.modal;
+    if(kind==='task'){
+      if(d.id){ // edit existing
+        const t=this.allTasks().find(t=>t.id===d.id);
+        if(t&&t.auto){ const ov={...this.state.overrides}; ov[d.id]={...(ov[d.id]||{}), date:d.date, note:d.note}; this.set({overrides:ov}); }
+        else { this.set({customTasks:this.state.customTasks.map(x=>x.id===d.id?{...x, ...d}:x)}); }
+      } else {
+        const t={id:'ct-'+Date.now(), type:d.type||'Custom task', property:d.property||'', address:(d.property||'').split(',')[0], date:d.date||iso(this.today()), note:d.note||'', done:false};
+        this.set({customTasks:[...this.state.customTasks, t]});
+      }
+    } else if(kind==='project'){
+      if(d.id){ this.set({projects:this.allProjects().map(x=>x.id===d.id?{...x, ...d, end:d.end||d.start}:x)}); }
+      else { const p={id:'proj-'+Date.now(), property:d.property||'', address:(d.property||'').split(',')[0], title:d.title||d.trade||'Project', trade:d.trade||'Other', start:d.start||iso(this.today()), end:d.end||d.start||iso(this.today()), done:false}; this.set({projects:[...this.allProjects(), p]}); }
+    } else if(kind==='lease'){
+      if(this.properties?.length){
+        this.createLeaseOnApi(d).then(()=>this.setState({modal:null,draft:{},extractMsg:''})).catch(e=>alert(e.message));
+        return;
+      }
+      const id='cl-'+Date.now();
+      const tenants=(d.tenantsText||'').split('\n').map(line=>{
+        const parts=line.split('·').map(s=>s.trim());
+        return parts[0]?{name:parts[0], phone:parts[1]||'', email:parts[2]||''}:null;
+      }).filter(Boolean);
+      const rentNum=parseFloat(String(d.rentNum).replace(/[^0-9.]/g,''))||0;
+      const prop=d.property||'New lease';
+      const lease={id, property:prop, address:prop.split(',')[0], city:(prop.split(',')[1]||'').trim(),
+        rent:rentNum?'$'+rentNum.toLocaleString('en-US',{minimumFractionDigits:2}):'', rentNum, utilities:d.utilities||'',
+        start:d.start||iso(this.today()), end:d.end||null,
+        occupancyType:d.occupancyType==='str'?'str':'lease',
+        status:d.occupancyType==='str'?'Short Term Rental':(d.status||'Active'), reason:'', months:'',
+        bedrooms:'', bathrooms:'', parking:d.parking||'', pets:d.pets||'',
+        tenants, tenantNames:tenants.map(t=>t.name).join(', '), notes:d.notes||'', imported:!!d._pendingFile};
+      this.set({customLeases:[...(this.state.customLeases||[]), lease]}, ()=>{
+        if(d._pendingFile) this.addDoc(id, d._pendingFile);
+        setTimeout(()=>this.scrollToToday(),40);
+      });
+    }
+    this.setState({modal:null, draft:{}, extractMsg:''});
+  }
+  deleteDraft(){
+    const d=this.state.draft; const kind=this.state.modal;
+    if(kind==='task'){ this.set({customTasks:this.state.customTasks.filter(x=>x.id!==d.id)}); }
+    if(kind==='project'){ this.set({projects:this.allProjects().filter(x=>x.id!==d.id)}); }
+    this.setState({modal:null, draft:{}, selected:null});
+  }
+
+  // =================================================================
+  renderVals(){
+    const S=this.state;
+    const dark = this.resolveTheme()==='dark';
+    const vars = dark ? {
+      '--bg':'#1f1e1d','--panel':'#262624','--surface':'#302f2d','--text':'#e9e6df','--muted':'#9a958c',
+      '--border':'#3a3835','--accent':'#c8765a','--green':'#6f9e83','--amber':'#c9a24e','--gray':'#5a5852','--red':'#cf6a52','--scroll':'#4a4843','--rowAlt':'#232220'
+    } : {
+      '--bg':'#f3f1ea','--panel':'#faf9f5','--surface':'#ffffff','--text':'#2b2926','--muted':'#86807575','--border':'#e6e2d8',
+      '--accent':'#bd5d3a','--green':'#5f8f6f','--amber':'#bf9540','--gray':'#bdb8ac','--red':'#c0563f','--scroll':'#d4cfc3','--rowAlt':'#f6f4ee'
+    };
+    if(!dark) vars['--muted']='#8a857c';
+    const embedded = !!this.props.embedded;
+    const shellStyle = embedded
+      ? { ...vars, display:'flex', flexDirection:'column', flex:1, minHeight:0, width:'100%', height:'100%' }
+      : { ...vars, display:'flex', flexDirection:'column', height:'100vh', width:'100%' };
+    const innerStyle = {
+      display:'flex', flexDirection:'column', flex:1, minHeight:0, width:'100%',
+      background:'var(--bg)', color:'var(--text)', fontFamily:"'Public Sans',system-ui,sans-serif"
+    };
+    const showStandaloneNav = !embedded;
+
+    const v=S.view;
+    const taskLayout=S.taskLayout||'timeline';
+    const tab=(name)=>({padding:'7px 15px',fontSize:'13px',fontWeight:600,border:'none',borderRadius:'7px',cursor:'pointer',fontFamily:'inherit',
+      background: v===name?'var(--accent)':'transparent', color: v===name?'#fff':'var(--text)'});
+    const taskTab=(name)=>({padding:'6px 12px',fontSize:'12px',fontWeight:600,border:'none',borderRadius:'6px',cursor:'pointer',fontFamily:'inherit',
+      background: taskLayout===name?'var(--accent)':'transparent', color: taskLayout===name?'#fff':'var(--text)'});
+
+    const base = {
+      shellStyle, innerStyle, showStandaloneNav, managerUrl: MANAGER_URL,
+      goLeases:()=>this.set({view:'leases', bulkSelectMode:false, bulkSelected:[]},()=>setTimeout(()=>this.scrollToToday(),40)),
+      goTasks:()=>this.set({view:'tasks'},()=>setTimeout(()=>this.scrollToToday(),40)),
+      goProjects:()=>this.set({view:'projects'},()=>setTimeout(()=>this.scrollToToday(),40)),
+      tabLeasesStyle:tab('leases'), tabTasksStyle:tab('tasks'), tabProjectsStyle:tab('projects'),
+      search:S.search, onSearch:(e)=>this.setState({search:e.target.value}),
+      searchPlaceholder: v==='tasks'?'Search property or task…':'Search property or tenant…',
+      scrollToday:()=>this.scrollToToday(),
+      stop:(e)=>e.stopPropagation(),
+      isTimeline: v==='leases'||v==='projects'||(v==='tasks'&&taskLayout!=='calendar'),
+      isLeases: v==='leases',
+      isTasks: v==='tasks',
+      isTaskCalendar: v==='tasks'&&taskLayout==='calendar',
+      toggleArchivedView:()=>this.set({showArchived:!S.showArchived, bulkSelectMode:false, bulkSelected:[]},()=>setTimeout(()=>this.scrollToToday(),40)),
+      archViewLabel: S.showArchived? '↩ Active properties' : ('Archived ('+(S.archived||[]).length+')'),
+      toggleSort:(e)=>{ e.stopPropagation(); this.set({leaseSort: S.leaseSort==='az'?'end':'az'}); },
+      sortLabel: S.leaseSort==='end' ? '⇅ Lease end' : '⇅ A–Z',
+      sortBtnStyle:{padding:'4px 9px',fontSize:'11px',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em',borderRadius:'6px',cursor:'pointer',fontFamily:'inherit',
+        border:'1px solid var(--border)', background:'var(--surface)', color:'var(--text)'},
+      archViewStyle:{padding:'7px 13px',fontSize:'13px',fontWeight:600,borderRadius:'8px',cursor:'pointer',fontFamily:'inherit',
+        border:'1px solid '+(S.showArchived?'var(--accent)':'var(--border)'),
+        background:S.showArchived?'var(--accent)':'var(--surface)', color:S.showArchived?'#fff':'var(--text)'},
+      showZoom: v==='leases'||v==='projects'||(v==='tasks'&&taskLayout!=='calendar'),
+      scrollRef:(el)=>{ this._scroll=el; },
+      toggleBulkSelectMode:()=>this.set({bulkSelectMode:!S.bulkSelectMode, bulkSelected:[]}),
+      bulkSelectLabel:S.bulkSelectMode?'Cancel':'Select',
+      bulkSelectBtnStyle:{padding:'7px 13px',fontSize:'13px',fontWeight:600,borderRadius:'8px',cursor:'pointer',fontFamily:'inherit',
+        border:'1px solid '+(S.bulkSelectMode?'var(--accent)':'var(--border)'),
+        background:S.bulkSelectMode?'var(--accent)':'var(--surface)', color:S.bulkSelectMode?'#fff':'var(--text)'},
+      showBulkSelectControls:v==='leases'&&!S.showArchived,
+      showBulkArchiveBtn:v==='leases'&&S.bulkSelectMode&&!S.showArchived&&(S.bulkSelected||[]).length>0,
+      bulkArchiveLabel:'Archive ('+(S.bulkSelected||[]).length+')',
+      bulkArchiveBtnStyle:{padding:'7px 13px',fontSize:'13px',fontWeight:600,borderRadius:'8px',cursor:'pointer',fontFamily:'inherit',
+        border:'none', background:'var(--accent)', color:'#fff'},
+      bulkArchiveSelected:()=>this.bulkArchiveSelected(),
+    };
+
+    if(!S.ready){
+      return {...base, stats:[], rows:[], headerMonths:[], rangeLabel:'Loading…', rangeLabel:'', contentWidth:0, timeWidth:0, labelW:260, rowsEmpty:false,
+        zoomLabel:'', addLabel:'Add', drawerOpen:false, modalOpen:false, taskFilters:[], taskViewModes:[], calendarWeekdays:[], calendarCells:[], calendarMonthLabel:'', calendarMonthEmpty:false, rowColLabel:'', todayLineStyle:{display:'none'} };
+    }
+
+    const r=this.range();
+    const dw=S.dayWidth;
+    const labelW=260;
+    const timeWidth=this.timeWidth();
+    const tod=this.today();
+    const todayX=this.x(tod);
+
+    // header months
+    const headerMonths=[];
+    let cur=new Date(r.start);
+    let alt=0;
+    while(cur < r.end){
+      const next=new Date(cur); next.setMonth(next.getMonth()+1);
+      const left=this.x(cur), w=(Math.min(next,r.end)-cur)/DAY*dw;
+      headerMonths.push({ label: cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+String(cur.getFullYear()).slice(2):''),
+        style:{position:'absolute', left:left+'px', width:w+'px', top:0, height:'38px', display:'flex', alignItems:'center', paddingLeft:'8px',
+          fontSize:'12px', fontWeight:600, color:'var(--muted)', borderLeft:'1px solid var(--border)', background: alt%2? 'transparent':'rgba(127,127,127,0.03)'} });
+      cur=next; alt++;
+    }
+    const todayLineStyle={position:'absolute', left:todayX+'px', top:0, bottom:0, width:'2px', background:'var(--accent)', opacity:0.5, zIndex:5, pointerEvents:'none'};
+
+    let rangeLabel = fmtDate(addDays(tod,-30))+' — '+fmtDate(addDays(tod,150));
+    const zoomLabels={3:'Year',5:'Months',9:'Weeks',16:'Days'};
+    const zoomLabel=zoomLabels[dw]||dw+'px';
+    const zoomSteps=[3,5,9,16];
+    const zoomIn=()=>{ const i=zoomSteps.indexOf(dw); if(i<zoomSteps.length-1) this.set({dayWidth:zoomSteps[i+1]},()=>setTimeout(()=>this.scrollToToday(),30)); };
+    const zoomOut=()=>{ const i=zoomSteps.indexOf(dw); if(i>0) this.set({dayWidth:zoomSteps[i-1]},()=>setTimeout(()=>this.scrollToToday(),30)); };
+
+    const q=S.search.trim().toLowerCase();
+    const allTasks=this.allTasks();
+
+    // =================== LEASES VIEW ===================
+    let rows=[]; let rowColLabel='Property'; let emptyMsg='';
+    const rowH=54;
+    const tasksByProp={};
+    allTasks.forEach(t=>{ (tasksByProp[t.property]=tasksByProp[t.property]||[]).push(t); });
+
+    if(v==='leases'){
+      const byProp=this.leaseInfo();
+      const arch=S.archived||[];
+      let keys=Object.keys(byProp).sort();
+      keys = keys.filter(p=> S.showArchived ? arch.includes(p) : !arch.includes(p));
+      if(q) keys=keys.filter(p=> p.toLowerCase().includes(q) || byProp[p].some(l=>(l.tenantNames||'').toLowerCase().includes(q)));
+      if(S.leaseSort==='end'){
+        const todMs=tod.getTime();
+        const nearestEnd=(p)=>{
+          // nearest lease-end on or after today; fall back to latest end if all past; month-to-month (no end) = far future
+          let futureMin=Infinity, pastMax=-Infinity, hasOngoing=false;
+          byProp[p].forEach(l=>{ if(!l.end){ if(l._current) hasOngoing=true; return; } const e=pd(l.end).getTime();
+            if(e>=todMs){ if(e<futureMin) futureMin=e; } else if(e>pastMax) pastMax=e; });
+          if(futureMin!==Infinity) return futureMin;
+          if(hasOngoing) return todMs + 3650*DAY; // ongoing month-to-month sorts after dated ones
+          return pastMax!==-Infinity ? pastMax : Infinity; // ended properties last
+        };
+        keys.sort((a,b)=>{ const d=nearestEnd(a)-nearestEnd(b); return d!==0?d : (a<b?-1:1); });
+      }
+      rows=keys.map((p,ri)=>{
+        const ls=byProp[p];
+        const cur=ls.find(l=>l._current);
+        const first=ls[0];
+        const sub = cur ? (isStrLease(cur) ? ('Short Term Rental'+(cur.rentNum?(' · '+fmtMoney(cur.rentNum)+'/mo'):'')) : ((cur.tenantNames||'Occupied')+' · '+fmtMoney(cur.rentNum)+'/mo')) : (first.city||'');
+        const bars=ls.map(l=>{
+          const s=pd(l.start);
+          const str=isStrLease(l);
+          const ongoing=!l.end && !str;
+          const e=ongoing ? this.range().end : pd(l.end||l.start);
+          const left=this.x(s), w=Math.max(6,(e-s)/DAY*dw);
+          const color=this.leaseColor(l);
+          const bg = ongoing ? ('linear-gradient(90deg, '+color+' calc(100% - 90px), transparent)') : color;
+          const rangeLabel=str ? (fmtDate(s)+' → '+fmtDate(e)) : (fmtDate(s)+' → '+(l.end?fmtDate(e):'ongoing (month-to-month)'));
+          return { label:occupancyBarLabel(l, ongoing), title:l.address+' · '+(str?'Short Term Rental':(l.tenantNames||l.status))+' · '+rangeLabel+' · '+fmtMoney(l.rentNum),
+            onClick:(ev)=>{ ev.stopPropagation(); this.setState({selected:{kind:'lease', data:l}}); },
+            style:{position:'absolute', left:left+'px', width:w+'px', top:'20px', height:'26px', background:bg,
+              borderRadius:'6px', display:'flex', alignItems:'center', padding:'0 9px', fontSize:'12px', fontWeight:600, color:'#fff',
+              cursor:'pointer', boxShadow: ongoing?'none':'0 1px 2px rgba(0,0,0,0.12)', overflow:'hidden',
+              border: str?'1.5px dashed rgba(255,255,255,0.55)':(l._risk?'1.5px solid #fff':'none')} };
+        });
+        const markers=(tasksByProp[p]||[]).map(t=>{
+          const left=this.x(pd(t.date));
+          return { title:t.type+' · '+fmtDate(pd(t.date))+(t.done?' (done)':''),
+            onClick:(ev)=>{ if(this._drag&&this._drag.moved) return; ev.stopPropagation(); this.setState({selected:{kind:'task', data:t}}); },
+            onDown:(ev)=>this.startDrag('task', t.id, ev),
+            style:{position:'absolute', left:(left-5)+'px', top:'6px', width:'10px', height:'10px', borderRadius:'3px',
+              background:t.done?'transparent':TASK_COLOR[t.type]||'#888', border:'2px solid '+(TASK_COLOR[t.type]||'#888'),
+              cursor:'grab', zIndex:6, touchAction:'none'} };
+        });
+        const row = rowMaker(p, first.address, sub, bars, markers, ri, rowH, labelW, timeWidth,
+          ()=>this.setState({selected:{kind:'property', data:{property:p, leases:ls}}}));
+        const bulkMode=S.bulkSelectMode&&!S.showArchived;
+        const bulkChecked=(S.bulkSelected||[]).includes(p);
+        row.showBulkCheck=bulkMode;
+        row.bulkChecked=bulkChecked;
+        row.bulkCheckMark=bulkChecked?'✓':'';
+        row.bulkCheckStyle={flex:'none',width:'18px',height:'18px',borderRadius:'5px',cursor:'pointer',fontFamily:'inherit',fontSize:'12px',fontWeight:700,
+          border:'1.5px solid '+(bulkChecked?'var(--accent)':'var(--border)'), background:bulkChecked?'var(--accent)':'var(--surface)', color:bulkChecked?'#fff':'transparent',
+          display:'flex',alignItems:'center',justifyContent:'center',padding:0};
+        row.onBulkToggle=(ev)=>{ ev.stopPropagation(); this.toggleBulkProperty(p); };
+        if(bulkMode) row.onLabel=(ev)=>{ ev.stopPropagation(); this.toggleBulkProperty(p); };
+        const isArch = arch.includes(p);
+        row.showArchive = true;
+        row.archiveLabel = isArch ? '↩ Restore' : 'Archive';
+        row.archiveTitle = isArch ? 'Restore to active' : 'Archive — no longer managed';
+        row.archiveBtnStyle = {flex:'none',whiteSpace:'nowrap',padding:'5px 10px',height:'28px',borderRadius:'7px',cursor:'pointer',fontFamily:'inherit',fontSize:'11px',fontWeight:700,
+          border:'1px solid '+(isArch?'var(--green)':'var(--border)'), background: isArch?'var(--green)':'var(--surface)', color: isArch?'#fff':'var(--text)'};
+        row.onArchive = (ev)=>{ ev.stopPropagation();
+          const cur = S.archived||[];
+          const next = isArch ? cur.filter(x=>x!==p) : [...cur, p];
+          this.set({archived:next});
+        };
+        return row;
+      });
+      emptyMsg = S.showArchived ? 'No archived properties.' : 'No properties match your search.';
+    }
+
+    // =================== PROJECTS VIEW ===================
+    if(v==='projects'){
+      rowColLabel='Property';
+      const projs=this.allProjects();
+      const byProp={};
+      projs.forEach(pr=>{ (byProp[pr.property]=byProp[pr.property]||[]).push(pr); });
+      let keys=Object.keys(byProp).sort();
+      if(q) keys=keys.filter(p=>p.toLowerCase().includes(q));
+      rows=keys.map((p,ri)=>{
+        const prs=byProp[p];
+        const bars=prs.map(pr=>{
+          const s=pd(pr.start), e=pd(pr.end||pr.start);
+          const single = (e-s)<DAY;
+          const left=this.x(s), w=Math.max(single?14:8,(addDays(e,1)-s)/DAY*dw);
+          const color=TRADE_COLOR[pr.trade]||'#888';
+          return { label:pr.title, title:pr.title+' · '+pr.trade+' · '+fmtShort(s)+(single?'':' → '+fmtShort(e)),
+            onClick:(ev)=>{ if(this._drag&&this._drag.moved) return; ev.stopPropagation(); this.setState({selected:{kind:'project', data:pr}}); },
+            onDown:(ev)=>this.startDrag('project', pr.id, ev),
+            style:{position:'absolute', left:left+'px', width:w+'px', top:'20px', height:'26px', background:color, opacity:pr.done?0.45:1,
+              borderRadius:'6px', display:'flex', alignItems:'center', padding:'0 9px', fontSize:'12px', fontWeight:600, color:'#fff',
+              cursor:'grab', boxShadow:'0 1px 2px rgba(0,0,0,0.12)', overflow:'hidden', touchAction:'none', textDecoration:pr.done?'line-through':'none'} };
+        });
+        return rowMaker(p, prs[0].address, prs.length+' project'+(prs.length>1?'s':''), bars, [], ri, rowH, labelW, timeWidth,
+          ()=>this.setState({selected:{kind:'property', data:{property:p}}}));
+      });
+      emptyMsg='No projects yet. Click “+ Add project”.';
+    }
+
+    // =================== TASKS VIEW ===================
+    let taskFilters=[]; let taskViewModes=[];
+    let calendarWeekdays=[]; let calendarCells=[]; let calendarMonthLabel=''; let calendarMonthEmpty=false;
+    let calendarPrev=()=>{}; let calendarNext=()=>{};
+    if(v==='tasks'){
+      const setF=(f)=>this.set({taskFilter:f},()=>{ if(taskLayout!=='calendar') setTimeout(()=>this.scrollToToday(),40); });
+      const fdef=[['open','Open'],['overdue','Overdue'],['week','Next 7 days'],['done','Completed'],['all','All']];
+      taskFilters=fdef.map(([k,lab])=>({label:lab, onClick:()=>setF(k),
+        style:{padding:'7px 14px',fontSize:'13px',fontWeight:600,borderRadius:'8px',cursor:'pointer',fontFamily:'inherit',
+          border:'1px solid '+(S.taskFilter===k?'var(--accent)':'var(--border)'),
+          background:S.taskFilter===k?'var(--accent)':'var(--surface)', color:S.taskFilter===k?'#fff':'var(--text)'}}));
+      taskViewModes=[['timeline','Timeline'],['calendar','Month']].map(([k,lab])=>({label:lab, onClick:()=>this.set({taskLayout:k},()=>setTimeout(()=>this.scrollToToday(),40)),
+        style:taskTab(k)}));
+      let list=allTasks.slice();
+      if(q) list=list.filter(t=>(t.property||'').toLowerCase().includes(q)||(t.address||'').toLowerCase().includes(q)||t.type.toLowerCase().includes(q));
+      if(S.taskFilter==='open') list=list.filter(t=>!t.done);
+      else if(S.taskFilter==='done') list=list.filter(t=>t.done);
+      else if(S.taskFilter==='overdue') list=list.filter(t=>!t.done && pd(t.date)<tod);
+      else if(S.taskFilter==='week') list=list.filter(t=>!t.done && pd(t.date)>=tod && pd(t.date)<=addDays(tod,7));
+      const arch=S.archived||[];
+      list=list.filter(t=>!arch.includes(t.property));
+
+      if(taskLayout==='calendar'){
+        rowColLabel='Property';
+        const todMonth=new Date(tod.getFullYear(), tod.getMonth(), 1);
+        const anchor=pd(S.calendarMonth)||todMonth;
+        const calYear=anchor.getFullYear(), calMonth=anchor.getMonth();
+        const firstOfMonth=new Date(calYear, calMonth, 1);
+        const gridStart=addDays(firstOfMonth, -firstOfMonth.getDay());
+        calendarMonthLabel=firstOfMonth.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+        calendarPrev=()=>this.set({calendarMonth:iso(new Date(calYear, calMonth-1, 1))});
+        calendarNext=()=>this.set({calendarMonth:iso(new Date(calYear, calMonth+1, 1))});
+        calendarWeekdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(label=>({label,
+          style:{padding:'10px 8px', textAlign:'center', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em',
+            color:'var(--muted)', background:'var(--panel)', borderBottom:'1px solid var(--border)'}}));
+        const tasksByDate={};
+        list.forEach(t=>{ (tasksByDate[t.date]=tasksByDate[t.date]||[]).push(t); });
+        calendarCells=[];
+        let monthTaskCount=0;
+        for(let i=0;i<42;i++){
+          const date=addDays(gridStart, i);
+          const inMonth=date.getMonth()===calMonth;
+          const isToday=iso(date)===iso(tod);
+          const dateKey=iso(date);
+          const dayTasks=(tasksByDate[dateKey]||[]).slice().sort((a,b)=>a.type.localeCompare(b.type));
+          if(inMonth) monthTaskCount+=dayTasks.length;
+          const shown=dayTasks.slice(0,3);
+          const overflow=dayTasks.length-shown.length;
+          calendarCells.push({
+            dayNum:date.getDate(), overflow:overflow>0, overflowLabel:'+'+overflow+' more',
+            cellStyle:{minHeight:'108px', padding:'8px', background: inMonth?'var(--surface)':'var(--rowAlt)', borderTop:'1px solid var(--border)', display:'flex', flexDirection:'column', gap:'6px'},
+            dayNumStyle:{fontSize:'13px', fontWeight:isToday?700:600, width:isToday?'26px':'auto', height:isToday?'26px':'auto', lineHeight:isToday?'26px':'1.2',
+              textAlign:isToday?'center':'left', borderRadius:isToday?'999px':'0', background:isToday?'var(--accent)':'transparent', color:isToday?'#fff':(inMonth?'var(--text)':'var(--muted)'), alignSelf:'flex-start'},
+            items:shown.map(t=>{
+              const overdue=!t.done && pd(t.date)<tod;
+              const color=TASK_COLOR[t.type]||'#888';
+              return { label:t.type, title:t.type+' · '+(t.address||t.property)+' · '+fmtDate(pd(t.date))+(t.done?' (done)':''),
+                onClick:()=>this.setState({selected:{kind:'task', data:t}}),
+                style:{fontSize:'11px', fontWeight:600, lineHeight:1.25, padding:'4px 7px', borderRadius:'6px', cursor:'pointer', overflow:'hidden',
+                  textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#fff', background:color, opacity:t.done?0.5:1, textDecoration:t.done?'line-through':'none',
+                  border:overdue&&!t.done?'1.5px solid var(--red)':'none'} };
+            })
+          });
+        }
+        calendarMonthEmpty=monthTaskCount===0;
+        rangeLabel=calendarMonthLabel;
+      } else {
+        rowColLabel='Property';
+        const byProp={};
+        list.forEach(t=>{ (byProp[t.property]=byProp[t.property]||[]).push(t); });
+        let keys=Object.keys(byProp).sort();
+        rows=keys.map((p,ri)=>{
+          const ts=byProp[p].slice().sort((a,b)=>a.date<b.date?-1:1);
+          const open=ts.filter(t=>!t.done).length;
+          const sub=open+' open · '+ts.length+' task'+(ts.length>1?'s':'');
+          const bars=ts.map(t=>{
+            const d=pd(t.date);
+            const left=this.x(d);
+            const showLabel=dw>=9;
+            const w=Math.max(showLabel?Math.min(160,Math.max(48,t.type.length*7+18)):14,14);
+            const color=TASK_COLOR[t.type]||'#888';
+            const overdue=!t.done && d<tod;
+            return { label:showLabel?t.type:'', title:t.type+' · '+fmtDate(d)+(t.done?' (done)':'')+(overdue?' · overdue':''),
+              onClick:(ev)=>{ if(this._drag&&this._drag.moved) return; ev.stopPropagation(); this.setState({selected:{kind:'task', data:t}}); },
+              onDown:(ev)=>this.startDrag('task', t.id, ev),
+              style:{position:'absolute', left:left+'px', width:w+'px', top:'20px', height:'26px', background:color, opacity:t.done?0.45:1,
+                borderRadius:'6px', display:'flex', alignItems:'center', padding:'0 9px', fontSize:'12px', fontWeight:600, color:'#fff',
+                cursor:'grab', boxShadow:'0 1px 2px rgba(0,0,0,0.12)', overflow:'hidden', touchAction:'none', textDecoration:t.done?'line-through':'none',
+                border:overdue&&!t.done?'2px solid var(--red)':'none', zIndex:overdue?7:6} };
+          });
+          return rowMaker(p, ts[0].address||p.split(',')[0], sub, bars, [], ri, rowH, labelW, timeWidth,
+            ()=>this.setState({selected:{kind:'property', data:{property:p}}}));
+        });
+        emptyMsg='No tasks in this filter.';
+      }
+    }
+
+    // =================== STATS ===================
+    let stats=[];
+    if(v==='leases'){
+      const ls=this.allLeases();
+      const active=ls.filter(l=>(l.status||'').toLowerCase().includes('active')).length;
+      const byProp=this.leaseInfo();
+      let risk=0; Object.values(byProp).forEach(arr=>arr.forEach(l=>{ if(l._risk) risk++; }));
+      const occ = (()=>{ const keys=Object.keys(byProp); const occd=keys.filter(p=>byProp[p].some(l=>l._current)).length; return Math.round(occd/keys.length*100); })();
+      const rentRoll = Object.values(byProp).reduce((sum,arr)=>{ const c=arr.find(l=>l._current); return sum+(c?c.rentNum:0); },0);
+      stats=[
+        {label:'Properties', value:Object.keys(byProp).length, color:'var(--text)'},
+        {label:'Occupancy', value:occ+'%', color:'var(--green)'},
+        {label:'Active leases', value:active, color:'var(--text)'},
+        {label:'Expiring · no renewal', value:risk, color:'var(--red)'},
+        {label:'Monthly rent roll', value:fmtMoney(rentRoll), color:'var(--text)'},
+      ];
+    } else if(v==='tasks'){
+      const open=allTasks.filter(t=>!t.done);
+      const overdue=open.filter(t=>pd(t.date)<tod).length;
+      const next30=open.filter(t=>{ const d=pd(t.date); return d>=tod && d<=addDays(tod,30); }).length;
+      stats=[
+        {label:'Open tasks', value:open.length, color:'var(--text)'},
+        {label:'Overdue', value:overdue, color:overdue?'var(--red)':'var(--muted)'},
+        {label:'Next 30 days', value:next30, color:'var(--amber)'},
+        {label:'Completed', value:allTasks.filter(t=>t.done).length, color:'var(--green)'},
+      ];
+    } else {
+      const projs=this.allProjects();
+      stats=[
+        {label:'Projects', value:projs.length, color:'var(--text)'},
+        {label:'Properties in reno', value:new Set(projs.map(p=>p.property)).size, color:'var(--text)'},
+        {label:'Completed', value:projs.filter(p=>p.done).length, color:'var(--green)'},
+      ];
+    }
+
+    // =================== ADD BUTTON ===================
+    const addLabel = v==='projects' ? '+ Project' : v==='tasks' ? '+ Task' : '+ Occupancy';
+    const onAdd=()=>{
+      if(v==='projects') this.setState({modal:'project', draft:{start:iso(tod), trade:'Painting'}});
+      else if(v==='tasks') this.setState({modal:'task', draft:{type:'Custom task', date:iso(tod)}});
+      else this.setState({modal:'lease', draft:{status:'Active', occupancyType:'lease'}, extractMsg:''});
+    };
+
+    // =================== DRAWER ===================
+    const sel=S.selected;
+    const drawerOpen=!!sel;
+    let drawerTitle='', drawerBody=null;
+    const closeDrawer=()=>this.setState({selected:null, leaseEditDraft:null});
+    if(sel){
+      const R=React.createElement;
+      const field=(label,val)=> R('div',{style:{marginBottom:'13px'}},
+        R('div',{style:{fontSize:'11px',textTransform:'uppercase',letterSpacing:'0.05em',color:'var(--muted)',fontWeight:600,marginBottom:'3px'}},label),
+        R('div',{style:{fontSize:'14px',color:'var(--text)'}},val||'—'));
+      const lbl=(t)=>R('div',{style:{fontSize:'11px',textTransform:'uppercase',letterSpacing:'0.05em',color:'var(--muted)',fontWeight:600,marginBottom:'5px'}},t);
+      const inputStyle={width:'100%',padding:'9px 11px',fontSize:'14px',border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text)',borderRadius:'8px',fontFamily:'inherit',outline:'none',boxSizing:'border-box'};
+      const btn=(label,fn,primary)=>R('button',{onClick:fn,style:{padding:'9px 14px',fontSize:'13px',fontWeight:600,border:primary?'none':'1px solid var(--border)',background:primary?'var(--accent)':'var(--surface)',color:primary?'#fff':'var(--text)',borderRadius:'8px',cursor:'pointer',fontFamily:'inherit'}},label);
+      if(sel.kind==='lease'){
+        const l=sel.data;
+        const baseDraft=(S.leaseEditDraft&&S.leaseEditDraft.id===l.id)?S.leaseEditDraft:this.leaseToDraft(l);
+        const upd=(k,val)=>this.setState({leaseEditDraft:{...baseDraft,[k]:val,id:l.id}});
+        const isStr=baseDraft.occupancyType==='str';
+        const noticeTerms=(!baseDraft.end||/month/i.test(baseDraft.reason||''))
+          ? 'Month-to-month · Tenant: 1 month notice (on/before the 1st). Manager: 3 months notice.'
+          : 'Fixed term · Tenant: 2 months notice before end. Manager: 3 months notice before end.';
+        drawerTitle=(baseDraft.property||l.address||'').split(',')[0];
+        drawerBody=R('div',{style:{display:'flex',flexDirection:'column',gap:'13px'}},
+          R('div',{}, lbl('Occupancy type'),
+            R('select',{value:baseDraft.occupancyType||'lease', onChange:(e)=>upd('occupancyType',e.target.value), style:inputStyle},
+              R('option',{value:'lease'},'Long-term lease'),
+              R('option',{value:'str'},'Short Term Rental'))),
+          isStr? null : R('div',{}, lbl('Status'),
+            R('select',{value:baseDraft.status||'Active', onChange:(e)=>upd('status',e.target.value), style:inputStyle},
+              ['Active','Upcoming','Expiring','Expired'].map((s,i)=>R('option',{key:i,value:s},s)))),
+          !isStr && l._risk? R('div',{style:{fontSize:'12px',color:'var(--red)',fontWeight:600,marginTop:'-6px'}},'⚠ Expiring with no renewal on file'):null,
+          R('div',{}, lbl('Property'), R('input',{value:baseDraft.property||'', onChange:(e)=>upd('property',e.target.value), style:inputStyle})),
+          R('div',{}, lbl(isStr?'Guest(s) — one per line: Name · phone · email':'Tenant(s) — one per line: Name · phone · email'),
+            R('textarea',{value:baseDraft.tenantsText||'', onChange:(e)=>upd('tenantsText',e.target.value), rows:3, placeholder:'Jane Doe · 709 555 1234 · jane@email.com', style:{...inputStyle,resize:'vertical'}})),
+          R('div',{style:{display:'flex',gap:'10px'}},
+            R('div',{style:{flex:1}}, lbl(isStr?'Check-in':'Lease start'), R('input',{type:'date', value:baseDraft.start||'', onChange:(e)=>upd('start',e.target.value), style:inputStyle})),
+            R('div',{style:{flex:1}}, lbl(isStr?'Check-out':'Lease end'), R('input',{type:'date', value:baseDraft.end||'', onChange:(e)=>upd('end',e.target.value), style:inputStyle}))),
+          isStr? null : R('div',{}, lbl('Term type / reason'), R('input',{value:baseDraft.reason||'', onChange:(e)=>upd('reason',e.target.value), placeholder:'e.g. Month to month', style:inputStyle})),
+          isStr? null : R('div',{style:{fontSize:'12px',color:'var(--muted)',lineHeight:1.45,marginTop:'-4px'}}, noticeTerms),
+          R('div',{style:{display:'flex',gap:'10px'}},
+            R('div',{style:{flex:1}}, lbl('Monthly rent ($)'), R('input',{type:'number', value:baseDraft.rentNum??'', onChange:(e)=>upd('rentNum',e.target.value), style:inputStyle})),
+            R('div',{style:{flex:1}}, lbl('Utilities'), R('input',{value:baseDraft.utilities||'', onChange:(e)=>upd('utilities',e.target.value), placeholder:'Included / Not included', style:inputStyle}))),
+          R('div',{style:{display:'flex',gap:'10px'}},
+            R('div',{style:{flex:1}}, lbl('Bedrooms'), R('input',{value:baseDraft.bedrooms||'', onChange:(e)=>upd('bedrooms',e.target.value), style:inputStyle})),
+            R('div',{style:{flex:1}}, lbl('Bathrooms'), R('input',{value:baseDraft.bathrooms||'', onChange:(e)=>upd('bathrooms',e.target.value), style:inputStyle})),
+            R('div',{style:{flex:1}}, lbl('Parking'), R('input',{value:baseDraft.parking||'', onChange:(e)=>upd('parking',e.target.value), style:inputStyle}))),
+          R('div',{}, lbl('Pets'), R('input',{value:baseDraft.pets||'', onChange:(e)=>upd('pets',e.target.value), style:inputStyle})),
+          R('div',{}, lbl('Notes'), R('textarea',{value:baseDraft.notes||'', onChange:(e)=>upd('notes',e.target.value), rows:3, style:{...inputStyle,resize:'vertical'}})),
+          R('div',{style:{display:'flex',gap:'9px',marginTop:'4px',flexWrap:'wrap'}},
+            btn('Save changes', ()=>this.saveLeaseFromDraft(S.leaseEditDraft&&S.leaseEditDraft.id===l.id?S.leaseEditDraft:baseDraft), true),
+            btn('Cancel', ()=>this.setState({leaseEditDraft:null}))),
+          this.docSection(l.id)
+        );
+      } else if(sel.kind==='task'){
+        const t=sel.data;
+        drawerTitle=t.type;
+        drawerBody=R('div',{},
+          field('Property', t.property),
+          field('Date', fmtDate(pd(t.date))),
+          field('Status', t.done?'Completed':'Open'),
+          t.note?field('Note',t.note):null,
+          R('div',{style:{display:'flex',gap:'9px',marginTop:'8px',flexWrap:'wrap'}},
+            btn(t.done?'Mark open':'Mark done', ()=>{ this.toggleTask(t.id); this.setState({selected:null}); }, true),
+            btn('Reschedule', ()=>this.setState({modal:'task', draft:{id:t.id, type:t.type, property:t.property, date:t.date, note:t.note}, selected:null}))
+          ),
+          R('div',{style:{marginTop:'14px',fontSize:'12px',color:'var(--muted)'}}, t.auto?'Auto-generated from lease dates. Drag the marker on the timeline to reschedule.':'Custom task.')
+        );
+      } else if(sel.kind==='project'){
+        const p=sel.data;
+        drawerTitle=p.title;
+        drawerBody=R('div',{},
+          field('Property', p.property),
+          field('Trade', p.trade),
+          field('Schedule', fmtDate(pd(p.start))+((p.end&&p.end!==p.start)?' → '+fmtDate(pd(p.end)):' (single day)')),
+          field('Status', p.done?'Completed':'Scheduled'),
+          R('div',{style:{display:'flex',gap:'9px',marginTop:'8px',flexWrap:'wrap'}},
+            btn(p.done?'Mark open':'Mark done', ()=>{ this.set({projects:this.allProjects().map(x=>x.id===p.id?{...x,done:!x.done}:x)}); this.setState({selected:null}); }, true),
+            btn('Edit', ()=>this.setState({modal:'project', draft:{...p}, selected:null}))
+          )
+        );
+      } else if(sel.kind==='property'){
+        const d=sel.data;
+        drawerTitle=(d.property||'').split(',')[0];
+        const ls=(d.leases||[]).slice().reverse();
+        const isArch=(S.archived||[]).includes(d.property);
+        drawerBody=R('div',{},
+          field('Address', d.property),
+          R('button',{onClick:()=>{ const cur=S.archived||[]; const next=isArch?cur.filter(x=>x!==d.property):[...cur,d.property]; this.set({archived:next}); this.setState({selected:null}); },
+            style:{marginBottom:'16px',padding:'9px 14px',fontSize:'13px',fontWeight:600,borderRadius:'8px',cursor:'pointer',fontFamily:'inherit',
+              border:'1px solid '+(isArch?'var(--green)':'var(--border)'), background:isArch?'var(--green)':'var(--surface)', color:isArch?'#fff':'var(--text)'}},
+            isArch?'↩ Restore to active':'Archive'),
+          R('div',{style:{fontSize:'11px',textTransform:'uppercase',letterSpacing:'0.05em',color:'var(--muted)',fontWeight:600,marginBottom:'7px'}},'Lease history ('+ls.length+')'),
+          R('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}}, ls.map((l,i)=>R('div',{key:i,onClick:()=>this.setState({selected:{kind:'lease',data:l}}),style:{padding:'9px 11px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'9px',cursor:'pointer'}},
+            R('div',{style:{fontSize:'13px',fontWeight:600,display:'flex',justifyContent:'space-between',gap:'8px'}}, R('span',{},isStrLease(l)?'Short Term Rental':(l.tenantNames||l.status)), R('span',{style:{color:'var(--muted)'}},fmtMoney(l.rentNum))),
+            R('div',{style:{fontSize:'12px',color:'var(--muted)',marginTop:'2px'}}, fmtShort(pd(l.start))+' → '+(l.end?fmtShort(pd(l.end)):'ongoing')+' · '+l.status)
+          )))
+        );
+      }
+    }
+
+    // =================== MODAL ===================
+    const modalOpen=!!S.modal;
+    let modalTitle='', modalBody=null;
+    const d=S.draft;
+    const upd=(k,val)=>this.setState({draft:{...this.state.draft,[k]:val}});
+    if(S.modal){
+      const R=React.createElement;
+      const lbl=(t)=>R('label',{style:{fontSize:'12px',fontWeight:600,color:'var(--muted)',display:'block',marginBottom:'5px'}},t);
+      const inputStyle={width:'100%',padding:'9px 11px',fontSize:'14px',border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text)',borderRadius:'8px',fontFamily:'inherit',outline:'none'};
+      const props=[...(this.properties||[]).map(p=>this.propertyLabel(p)), ...new Set((this.allLeases()).map(l=>l.property))].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).sort();
+      const propPicker=()=>{
+        const q=(d.property||'').trim().toLowerCase();
+        const filtered=!q?props:props.filter(p=>p.toLowerCase().includes(q));
+        const showList=!!d._propOpen && filtered.length>0;
+        const listStyle={marginTop:'4px', maxHeight:'200px', overflowY:'auto', background:'var(--surface)',
+          border:'1px solid var(--border)', borderRadius:'8px', boxShadow:'0 8px 24px rgba(0,0,0,0.12)'};
+        const itemStyle={display:'block', width:'100%', textAlign:'left', padding:'10px 12px', border:'none',
+          background:'transparent', color:'var(--text)', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'};
+        return R('div',{},
+          R('input',{
+            value:d.property||'',
+            onChange:(e)=>this.setState({draft:{...this.state.draft, property:e.target.value, _propOpen:true}}),
+            onFocus:()=>upd('_propOpen', true),
+            onBlur:()=>{ window.setTimeout(()=>{ if(this.state.modal) this.setState({draft:{...this.state.draft, _propOpen:false}}); }, 120); },
+            placeholder:'Type or pick…', style:inputStyle, autoComplete:'off'
+          }),
+          showList? R('div',{style:listStyle},
+            filtered.slice(0,80).map((p,i)=>R('button',{
+              key:i, type:'button',
+              onMouseDown:(e)=>{ e.preventDefault(); this.setState({draft:{...this.state.draft, property:p, _propOpen:false}}); },
+              style:{...itemStyle, borderBottom:i<Math.min(filtered.length,80)-1?'1px solid var(--border)':'none'}
+            }, p))
+          ):null
+        );
+      };
+      const propField=R('div',{}, lbl('Property'), propPicker());
+      const dateField=(k,label)=>R('div',{}, lbl(label), R('input',{type:'date', value:d[k]||'', onChange:(e)=>upd(k,e.target.value), style:inputStyle}));
+      const noteField=R('div',{}, lbl('Note'), R('textarea',{value:d.note||'', onChange:(e)=>upd('note',e.target.value), rows:2, style:{...inputStyle,resize:'vertical'}}));
+      if(S.modal==='task'){
+        modalTitle = d.id?'Reschedule task':'Add task';
+        modalBody=R('div',{style:{display:'flex',flexDirection:'column',gap:'14px'}},
+          R('div',{}, lbl('Type'), R('select',{value:d.type||'Custom task', onChange:(e)=>upd('type',e.target.value), style:inputStyle}, TASK_TYPES.map((t,i)=>R('option',{key:i,value:t},t)))),
+          propField, dateField('date','Date'), noteField,
+          d.id&&String(d.id).startsWith('ct-')? R('button',{onClick:()=>this.deleteDraft(),style:{alignSelf:'flex-start',background:'none',border:'none',color:'var(--red)',fontSize:'13px',fontWeight:600,cursor:'pointer',fontFamily:'inherit',padding:0}},'Delete task'):null
+        );
+      } else if(S.modal==='project'){
+        modalTitle = d.id?'Edit project':'Add project';
+        modalBody=R('div',{style:{display:'flex',flexDirection:'column',gap:'14px'}},
+          R('div',{}, lbl('Title'), R('input',{value:d.title||'', onChange:(e)=>upd('title',e.target.value), placeholder:'e.g. Kitchen flooring', style:inputStyle})),
+          R('div',{}, lbl('Trade'), R('select',{value:d.trade||'Other', onChange:(e)=>upd('trade',e.target.value), style:inputStyle}, TRADES.map((t,i)=>R('option',{key:i,value:t},t)))),
+          propField,
+          R('div',{style:{display:'flex',gap:'10px'}}, R('div',{style:{flex:1}},dateField('start','Start')), R('div',{style:{flex:1}},dateField('end','End'))),
+          d.id? R('button',{onClick:()=>this.deleteDraft(),style:{alignSelf:'flex-start',background:'none',border:'none',color:'var(--red)',fontSize:'13px',fontWeight:600,cursor:'pointer',fontFamily:'inherit',padding:0}},'Delete project'):null
+        );
+      } else if(S.modal==='lease'){
+        const isStr=(d.occupancyType||'lease')==='str';
+        modalTitle=isStr?'Add Short Term Rental':'Add occupancy';
+        const upId='lease-ocr-file';
+        const fname=d._pendingFile?d._pendingFile.name:'';
+        modalBody=R('div',{style:{display:'flex',flexDirection:'column',gap:'14px'}},
+          R('div',{}, lbl('Occupancy type'),
+            R('select',{value:d.occupancyType||'lease', onChange:(e)=>upd('occupancyType',e.target.value), style:inputStyle},
+              R('option',{value:'lease'},'Long-term lease'),
+              R('option',{value:'str'},'Short Term Rental'))),
+          isStr? null : R('div',{style:{padding:'14px',border:'1px dashed var(--accent)',borderRadius:'11px',background:'var(--surface)'}},
+            R('div',{style:{fontSize:'13px',fontWeight:700,marginBottom:'3px'}},'Import from lease document'),
+            R('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'10px'}},'Upload a signed lease (PDF) and we\u2019ll read it and fill in the details below.'),
+            R('div',{style:{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}},
+              R('label',{htmlFor:upId,style:{display:'inline-flex',alignItems:'center',gap:'7px',padding:'8px 13px',fontSize:'13px',fontWeight:600,border:'1px solid var(--border)',background:'var(--panel)',color:'var(--text)',borderRadius:'8px',cursor:'pointer'}}, fname?('\u2398 '+fname):'\u2398 Choose file'),
+              R('input',{id:upId,type:'file',accept:'.pdf,.txt',style:{display:'none'},onChange:(e)=>{ const f=e.target.files[0]; if(f){ upd('_pendingFile',f); this.extractFromFile(f); } e.target.value=''; }}),
+              S.extracting? R('span',{style:{fontSize:'12px',color:'var(--accent)',fontWeight:600}},'\u29D7 '+(S.extractMsg||'Working\u2026')) : (S.extractMsg? R('span',{style:{fontSize:'12px',color:'var(--green)',fontWeight:600}},S.extractMsg):null)
+            )
+          ),
+          propField,
+          R('div',{style:{display:'flex',gap:'10px'}},
+            R('div',{style:{flex:1}}, R('div',{}, lbl(isStr?'Nightly / total rate ($)':'Monthly rent ($)'), R('input',{type:'number', value:d.rentNum||'', onChange:(e)=>upd('rentNum',e.target.value), style:inputStyle}))),
+            isStr? null : R('div',{style:{flex:1}}, R('div',{}, lbl('Status'), R('select',{value:d.status||'Active', onChange:(e)=>upd('status',e.target.value), style:inputStyle}, ['Active','Upcoming','Expiring','Expired'].map((s,i)=>R('option',{key:i,value:s},s)))))),
+          R('div',{style:{display:'flex',gap:'10px'}}, R('div',{style:{flex:1}},dateField('start',isStr?'Check-in':'Lease start')), R('div',{style:{flex:1}},dateField('end',isStr?'Check-out':'Lease end'))),
+          R('div',{}, lbl(isStr?'Guest(s) \u2014 one per line: Name \u00b7 phone \u00b7 email':'Tenant(s) \u2014 one per line: Name \u00b7 phone \u00b7 email'), R('textarea',{value:d.tenantsText||'', onChange:(e)=>upd('tenantsText',e.target.value), rows:2, placeholder:'Jane Doe \u00b7 709 555 1234 \u00b7 jane@email.com', style:{...inputStyle,resize:'vertical'}})),
+          R('div',{}, lbl('Notes'), R('textarea',{value:d.notes||'', onChange:(e)=>upd('notes',e.target.value), rows:2, style:{...inputStyle,resize:'vertical'}}))
+        );
+      }
+    }
+
+    return {
+      ...base,
+      stats, rows, headerMonths, todayLineStyle,
+      rangeLabel, contentWidth: labelW+timeWidth, timeWidth, labelW, rowColLabel,
+      rowsEmpty: (v==='leases'||v==='projects'||(v==='tasks'&&taskLayout!=='calendar')) && rows.length===0, emptyMsg,
+      zoomLabel, zoomIn, zoomOut, addLabel, onAdd,
+      taskFilters, taskViewModes, calendarWeekdays, calendarCells, calendarMonthLabel, calendarMonthEmpty, calendarPrev, calendarNext,
+      drawerOpen, drawerTitle, drawerBody, closeDrawer,
+      modalOpen, modalTitle, modalBody, closeModal:()=>this.setState({modal:null,draft:{}}), saveModal:()=>this.saveModalNow(),
+    };
+  }
+}
+
+function rowMaker(key, address, sub, bars, markers, ri, rowH, labelW, timeWidth, onLabel){
+  return {
+    address, sub, bars, markers, onLabel,
+    rowStyle:{display:'flex', height:rowH+'px', borderBottom:'1px solid var(--border)', background: ri%2? 'var(--rowAlt)':'transparent'},
+    labelStyle:{position:'sticky', left:0, zIndex:10, width:labelW+'px', flex:'none', background:'var(--panel)', borderRight:'1px solid var(--border)',
+      display:'flex', alignItems:'center', gap:'8px', padding:'0 14px', cursor:'pointer', overflow:'hidden'},
+    laneStyle:{position:'relative', width:timeWidth+'px', flex:'none'}
+  };
+}
+</script>
+</body>
+</html>
