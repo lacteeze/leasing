@@ -752,6 +752,10 @@
           <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
           <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Leases</span><span class="tnum" style="font-size:12px;color:var(--fg-3)">{{ leaseCount }}</span></sc-if>
         </button>
+        <button onClick="{{ goPortfolio }}" style="{{ navPortfolio }}" title="Portfolio timeline">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 4v16"/><path d="M16 8h5M16 12h5M16 16h5"/></svg>
+          <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Portfolio</span></sc-if>
+        </button>
         <button onClick="{{ goFunnel }}" style="{{ navInquiries }}" title="Inquiries">
           <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="4"/><path d="m11 11 8-8 3 3-3 3-2-2-2 2-2-2"/></svg>
           <sc-if value="{{ sideExpanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left">Inquiries</span><span class="tnum" style="font-size:11px;font-weight:600;color:var(--ink);background:var(--canary);border-radius:9999px;padding:1px 7px">{{ newCount }}</span></sc-if>
@@ -2688,6 +2692,7 @@ class Component extends DCLogic {
       this.loadAuditLog();
     }
   };
+  goPortfolio = () => { window.location.href = '/portfolio/Portfolio%20Timeline.dc.html'; };
   viewListingsForProperty = (propertyId) => {
     this.setState({ mgrView: 'listings', listFilter: 'all', listFilterProperty: propertyId, openProp: null, mgrMobileNavOpen:false });
     if (this.state.managerUser) this.loadManagerListings();
@@ -5582,7 +5587,7 @@ class Component extends DCLogic {
       signInEmail:s.signInEmail, signInPassword:s.signInPassword, signInSubmitting, signInBtnLabel, signInBtnOpacity,
       authLoading, authReady, authError, oauthGoogle, oauthMicrosoft, oauthNone, authEmail, showOAuthDivider,
       mgrName, mgrEmail, mgrAvatarUrl, mgrAvatarInitials: !mgrAvatarUrl, mgrInitials,
-      goOverview:this.goOverview, goProperties:this.goProperties, goListings:this.goListings, goLeases:this.goLeases, goFunnel:this.goFunnel, goBookings:this.goBookings,
+      goOverview:this.goOverview, goProperties:this.goProperties, goListings:this.goListings, goLeases:this.goLeases, goPortfolio:this.goPortfolio, goFunnel:this.goFunnel, goBookings:this.goBookings,
       goApply:this.goApply, goBackDetail:this.goBackDetail,
       openGalleryPhoto0:this.openGalleryPhoto0, openGalleryPhoto1:this.openGalleryPhoto1, openGalleryPhoto2:this.openGalleryPhoto2,
       pubSearch: s.pubSearch, setPubSearch: this.setPubSearch,
@@ -5621,6 +5626,7 @@ class Component extends DCLogic {
       navOverview:this.navStyle(s.mgrView==='overview',col), navProperties:this.navStyle(s.mgrView==='properties',col),
       navListings:this.navStyle(s.mgrView==='listings',col),
       navLeases:this.navStyle(s.mgrView==='leases',col),
+      navPortfolio:this.navStyle(false,col),
       navInquiries:this.navStyle(s.mgrView==='funnel',col), navBookings:this.navStyle(s.mgrView==='bookings',col),
       navViewings:this.navStyle(s.mgrView==='viewings',col), navPublicBtn:this.navStyle(false,col),
       sideStyle, sideExpanded:!col, sideCollapsed:col, toggleSide:this.toggleSide,
