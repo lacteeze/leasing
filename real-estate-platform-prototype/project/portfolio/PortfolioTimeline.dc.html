@@ -272,15 +272,39 @@ class Component extends DCLogic {
     try{ return localStorage.getItem(THEME_KEY)||'light'; }catch(e){ return 'light'; }
   }
 
+  applyDbData(leaseRows, propertyRows, { scroll = true } = {}){
+    const properties=propertyRows||[];
+    const leases=leaseRows||[];
+    this.properties=properties;
+    const propById=new Map(properties.map(p=>[p.id,p]));
+    this.leases=leases.map(l=>this.mapApiLease(l, propById.get(l.propertyId)));
+    const archived=properties.filter(p=>p.managementStatus==='ARCHIVED').map(p=>this.propertyLabel(p));
+    this.setState({archived, ready:true, customLeases:[]}, ()=>{
+      this.ensureProjects();
+      if(scroll) setTimeout(()=>this.scrollToToday(),60);
+    });
+  }
+
+  syncFromParentProps({ scroll = true } = {}){
+    if(!this.props.embedded) return false;
+    const leases=this.props.dbLeases;
+    const properties=this.props.dbProperties;
+    if(!Array.isArray(leases)) return false;
+    this.applyDbData(leases, properties||[], { scroll });
+    return true;
+  }
+
   componentDidMount(){
     try{
       const saved = JSON.parse(localStorage.getItem(KEY)||'null');
       if(saved){
-        const { theme: _theme, ...rest } = saved;
+        const { theme: _theme, archived: _archived, customLeases: _customLeases, ...rest } = saved;
         this.setState(s=>({...s, ...rest}));
       }
     }catch(e){}
-    this.loadFromApi();
+    if(!this.syncFromParentProps()){
+      this.loadFromApi();
+    }
     this._move = (e)=>this.onDragMove(e);
     this._up = (e)=>this.onDragUp(e);
     window.addEventListener('pointermove', this._move);
@@ -290,6 +314,9 @@ class Component extends DCLogic {
   componentDidUpdate(prevProps){
     if(this.props.embedded && prevProps.theme !== this.props.theme){
       this.setState(s=>({ _tick: (s._tick||0)+1 }));
+    }
+    if(this.props.embedded && prevProps.dbKey !== this.props.dbKey){
+      this.syncFromParentProps({ scroll: false });
     }
   }
 
@@ -302,7 +329,8 @@ class Component extends DCLogic {
   mapApiLease(row, prop){
     const property=this.propertyLabel(prop)||row.propertyTitle||row.propertyId;
     const tenants=row.tenantName?[{name:row.tenantName, phone:row.tenantPhone||'', email:row.tenantEmail||''}]:[];
-    const active=row.status==='ACTIVE';
+    const str=prop?.occupancyStatus==='short_term';
+    const statusLabel=str?'Short Term Rental':(row.status==='ENDED'?'Historical':(row.status==='ACTIVE'?'Active':'Expired'));
     return {
       id:row.id, propertyId:row.propertyId, property, fromApi:true,
       address:prop?.title||prop?.address||row.propertyTitle||'Property',
@@ -311,7 +339,7 @@ class Component extends DCLogic {
       rentNum:Number(row.monthlyRate)||0,
       utilities:prop?.utilitiesIncluded?'Utilities Included':'Not Included',
       start:row.startDate, end:row.endDate,
-      status:active?'Active':'Expired',
+      status:statusLabel,
       reason:'', months:'',
       bedrooms:prop?.beds!=null?String(prop.beds):'',
       bathrooms:prop?.baths!=null?String(prop.baths):'',
@@ -329,23 +357,16 @@ class Component extends DCLogic {
       ]);
       if(leaseRes.status===401||propRes.status===401){
         if(this.props.embedded){
-          this.leases=[]; this.properties=[];
-          this.setState({ready:true});
+          if(!this.syncFromParentProps()) this.setState({ready:true});
           return;
         }
         window.location.href=MANAGER_URL; return;
       }
       const leases=leaseRes.ok?await leaseRes.json():[];
       const properties=propRes.ok?await propRes.json():[];
-      this.properties=properties||[];
-      const propById=new Map(this.properties.map(p=>[p.id,p]));
-      this.leases=(leases||[]).map(l=>this.mapApiLease(l, propById.get(l.propertyId)));
-      const archived=this.properties.filter(p=>p.managementStatus==='ARCHIVED').map(p=>this.propertyLabel(p));
-      this.setState({archived, ready:true, customLeases:[]}, ()=>{
-        this.ensureProjects();
-        setTimeout(()=>this.scrollToToday(),60);
-      });
+      this.applyDbData(leases, properties);
     }catch(e){
+      if(this.props.embedded && this.syncFromParentProps()) return;
       this.leases=[];
       this.properties=[];
       this.setState({ready:true}, ()=>setTimeout(()=>this.scrollToToday(),60));
@@ -781,6 +802,7 @@ class Component extends DCLogic {
     const st=(l.status||'').toLowerCase();
     if(st==='upcoming') return 'var(--amber)';
     if(st.includes('active')||st.includes('expiring')) return 'var(--green)';
+    if(st.includes('historical')||st.includes('expired')) return 'var(--gray)';
     return 'var(--gray)';
   }
 

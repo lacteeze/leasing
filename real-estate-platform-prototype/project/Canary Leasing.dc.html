@@ -1448,7 +1448,7 @@
         <!-- PORTFOLIO TIMELINE -->
         <sc-if value="{{ mgrIsPortfolio }}" hint-placeholder-val="{{ false }}">
         <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">
-          <dc-import name="portfolio/PortfolioTimeline" embedded="{{ portfolioEmbedded }}" theme="{{ mgrTheme }}" style="flex:1;min-height:0;width:100%;height:100%;display:flex;flex-direction:column"/>
+          <dc-import name="portfolio/PortfolioTimeline" embedded="{{ portfolioEmbedded }}" theme="{{ mgrTheme }}" dbLeases="{{ timelineDbLeases }}" dbProperties="{{ timelineDbProperties }}" dbKey="{{ timelineDbKey }}" style="flex:1;min-height:0;width:100%;height:100%;display:flex;flex-direction:column"/>
         </div>
         </sc-if>
 
@@ -2701,7 +2701,13 @@ class Component extends DCLogic {
       this.loadAuditLog();
     }
   };
-  goPortfolio = () => this.setState({ mgrView:'portfolio', mgrMobileNavOpen:false });
+  goPortfolio = () => {
+    this.setState({ mgrView:'portfolio', mgrMobileNavOpen:false });
+    if (this.state.managerUser) {
+      this.loadPortfolio();
+      this.loadManagerLeases();
+    }
+  };
   viewListingsForProperty = (propertyId) => {
     this.setState({ mgrView: 'listings', listFilter: 'all', listFilterProperty: propertyId, openProp: null, mgrMobileNavOpen:false });
     if (this.state.managerUser) this.loadManagerListings();
@@ -5650,6 +5656,9 @@ class Component extends DCLogic {
       mgrSearch: s.mgrSearch, setMgrSearch: this.setMgrSearch, mgrSearchPlaceholder,
       mgrIsOverview:s.mgrView==='overview', mgrIsProperties:s.mgrView==='properties', mgrIsListings:s.mgrView==='listings', mgrIsLeases:s.mgrView==='leases',
       mgrIsPortfolio:s.mgrView==='portfolio', portfolioEmbedded:true, mgrTheme:s.theme,
+      timelineDbLeases:s.managerLeases,
+      timelineDbProperties:s.portfolio.filter(p => p.fromDb),
+      timelineDbKey:s.managerLeases.map(l => l.id).sort().join('|') + '::' + s.portfolio.filter(p => p.fromDb).map(p => p.id).sort().join('|'),
       mgrIsUploader:s.mgrView==='uploader', mgrIsFunnel:s.mgrView==='funnel', mgrIsBookings:s.mgrView==='bookings',
       kpis, recentInquiries, upcomingBookings, bookingRows, lanes,
       columns, funnelCount, funnelFilteredLabel, inqPropertyOptions, inqLeaseTypeOptions,
